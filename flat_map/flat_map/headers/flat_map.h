@@ -2,11 +2,11 @@
 #define NSU_OOP_LABS_FLAT_MAP_H
 
 #include <iostream>
-
+// todo реализовать перемещ конструкторы
 class FlatMap {
   private:
-  double resizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
-  size_t startSize = 2;
+  const double resizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
+  const size_t startSize = 2;
   typedef struct pair_ {
     std::string key;
     std::string value;
@@ -16,7 +16,7 @@ class FlatMap {
   size_t curSize_;
   size_t maxSize_;
 
-  size_t getIndex(const std::string& key) const;
+  [[nodiscard]] size_t getIndex(const std::string& key) const;
   void resize(size_t new_size);
 
   public:
@@ -26,11 +26,17 @@ class FlatMap {
   // конструктор копирования
   FlatMap(const FlatMap& otherMap);
 
+  // конструктор перемещения
+  FlatMap(FlatMap&& otherMap) noexcept;
+
   // деструктор
   ~FlatMap();
 
   // оператор присваивания
   FlatMap& operator=(const FlatMap& otherMap);
+
+  // перемещающий operator=
+  FlatMap& operator=(FlatMap&& otherMap) noexcept;
 
   // получить количество элементов в таблице
   [[nodiscard]] std::size_t size() const;
@@ -48,21 +54,40 @@ class FlatMap {
   void clear();
 
 
+  class iterator {
+private:
+    pair_* cur_;
+
+public:
+    explicit iterator(pair_* ptr);
+
+    bool operator==(const iterator& other_it) const;
+
+    bool operator!=(const iterator& other_it) const;
+
+    iterator& operator++();
+
+    std::string getKey(){
+      return cur_->key;
+    }
+    std::string getValue(){
+      return cur_->value;
+    }
+  };
+
   // Получить итератор на первый элемент
-   iterator begin();
+  [[nodiscard]] iterator begin();
 
   // Получить итератор на элемент, следующий за последним
-   iterator end();
+  [[nodiscard]] iterator end();
+
+  // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
+  // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
+  [[nodiscard]] iterator find(const std::string &key);
+
 
 };
 
-// Получить итератор на первый элемент
-// iterator begin();
-
-// Получить итератор на элемент, следующий за последним
-// iterator end();
-
-// очистка таблицы, после которой maxSize_() возвращает 0, а contains() - false на любой ключ
 
 
 #endif// NSU_OOP_LABS_FLAT_MAP_H

@@ -1,6 +1,6 @@
 #include "flat_map.h"
 
-size_t FlatMap::getIndex(const std::string &key) const {
+[[nodiscard]] size_t FlatMap::getIndex(const std::string &key) const {
   size_t left = 1, right = curSize_ - 1;
   while (left <= right) {
     size_t mid = (left + right) / 2;
@@ -29,9 +29,17 @@ FlatMap::FlatMap(const FlatMap &otherMap) {
   }
 }
 
+FlatMap::FlatMap(FlatMap &&otherMap) noexcept
+    : curSize_(otherMap.curSize_)
+    , maxSize_(otherMap.maxSize_) {
+  array_ = otherMap.array_;
+  otherMap.array_ = nullptr;
+}
+
+
 FlatMap::~FlatMap() {
   delete[] array_;
-};
+}
 
 FlatMap &FlatMap::operator=(const FlatMap &otherMap) {
   if (this == &otherMap) {
@@ -46,8 +54,21 @@ FlatMap &FlatMap::operator=(const FlatMap &otherMap) {
   for (size_t i = 0; i < curSize_; ++i) {
     array_[i] = otherMap.array_[i];
   }
+  
   return *this;
 }
+
+FlatMap &FlatMap::operator=(FlatMap &&otherMap) noexcept {
+  if (this == &otherMap) {
+    return *this;
+  }
+  curSize_ = otherMap.curSize_;
+  maxSize_ = otherMap.maxSize_;
+  delete[] array_;
+  array_ = otherMap.array_;
+  otherMap.array_ = nullptr;
+}
+
 
 [[nodiscard]] bool FlatMap::contains(const std::string &key) const {
   if (curSize_ == 0) {
@@ -119,4 +140,38 @@ void FlatMap::clear() {
   maxSize_ = startSize;
   curSize_ = 0;
   array_ = new pair_[startSize];
+}
+
+
+FlatMap::iterator::iterator(pair_ *ptr) : cur_(ptr) {
+}
+
+bool FlatMap::iterator::operator==(const iterator &other_it) const {
+  return cur_ == other_it.cur_;
+}
+
+
+bool FlatMap::iterator::operator!=(const iterator &other_it) const {
+  return cur_ != other_it.cur_;
+}
+
+FlatMap::iterator &FlatMap::iterator::operator++() {
+  ++cur_;
+  return *this;
+}
+
+
+[[nodiscard]] FlatMap::iterator FlatMap::begin() {
+  return iterator(array_);
+}
+
+[[nodiscard]] FlatMap::iterator FlatMap::end() {
+  return iterator(array_ + curSize_);
+}
+
+FlatMap::iterator FlatMap::find(const std::string &key) {
+  if (contains(key)) {
+    return iterator(array_ + getIndex(key));
+  }
+  return FlatMap::end();
 }
