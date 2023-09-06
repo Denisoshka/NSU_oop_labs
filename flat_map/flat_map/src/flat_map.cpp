@@ -54,7 +54,7 @@ FlatMap &FlatMap::operator=(const FlatMap &otherMap) {
   for (size_t i = 0; i < curSize_; ++i) {
     array_[i] = otherMap.array_[i];
   }
-  
+
   return *this;
 }
 
