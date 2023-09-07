@@ -58,6 +58,9 @@ FlatMap &FlatMap::operator=(const FlatMap &otherMap) {
   return *this;
 }
 
+
+
+
 FlatMap &FlatMap::operator=(FlatMap &&otherMap) noexcept {
   if (this == &otherMap) {
     return *this;
@@ -67,8 +70,8 @@ FlatMap &FlatMap::operator=(FlatMap &&otherMap) noexcept {
   delete[] array_;
   array_ = otherMap.array_;
   otherMap.array_ = nullptr;
+  return *this;
 }
-
 
 [[nodiscard]] bool FlatMap::contains(const std::string &key) const {
   if (curSize_ == 0) {

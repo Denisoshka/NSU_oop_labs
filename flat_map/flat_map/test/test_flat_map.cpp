@@ -54,7 +54,7 @@ TEST(FlatMapTest, Fill) {
   map.clear();
   EXPECT_EQ(map.size(), 0);
 }
-// Другие тесты здесь...
+
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

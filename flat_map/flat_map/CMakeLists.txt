@@ -4,7 +4,7 @@ project(flat_map CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(SOURCE_LIB src/flat_map.cpp)
 #set(CMAKE_CXX_COMPILER "clang++")
-
+add_compile_options(-Wall -Wextra -pedantic -Werror)
 add_library(${PROJECT_NAME} OBJECT ${SOURCE_LIB})
 target_include_directories(flat_map PUBLIC headers)
 
