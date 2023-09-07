@@ -85,9 +85,6 @@ public:
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
   [[nodiscard]] iterator find(const std::string &key);
 
-
 };
-
-
 
 #endif// NSU_OOP_LABS_FLAT_MAP_H
