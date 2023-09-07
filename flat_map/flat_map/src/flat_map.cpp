@@ -59,8 +59,6 @@ FlatMap &FlatMap::operator=(const FlatMap &otherMap) {
 }
 
 
-
-
 FlatMap &FlatMap::operator=(FlatMap &&otherMap) noexcept {
   if (this == &otherMap) {
     return *this;
@@ -91,9 +89,10 @@ FlatMap &FlatMap::operator=(FlatMap &&otherMap) noexcept {
   if (!contains(key)) {
     return 0;
   }
-  for (size_t index = getIndex(key); index < curSize_ - 1; index++) {
+  for (size_t index = getIndex(key); index < curSize_ - 1; ++index) {
     array_[index] = array_[index + 1];
   }
+  --curSize_;
   if (curSize_ < (size_t) ((double) maxSize_ / resizeRate_)) {
     resize(size_t((double) maxSize_ / resizeRate_));
   }
@@ -114,11 +113,14 @@ std::string &FlatMap::operator[](const std::string &key) {
     resize(size_t((double) maxSize_ * resizeRate_));
   }
   size_t insertIndex = 0;
-  for (; insertIndex < curSize_ && array_[insertIndex].key < key; insertIndex++) {
+  for (; insertIndex < curSize_ && key > array_[insertIndex].key; insertIndex++) {
   }
-
-  for (size_t shiftIndex = insertIndex; shiftIndex < curSize_;
-       array_[shiftIndex].key = array_[shiftIndex + 1].key, shiftIndex++) {
+  size_t startShift = curSize_;
+  for (; insertIndex < startShift; --startShift) {
+    if (!startShift) {
+      break;
+    }
+    array_[startShift] = array_[startShift-1];
   }
 
   array_[insertIndex].key = key;
