@@ -2,7 +2,7 @@
 #define NSU_OOP_LABS_FLAT_MAP_H
 
 #include <iostream>
-// todo реализовать перемещ конструкторы
+
 class FlatMap {
   private:
   const double resizeRate_ = 1.7;// с семинаров помню что нужно использовать это число

@@ -1,7 +1,7 @@
-#include <iostream>
-
 #include "flat_map.h"
 #include "gtest/gtest.h"
+
+//#include <iostream>
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
@@ -152,11 +152,11 @@ TEST(FlatMapTest, CopyConstructor) {
     testMap1[(std::string) params[0]] = params[1];
   }
   for (const auto &params : testCase) {
-    EXPECT_NE(testMap1[params[0]],testMap2[params[0]]);
+    EXPECT_NE(testMap1[params[0]], testMap2[params[0]]);
   }
   testMap2 = testMap1;
   for (const auto &params : testCase) {
-    EXPECT_EQ(testMap1[params[0]],testMap2[params[0]]);
+    EXPECT_EQ(testMap1[params[0]], testMap2[params[0]]);
   }
 }
 
@@ -170,7 +170,7 @@ TEST(FlatMapTest, Iterator) {
     testMap1[(std::string) params[0]] = params[1];
   }
 
-  for (auto it = testMap1.begin(); it != testMap1.end(); ++it){
+  for (auto it = testMap1.begin(); it != testMap1.end(); ++it) {
     EXPECT_EQ(testMap1[it.getKey()], it.getValue());
   }
 }
@@ -186,26 +186,27 @@ TEST(FlatMapTest, Find) {
   }
 
   size_t count = 0;
-  for (auto it = testMap1.find("key1"); it != testMap1.end(); ++it){
-    count ++;
+  for (auto it = testMap1.find("key1"); it != testMap1.end(); ++it) {
+    count++;
   }
   EXPECT_EQ(count, 7);
 
   count = 0;
-  for (auto it = testMap1.find("key4"); it != testMap1.end(); ++it){
-    count ++;
+  for (auto it = testMap1.find("key4"); it != testMap1.end(); ++it) {
+    count++;
   }
   EXPECT_EQ(count, 4);
 
   count = 0;
-  for (auto it = testMap1.find("key7"); it != testMap1.end(); ++it){
-    count ++;
+  for (auto it = testMap1.find("key7"); it != testMap1.end(); ++it) {
+    count++;
   }
   EXPECT_EQ(count, 1);
 
   count = 0;
-  for (auto it = testMap1.find("key8"); it != testMap1.end(); ++it){
-    count ++;
+  for (auto it = testMap1.find("key8"); it != testMap1.end(); ++it) {
+    count++;
   }
   EXPECT_EQ(count, 0);
+  EXPECT_FALSE(testMap1.contains("key8"));
 }

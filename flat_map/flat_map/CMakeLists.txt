@@ -20,8 +20,7 @@ if (NOT GTest_FOUND)
     FetchContent_MakeAvailable(googletest)
 endif ()
 
-add_executable(test_flat_map
-        test/test_flat_map.cpp)
+add_executable(test_flat_map test/test_flat_map.cpp)
 
 target_link_libraries(test_flat_map
         gtest

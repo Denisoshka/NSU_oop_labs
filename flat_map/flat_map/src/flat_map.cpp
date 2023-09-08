@@ -30,9 +30,9 @@ FlatMap::FlatMap(const FlatMap &otherMap) {
 }
 
 FlatMap::FlatMap(FlatMap &&otherMap) noexcept
-    : curSize_(otherMap.curSize_)
+    : array_(otherMap.array_)
+    , curSize_(otherMap.curSize_)
     , maxSize_(otherMap.maxSize_) {
-  array_ = otherMap.array_;
   otherMap.array_ = nullptr;
 }
 
@@ -120,7 +120,7 @@ std::string &FlatMap::operator[](const std::string &key) {
     if (!startShift) {
       break;
     }
-    array_[startShift] = array_[startShift-1];
+    array_[startShift] = array_[startShift - 1];
   }
 
   array_[insertIndex].key = key;
@@ -128,7 +128,7 @@ std::string &FlatMap::operator[](const std::string &key) {
   curSize_++;
 
   return array_[insertIndex].value;
-};
+}
 
 void FlatMap::resize(const size_t new_size) {
   auto *buf_array = new pair_[new_size];
