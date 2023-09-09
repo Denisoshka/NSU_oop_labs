@@ -3,27 +3,19 @@
 
 #include <iostream>
 #include <vector>
-#include "boost/program_options.hpp"
 
-namespace po = boost::program_options;
 
 class clParser {
   private:
   std::string outputFileName_;
   std::string configFileName_;
-  std::vector<std::string> inputFileName_;
+  std::vector<std::string> inputFilesName_;
 
 
   public:
-      po::options_description opts_desc("General options");
-    opts_desc.add_options()
-        ("help,h",
-         "Show options description")
-        ("config,c",
-//  explicit clParser();
-  void getOptions();
-
-
+  //  explicit clParser();
+  bool getOptions(int argc, char **argv);
+  void printConverterDesc();
 };
 
 

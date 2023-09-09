@@ -1,6 +1,7 @@
+message(STATUS "Creating library \"config_parser\"")
+
 cmake_minimum_required(VERSION 3.8)
 project(cl_parser CXX)
-
 set(CMAKE_CXX_STANDARD 20)
 set(SOURCE_LIB src/cl_parser.cpp)
 #set(CMAKE_CXX_COMPILER "clang++")
