@@ -1,6 +1,5 @@
 {
-  "name": "src",
-  "version": "1.0.0",
-  "dependencies": {
-  }
+  "name": "mute",
+  "description": "mute [start] [end]"
+
 }
