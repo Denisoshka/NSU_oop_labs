@@ -1,5 +1,8 @@
 #include "flat_map.h"
 
+const double resizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
+const size_t startSize = 2;
+
 [[nodiscard]] size_t FlatMap::getIndex(const std::string &key) const {
   size_t left = 1, right = curSize_ - 1;
   while (left <= right) {
@@ -92,9 +95,14 @@ FlatMap &FlatMap::operator=(FlatMap &&otherMap) noexcept {
   for (size_t index = getIndex(key); index < curSize_ - 1; ++index) {
     array_[index] = array_[index + 1];
   }
+<<<<<<< Updated upstream
   --curSize_;
   if (curSize_ < (size_t) ((double) maxSize_ / resizeRate_)) {
     resize(size_t((double) maxSize_ / resizeRate_));
+=======
+  if (curSize_ < static_cast<size_t>(static_cast<double>(maxSize_) / resizeRate_)) {
+    resize(static_cast<size_t>(static_cast<double>(maxSize_) / resizeRate_));
+>>>>>>> Stashed changes
   }
   return 1;
 }
@@ -110,7 +118,7 @@ std::string &FlatMap::operator[](const std::string &key) {
   }
 
   if (maxSize_ == curSize_) {
-    resize(size_t((double) maxSize_ * resizeRate_));
+    resize(static_cast<size_t>(static_cast<double>(maxSize_) * resizeRate_));
   }
   size_t insertIndex = 0;
   for (; insertIndex < curSize_ && key > array_[insertIndex].key; insertIndex++) {
@@ -124,7 +132,6 @@ std::string &FlatMap::operator[](const std::string &key) {
   }
 
   array_[insertIndex].key = key;
-  array_[insertIndex].value = "...";
   curSize_++;
 
   return array_[insertIndex].value;

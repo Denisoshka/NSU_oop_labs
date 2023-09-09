@@ -5,12 +5,10 @@
 
 class FlatMap {
   private:
-  const double resizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
-  const size_t startSize = 2;
-  typedef struct pair_ {
+  struct pair_ {
     std::string key;
     std::string value;
-  } pair_;
+  };
 
   pair_* array_;
   size_t curSize_;
@@ -67,10 +65,10 @@ public:
 
     iterator& operator++();
 
-    std::string getKey(){
+    std::string getKey() {
       return cur_->key;
     }
-    std::string getValue(){
+    std::string getValue() {
       return cur_->value;
     }
   };
@@ -83,8 +81,15 @@ public:
 
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
+<<<<<<< Updated upstream
   [[nodiscard]] iterator find(const std::string &key);
 
 };
 
+=======
+  [[nodiscard]] iterator find(const std::string& key);
+};
+
+
+>>>>>>> Stashed changes
 #endif// NSU_OOP_LABS_FLAT_MAP_H
