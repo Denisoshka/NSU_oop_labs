@@ -2,6 +2,7 @@
 #define CL_PARSER_CONVERTER_H
 
 class converter{
+  virtual void process();
 };
 
 void getDescription();

@@ -9,18 +9,21 @@ project(${project_name} CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(TEST_NAME "test_${project_name}")
 
-#file(GLOB CONVERTER_SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-
-#[[string(REPLACE
+file(GLOB CONVERTER_SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+#[[
+string(REPLACE
         "${CMAKE_CURRENT_SOURCE_DIR}/"
         " "
         CONVERTERS
         ${CONVERTER_SOURCE_DIRS}
-)]]
+)
+]]
 
 #MESSAGE(${CONVERTER_SOURCE_DIRS})
-set(CONVERTERS src/mix/mix.cpp src/mute/mute.cpp converter.cpp)
-message(${CONVERTERS})
+#set(CONVERTERS "src/mix/mix.cpp src/mute/mute.cpp src/converter.cpp")
+
+#message(${CONVERTERS})
+
 #message(${PROJECT_NAME})
 #message("------" ${CMAKE_CURRENT_SOURCE_DIR})
 #[[
@@ -32,14 +35,14 @@ endforeach (CONVERTER_SOURCE_DIR)
 #set(SOURCE_LIB CONVERTERS)
 
 add_compile_options(-Wall -Wextra -pedantic -Werror)
-add_library(${PROJECT_NAME} OBJECT ${CONVERTERS})
+add_library(${PROJECT_NAME} OBJECT ${CONVERTER_SOURCE_DIRS})
 target_include_directories(${project_name} PUBLIC headers)
 
-
+message(STATUS "Found libraries")
 find_package(GTest)
 if (NOT GTest_FOUND)
     include(FetchContent)
-    message(STATUS "download GTest")
+#    message(STATUS "download GTest")
     FetchContent_Declare(
             googletest
             GIT_REPOSITORY https://github.com/google/googletest.git
@@ -52,15 +55,15 @@ endif ()
 
 if (NOT Boost_FOUND)
     include(FetchContent)
-    message(STATUS "download Boost1")
+#    message(STATUS "download Boost1")
     FetchContent_Declare(
             Boost
             GIT_REPOSITORY https://github.com/boostorg/boost.git
             GIT_TAG boost-1.80.0
     )
-    message(STATUS "download Boost2")
+#    message(STATUS "download Boost2")
     FetchContent_MakeAvailable(Boost)
-    message(STATUS "download Boost3")
+    #    message(STATUS "download Boost3")
 endif ()
 message(STATUS "Link libraries")
 
