@@ -1,5 +1,5 @@
-#ifndef CL_PARSER_CONVERTER_H
-#define CL_PARSER_CONVERTER_H
+#ifndef CONVERTER_INTERFACE_CONVERTER_H
+#define CONVERTER_INTERFACE_CONVERTER_H
 
 class converterInterface{
   virtual void process() = 0;
