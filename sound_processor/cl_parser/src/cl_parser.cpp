@@ -1,7 +1,6 @@
 #include "cl_parser.h"
 
-#include <boost/program_options.hpp>
-#include <boost/property_tree/json_parser.hpp>
+#include <boost/program_options.hpp> #include <boost/property_tree/json_parser.hpp>
 
 namespace po = boost::program_options;
 namespace pt = boost::property_tree;

@@ -1,16 +1,22 @@
 cmake_minimum_required(VERSION 3.8)
-project(cl_parser CXX)
-set(CMAKE_CXX_STANDARD 20)
-set(SOURCE_LIB src/cl_parser.cpp)
-#set(CMAKE_CXX_COMPILER "clang++")
-add_compile_options(-Wall -Wextra -pedantic -Werror)
-add_library(${PROJECT_NAME} OBJECT ${SOURCE_LIB})
-target_include_directories(cl_parser PUBLIC headers)
 
+get_filename_component(project_name ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+message(${project_name})
+
+project(${project_name} CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(TEST_NAME "test_${project_name}")
+
+file(GLOB CONVERTER_INTERFACE_SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+
+add_library(${PROJECT_NAME} OBJECT ${CONVERTER_INTERFACE_SOURCE_DIRS})
+
+message(STATUS "Found libraries")
 find_package(GTest)
 if (NOT GTest_FOUND)
     include(FetchContent)
-
+    message(STATUS "download GTest")
     FetchContent_Declare(
             googletest
             GIT_REPOSITORY https://github.com/google/googletest.git
@@ -29,19 +35,21 @@ if (NOT Boost_FOUND)
     FetchContent_MakeAvailable(Boost)
 endif()
 
-target_link_libraries(cl_parser
+message(STATUS "Link libraries")
+message(STATUS ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}
+        PUBLIC converters
         PUBLIC Boost::program_options
         PUBLIC Boost::property_tree
 )
 
-add_executable(test_cl_parser test/test_cl_parser.cpp)
-
-target_link_libraries(test_cl_parser
+add_executable(${TEST_NAME} test/${TEST_NAME}.cpp)
+target_link_libraries(${TEST_NAME}
         gtest
         gtest_main
-        cl_parser
+        ${project_name}
 )
 
-add_test(NAME test_cl_parser
-        COMMAND test_cl_parser
+add_test(NAME ${TEST_NAME}
+        COMMAND ${TEST_NAME}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)

@@ -1,0 +1,8 @@
+#ifndef CONVERTERS_CONVERTER_TMP_H
+#define CONVERTERS_CONVERTER_TMP_H
+
+class converter_tmp{
+
+};
+
+#endif// CONVERTERS_CONVERTER_TMP_H
