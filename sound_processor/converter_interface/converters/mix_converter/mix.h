@@ -1,7 +1,7 @@
 #ifndef CONVERTERS_MIX_H
 #define CONVERTERS_MIX_H
 
-#include "converter_tmp/converter_tmp.h"
+#include "../converter/converter.h"
 
 class mixConverter: public converter {
 

@@ -18,7 +18,7 @@ void getDescription() {
   }
 }
 
-void getConverter(std::string converterName) {
+void getConverter(const std::string& converterName) {
   std::unordered_map<std::string, std::unique_ptr<converter>> converters = {
           {"mute", std::make_unique<muteConverter>()},
           {"mix", std::make_unique<mixConverter>()}
