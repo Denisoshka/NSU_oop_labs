@@ -95,7 +95,7 @@ FlatMap &FlatMap::operator=(FlatMap &&otherMap) noexcept {
   for (size_t index = getIndex(key); index < curSize_ - 1; ++index) {
     array_[index] = array_[index + 1];
   }
-
+  --curSize_;
   if (curSize_ < static_cast<size_t>(static_cast<double>(maxSize_) / resizeRate_)) {
     resize(static_cast<size_t>(static_cast<double>(maxSize_) / resizeRate_));
 

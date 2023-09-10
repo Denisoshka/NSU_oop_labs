@@ -24,7 +24,7 @@ TEST(FlatMapTest, Erase_1) {
   }
   for (const auto &params : testCase) {
     EXPECT_EQ(testMap.erase(params[0]), 1);
-    EXPECT_FALSE(testMap.contains(params[0]));
+    EXPECT_FALSE(testMap.contains(params[0]))<<params[0];
   }
   EXPECT_EQ(testMap.size(), 0);
 }
@@ -53,8 +53,8 @@ TEST(FlatMapTest, Erase_3) {
     testMap[(std::string) params[0]] = params[1];
   }
   for (const auto &params : testCase) {
-    EXPECT_EQ(testMap.erase(params[0]), 1);
-    EXPECT_FALSE(testMap.contains(params[0]));
+    EXPECT_EQ(testMap.erase(params[0]), 1)<<params[0];
+    EXPECT_FALSE(testMap.contains(params[0]))<<params[0];
   }
   EXPECT_EQ(testMap.size(), 0);
 }

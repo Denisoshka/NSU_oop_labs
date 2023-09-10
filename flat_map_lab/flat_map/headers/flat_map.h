@@ -1,5 +1,5 @@
-#ifndef NSU_OOP_LABS_FLAT_MAP_H
-#define NSU_OOP_LABS_FLAT_MAP_H
+#ifndef FLAT_MAP_LAB_FLAT_MAP_H
+#define FLAT_MAP_LAB_FLAT_MAP_H
 
 #include <iostream>
 
