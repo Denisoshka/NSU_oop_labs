@@ -95,14 +95,10 @@ FlatMap &FlatMap::operator=(FlatMap &&otherMap) noexcept {
   for (size_t index = getIndex(key); index < curSize_ - 1; ++index) {
     array_[index] = array_[index + 1];
   }
-<<<<<<< Updated upstream
-  --curSize_;
-  if (curSize_ < (size_t) ((double) maxSize_ / resizeRate_)) {
-    resize(size_t((double) maxSize_ / resizeRate_));
-=======
+
   if (curSize_ < static_cast<size_t>(static_cast<double>(maxSize_) / resizeRate_)) {
     resize(static_cast<size_t>(static_cast<double>(maxSize_) / resizeRate_));
->>>>>>> Stashed changes
+
   }
   return 1;
 }

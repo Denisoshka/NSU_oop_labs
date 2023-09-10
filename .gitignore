@@ -1,3 +1,5 @@
-cmake-build-*
+cmake-build-**
 .idea
 .clang-format
+CMakeFiles
+_*

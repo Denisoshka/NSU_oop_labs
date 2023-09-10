@@ -81,15 +81,8 @@ public:
 
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
-<<<<<<< Updated upstream
-  [[nodiscard]] iterator find(const std::string &key);
 
-};
-
-=======
   [[nodiscard]] iterator find(const std::string& key);
 };
 
-
->>>>>>> Stashed changes
 #endif// NSU_OOP_LABS_FLAT_MAP_H
