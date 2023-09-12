@@ -34,11 +34,11 @@ class FlatMap {
     this->array_ = buf_array;
   }
   [[nodiscard]] foundInf getIndex(const keyT& key) const {
-    if (array_[0].key == key){
+    if (array_[0].key == key) {
       return {0, true};
     }
     size_t left = 1;
-    size_t right = (curSize_) ? curSize_ - 1: curSize_;
+    size_t right = (curSize_) ? curSize_ - 1 : curSize_;
     while (left <= right) {
       size_t mid = (left + right) / 2;
       if (array_[mid].key == key) {
@@ -74,6 +74,8 @@ class FlatMap {
       : array_(otherMap.array_)
       , curSize_(otherMap.curSize_)
       , maxSize_(otherMap.maxSize_) {
+    otherMap.curSize_ = 0;
+    otherMap.maxSize_ = 0;
     otherMap.array_ = nullptr;
   }
 
@@ -110,6 +112,8 @@ class FlatMap {
     delete[] array_;
     array_ = otherMap.array_;
     otherMap.array_ = nullptr;
+    otherMap.curSize_ = 0;
+    otherMap.maxSize_ = 0;
     return *this;
   }
 
@@ -121,10 +125,7 @@ class FlatMap {
   // доступ / вставка элемента по ключу
   valueT& operator[](const keyT& key) {
     foundInf indexKey = getIndex(key);
-    int a = 10;
-    if (a!=10){
-      a++;
-    }
+
     if (indexKey.isFound) {
       return array_[indexKey.index].value;
     }
@@ -156,10 +157,11 @@ class FlatMap {
 
   // удаление элемента по ключу, возвращает количество удаленных элементов (0 или 1)
   [[nodiscard]] std::size_t erase(const keyT& key) {
-    if (!contains(key)) {
+    foundInf foundIndex = getIndex(key);
+    if (!foundIndex.isFound) {
       return 0;
     }
-    for (size_t index = getIndex(key); index < curSize_ - 1; ++index) {
+    for (size_t index = foundIndex.index; index < curSize_ - 1; ++index) {
       array_[index] = array_[index + 1];
     }
     --curSize_;
@@ -180,10 +182,13 @@ class FlatMap {
 
   class iterator {
 private:
-    std::size_t cur_;
+    pair_* cur_;
 
 public:
-    explicit iterator(std::size_t) : cur_(0) {
+    const keyT& first = cur_->key;
+    valueT& second = cur_->value;
+
+    explicit iterator(pair_* i) : cur_(i) {
     }
 
     bool operator==(const iterator& other_it) const {
@@ -195,29 +200,38 @@ public:
     }
 
     iterator& operator++() {
+
       ++cur_;
       return *this;
     };
 
-    /*keyT& first() {
-      keyT& key = array_[keyT].key;
-      return key;
-    }
-    valueT getValue() {
-      return cur_->value;
-    }*/
+    iterator operator++(int) {
+      iterator tmp{*this};
+      ++cur_;
+      return tmp;
+    };
   };
 
   // Получить итератор на первый элемент
-//  [[nodiscard]] iterator begin();
+  [[nodiscard]] iterator begin() {
+    return iterator(array_);
+  }
 
   // Получить итератор на элемент, следующий за последним
-//  [[nodiscard]] iterator end();
+  [[nodiscard]] iterator end() {
+    return iterator(array_ + curSize_);
+  }
 
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
 
-//  [[nodiscard]] iterator find(const keyT& key);
+  [[nodiscard]] iterator find(const keyT& key) {
+    foundInf foundIndex = getIndex(key);
+    if (foundIndex.isFound) {
+      return iterator(array_ + foundIndex.index);
+    }
+    return end();
+  }
 };
 
 #endif// NSU_OOP_LABS_FLAT_MAP_H
