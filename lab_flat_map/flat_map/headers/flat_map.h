@@ -200,13 +200,12 @@ public:
     }
 
     iterator& operator++() {
-
       ++cur_;
       return *this;
     };
 
     iterator operator++(int) {
-      iterator tmp{*this};
+      iterator tmp = *this;
       ++cur_;
       return tmp;
     };

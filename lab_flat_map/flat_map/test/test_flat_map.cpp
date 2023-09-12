@@ -1,6 +1,7 @@
 #include "flat_map.h"
 #include "gtest/gtest.h"
 
+#include <array>
 #include <iostream>
 
 int main(int argc, char **argv) {
@@ -248,3 +249,72 @@ TEST(FlatMapTest, Find_2) {
   EXPECT_EQ(count, 0);
   EXPECT_FALSE(tmp.contains(8));
 }
+
+
+TEST(FlatMapTest, Find_3) {
+  FlatMap<int, std::string> tmp;
+
+  std::array<int, 7> testCase_0 = {7, 1, 6, 2, 5, 3, 4};
+  std::array<std::string, 7> testCase_1 = {"key7", "key1", "key6", "key2", "key5", "key3", "key4"};
+  for (std::size_t i = 0; i < testCase_0.size(); i++ ) {
+    tmp[testCase_0[i]] = testCase_1[i];
+  }
+  for (std::size_t i = 0; i < testCase_0.size(); i++ ) {
+    EXPECT_EQ(tmp[testCase_0[i]], testCase_1[i]);
+  }
+  /*
+  for (const auto &params : testCase) {
+    EXPECT_EQ(tmp[params[0]], params[1]);
+  }
+   */
+  EXPECT_EQ(tmp.size(), 7);
+
+  size_t count = 0;
+  for (auto it = tmp.find(1); it != tmp.end(); ++it) {
+    count++;
+  }
+  EXPECT_EQ(count, 7);
+
+  count = 0;
+  for (auto it = tmp.find(4); it != tmp.end(); ++it) {
+    count++;
+  }
+  EXPECT_EQ(count, 4);
+
+  count = 0;
+  for (auto it = tmp.find(7); it != tmp.end(); ++it) {
+    count++;
+  }
+  EXPECT_EQ(count, 1);
+
+  count = 0;
+  for (auto it = tmp.find(8); it != tmp.end(); ++it) {
+    count++;
+  }
+  EXPECT_EQ(count, 0);
+  EXPECT_FALSE(tmp.contains(8));
+}
+
+TEST(FlatMapTest, postfix_incr) {
+  FlatMap<std::string, std::string> testMap1;
+
+  std::vector<std::vector<std::string>> testCase
+          = {{"key7", "value7"}, {"key1", "value1"}, {"key6", "value6"}, {"key2", "value2"},
+             {"key5", "value5"}, {"key3", "value3"}, {"key4", "value4"}};
+  for (const auto &params : testCase) {
+    testMap1[(std::string) params[0]] = params[1];
+  }
+
+  size_t count = 0;
+  auto it = testMap1.begin();
+  auto sub = it++;
+  for (; it != testMap1.end(); ++it) {
+    count++;
+  }
+  EXPECT_EQ(count, 6);
+  for (; sub != testMap1.end(); ++it) {
+    count++;
+  }
+  EXPECT_EQ(count, 7);
+}
+
