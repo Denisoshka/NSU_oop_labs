@@ -1,30 +1,12 @@
 #include "flat_map.h"
 
+/*
+template<typename keyT, typename valueT>
 
-template<typename keyT, typename valueT>
-[[nodiscard]] size_t FlatMap<keyT, valueT>::getIndex(const keyT &key) const {
-  size_t left = 1, right = curSize_ - 1;
-  while (left <= right) {
-    size_t mid = (left + right) / 2;
-    if (array_[mid].key == key) {
-      return mid;
-    }
-    else if (array_[mid].key < key) {
-      left = mid + 1;
-    }
-    else {
-      right = mid - 1;
-    }
-  }
-  return 0;
-}
-template<typename keyT, typename valueT>
-FlatMap<keyT, valueT>::FlatMap() {
-  this->array_ = new pair_[startSize];
-  this->curSize_ = 0;
-  this->maxSize_ = startSize;
-}
-template<typename keyT, typename valueT>
+}*/
+//template<typename keyT, typename valueT>
+
+/*template<typename keyT, typename valueT>
 FlatMap<keyT, valueT>::FlatMap(const FlatMap &otherMap) {
   curSize_ = otherMap.curSize_;
   maxSize_ = otherMap.maxSize_;
@@ -32,22 +14,25 @@ FlatMap<keyT, valueT>::FlatMap(const FlatMap &otherMap) {
   for (size_t i = 0; i < curSize_; i++) {
     array_[i] = otherMap.array_[i];
   }
-}
-
+}*/
+/*
 template<typename keyT, typename valueT>
 FlatMap<keyT, valueT>::FlatMap(FlatMap &&otherMap) noexcept
     : array_(otherMap.array_)
     , curSize_(otherMap.curSize_)
     , maxSize_(otherMap.maxSize_) {
   otherMap.array_ = nullptr;
-}
+}*/
+/*
 
 template<typename keyT, typename valueT>
 FlatMap<keyT, valueT>::~FlatMap() {
   delete[] array_;
 }
+*/
 
-template<typename keyT, typename valueT>
+//template<typename keyT, typename valueT>
+/*
 FlatMap<keyT, valueT> &FlatMap<keyT, valueT>::operator=(const FlatMap &otherMap) {
   if (this == &otherMap) {
     return *this;
@@ -64,21 +49,8 @@ FlatMap<keyT, valueT> &FlatMap<keyT, valueT>::operator=(const FlatMap &otherMap)
 
   return *this;
 }
-
-template<typename keyT, typename valueT>
-FlatMap<keyT, valueT> &FlatMap<keyT, valueT>::operator=(FlatMap &&otherMap) noexcept {
-  if (this == &otherMap) {
-    return *this;
-  }
-  this->curSize_ = otherMap.curSize_;
-  this->maxSize_ = otherMap.maxSize_;
-  delete[] this->array_;
-  this->array_ = otherMap.array_;
-  otherMap.array_ = nullptr;
-  return *this;
-}
-
-
+*/
+/*
 template<typename keyT, typename valueT>
 [[nodiscard]] bool FlatMap<keyT, valueT>::contains(const keyT &key) const {
   if (this->curSize_ == 0) {
@@ -93,7 +65,8 @@ template<typename keyT, typename valueT>
   }
   return true;
 }
-
+*/
+/*
 template<typename keyT, typename valueT>
 [[nodiscard]] std::size_t FlatMap<keyT, valueT>::erase(const keyT &key) {
   if (!contains<keyT>(key)) {
@@ -112,7 +85,23 @@ template<typename keyT, typename valueT>
 template<typename keyT, typename valueT>
 [[nodiscard]] std::size_t FlatMap<keyT, valueT>::size() const {
   return curSize_;
-};
+}*/
+
+
+/*
+template<typename keyT, typename valueT>
+FlatMap<keyT, valueT> &FlatMap<keyT, valueT>::operator=(FlatMap &&otherMap) noexcept {
+  if (this == &otherMap) {
+    return *this;
+  }
+  this->curSize_ = otherMap.curSize_;
+  this->maxSize_ = otherMap.maxSize_;
+  delete[] this->array_;
+  this->array_ = otherMap.array_;
+  otherMap.array_ = nullptr;
+  return *this;
+}*/
+/*
 
 template<class keyT, class valueT>
 valueT &FlatMap<keyT, valueT>::operator[](const keyT &key) {
@@ -140,8 +129,9 @@ valueT &FlatMap<keyT, valueT>::operator[](const keyT &key) {
 
   return this->array_[insertIndex].value;
 }
+*/
 
-template<class keyT, class valueT>
+/*template<class keyT, class valueT>
 void FlatMap<keyT, valueT>::resize(const size_t new_size) {
   auto *buf_array = new pair_[new_size];
   this->maxSize_ = new_size;
@@ -150,7 +140,8 @@ void FlatMap<keyT, valueT>::resize(const size_t new_size) {
   }
   delete[] array_;
   this->array_ = buf_array;
-}
+}*/
+/*
 
 template<class keyT, class valueT>
 void FlatMap<keyT, valueT>::clear() {
@@ -159,7 +150,9 @@ void FlatMap<keyT, valueT>::clear() {
   this->curSize_ = 0;
   this->array_ = new pair_[startSize];
 }
+*/
 
+/*
 template<class keyT, class valueT>
 FlatMap<keyT, valueT>::iterator::iterator(pair_ *ptr) : cur_(ptr) {
 }
@@ -168,11 +161,16 @@ template<class keyT, class valueT>
 bool FlatMap<keyT, valueT>::iterator::operator==(const iterator &other_it) const {
   return cur_ == other_it.cur_;
 }
+*/
 
+/*
 template<class keyT, class valueT>
 bool FlatMap<keyT, valueT>::iterator::operator!=(const iterator &other_it) const {
-  return cur_ != other_it.cur_;
+  return cur_ != other_it.cur_ ;
 }
+*/
+
+/*
 
 template<class keyT, class valueT>
 FlatMap<keyT, valueT>::iterator &FlatMap<keyT, valueT>::iterator::operator++() {
@@ -197,3 +195,4 @@ FlatMap<keyT, valueT>::iterator FlatMap<keyT, valueT>::find(const keyT &key) {
   }
   return FlatMap::end();
 }
+*/
