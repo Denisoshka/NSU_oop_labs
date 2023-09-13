@@ -13,10 +13,10 @@ private:
     keyT key;
     valueT value;
   };
-
+  int a = sizeof(pair_);
   // возвращает индекс элемента и в случае если такой элемент существует, то 2рое значение true,
   // иначе false
-  struct foundInf {
+  struct FoundInf {
     size_t index;
     bool IsFound;
   };
@@ -26,7 +26,7 @@ private:
   size_t MaxSize_;
 
   void resize(size_t new_size) {
-    auto* buf_array = new pair_[new_size];
+    auto buf_array = new pair_[new_size];
     MaxSize_ = new_size;
     for( std::size_t i = 0; i < CurSize_; ++i ) {
       buf_array[i] = Array_[i];
@@ -35,12 +35,15 @@ private:
     Array_ = buf_array;
   }
 
-  [[nodiscard]] foundInf getIndex(const keyT& key) const {
+  [[nodiscard]] FoundInf getIndex(const keyT& key) const {
     if( Array_[0].key == key ) {
       return {0, true};
     }
-    size_t left = 1;
-    size_t right = (CurSize_) ? CurSize_ - 1 : CurSize_;
+    if(CurSize_ == 0){
+      return {0, false};
+    }
+    size_t left = 0;
+    size_t right = CurSize_-1;
     while( left <= right ) {
       size_t mid = (left + right) / 2;
       if( Array_[mid].key == key ) {
@@ -50,10 +53,13 @@ private:
         left = mid + 1;
       }
       else {
+        if (mid == 0){
+          break;
+        }
         right = mid - 1;
       }
     }
-    return {0, false};
+    return {left, false};
   }
 
 public:
@@ -108,17 +114,17 @@ public:
   }
 
   // перемещающий operator=
-  FlatMap& operator=(FlatMap&& otherMap) noexcept {
-    if( this == &otherMap ) {
+  FlatMap& operator=(FlatMap&& OtherMap) noexcept {
+    if( this == &OtherMap ) {
       return *this;
     }
-    CurSize_ = otherMap.CurSize_;
-    MaxSize_ = otherMap.MaxSize_;
+    CurSize_ = OtherMap.CurSize_;
+    MaxSize_ = OtherMap.MaxSize_;
     delete[] Array_;
-    Array_ = otherMap.Array_;
-    otherMap.Array_ = nullptr;
-    otherMap.CurSize_ = 0;
-    otherMap.MaxSize_ = 0;
+    Array_ = OtherMap.Array_;
+    OtherMap.Array_ = nullptr;
+    OtherMap.CurSize_ = 0;
+    OtherMap.MaxSize_ = 0;
     return *this;
   }
 
@@ -129,30 +135,30 @@ public:
 
   // доступ / вставка элемента по ключу
   valueT& operator[](const keyT& key) {
-    foundInf indexKey = getIndex(key);
+    FoundInf InsertIndex = getIndex(key);
 
-    if( indexKey.IsFound ) {
-      return Array_[indexKey.index].value;
+    if( InsertIndex.IsFound ) {
+      return Array_[InsertIndex.index].value;
     }
 
     if( MaxSize_ == CurSize_ ) {
       resize(static_cast<size_t>(static_cast<double>(MaxSize_) * ResizeRate_));
     }
-    size_t insertIndex = 0;
+    /*size_t insertIndex = 0;
     for( ; insertIndex < CurSize_ && key > Array_[insertIndex].key; insertIndex++ ) {
-    }
-    size_t startShift = CurSize_;
-    for( ; insertIndex < startShift; --startShift ) {
-      if( !startShift ) {
+    }*/
+    size_t StartShift = CurSize_;
+    for( ; InsertIndex.index < StartShift; --StartShift ) {
+      if( !StartShift ) {
         break;
       }
-      Array_[startShift] = Array_[startShift - 1];
+      Array_[StartShift] = Array_[StartShift - 1];
     }
 
-    Array_[insertIndex].key = key;
+    Array_[InsertIndex.index].key = key;
     CurSize_++;
 
-    return this->Array_[insertIndex].value;
+    return Array_[InsertIndex.index].value;
   }
 
   // возвращает true, если запись с таким ключом присутствует в таблице
@@ -162,7 +168,7 @@ public:
 
   // удаление элемента по ключу, возвращает количество удаленных элементов (0 или 1)
   [[nodiscard]] std::size_t erase(const keyT& key) {
-    foundInf foundIndex = getIndex(key);
+    FoundInf foundIndex = getIndex(key);
     if( !foundIndex.IsFound ) {
       return 0;
     }
@@ -184,13 +190,43 @@ public:
     Array_ = new pair_[StartSize];
   }
 
+  /*
   class iterator {
   private:
     pair_* cur_;
 
   public:
-    const keyT& first = cur_->key;
-    valueT& second = cur_->value;
+    explicit iterator(pair_* i)
+        : cur_(i) {
+    }
+  };
+  */
+  /*
+    auto end() {
+      return std::end(*Array_);
+    }
+
+    auto begin() {
+      return std::begin(*Array_);
+    }
+
+    auto find(const keyT& key) {
+      FoundInf keyIndex = getIndex(key);
+      if(keyIndex.IsFound) {
+        return std::begin(Array_ + keyIndex);
+      }
+      return std::end(*Array_);
+    }
+  */
+
+
+
+  class iterator {
+  private:
+    pair_* cur_;
+
+  public:
+
 
     explicit iterator(pair_* i)
         : cur_(i) {
@@ -212,6 +248,7 @@ public:
     iterator operator++(int) {
       iterator tmp = *this;
       ++cur_;
+
       return tmp;
     };
   };
@@ -229,7 +266,7 @@ public:
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
   [[nodiscard]] iterator find(const keyT& key) {
-    foundInf foundIndex = getIndex(key);
+    FoundInf foundIndex = getIndex(key);
     if( foundIndex.IsFound ) {
       return iterator(Array_ + foundIndex.index);
     }

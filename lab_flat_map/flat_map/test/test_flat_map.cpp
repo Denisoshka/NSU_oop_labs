@@ -4,6 +4,64 @@
 #include <array>
 #include <iostream>
 
+std::vector<std::vector<std::string>> strTestCase1 = {
+        {"key1", "value1"},
+        {"key2", "value2"},
+        {"key3", "value3"},
+        {"key4", "value4"},
+        {"key5", "value5"},
+        {"key6", "value6"},
+        {"key7", "value7"}
+};
+
+std::vector<std::vector<std::string>> strTestCase2 = {
+        {"key7", "value7"},
+        {"key6", "value6"},
+        {"key5", "value5"},
+        {"key4", "value4"},
+        {"key3", "value3"},
+        {"key2", "value2"},
+        {"key1", "value1"}
+};
+std::vector<std::vector<std::string>> strTestCase3 = {
+        {"key7", "value7"},
+        {"key1", "value1"},
+        {"key6", "value6"},
+        {"key2", "value2"},
+        {"key5", "value5"},
+        {"key3", "value3"},
+        {"key4", "value4"}
+};
+std::vector<std::vector<std::string>> strTestCase4 = {
+        {"key1", "value1"},
+        {"key7", "value7"},
+        {"key2", "value2"},
+        {"key6", "value6"},
+        {"key3", "value3"},
+        {"key5", "value5"},
+        {"key4", "value4"}
+};
+
+std::vector<std::vector<std::string>> strTestCase5 = {
+        {"key1", "value1"},
+        {"key2", "value2"},
+        {"key3", "value3"},
+        {"key5", "value5"},
+        {"key6", "value6"},
+        {"key7", "value7"},
+        {"key4", "value4"}
+};
+
+std::vector<std::vector<int>> intTestCase1 = {
+        {7, 7},
+        {1, 1},
+        {6, 6},
+        {2, 2},
+        {5, 5},
+        {3, 3},
+        {4, 4}
+};
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
@@ -15,20 +73,13 @@ TEST(test_constructors, constructor_without_args) {
 }
 
 TEST(FlatMapTest, Erase_1) {
-  std::vector<std::vector<std::string>> testCase = {
-          {"key1", "value1"},
-          {"key2", "value2"},
-          {"key3", "value3"},
-          {"key4", "value4"},
-          {"key5", "value5"},
-          {"key6", "value6"},
-          {"key7", "value7"}
-  };
   FlatMap<std::string, std::string> testMap;
-  for( const auto &params: testCase ) {
-    testMap[(std::string)params[0]] = params[1];
+  for( const auto &params: strTestCase1 ) {
+    testMap[params[0]] = params[1];
   }
-  for( const auto &params: testCase ) {
+
+  EXPECT_TRUE(testMap.contains(strTestCase1[0][0]));
+  for( const auto &params: strTestCase1 ) {
     EXPECT_EQ(testMap.erase(params[0]), 1);
     EXPECT_FALSE(testMap.contains(params[0])) << params[0];
   }
@@ -36,20 +87,12 @@ TEST(FlatMapTest, Erase_1) {
 }
 
 TEST(FlatMapTest, Erase_2) {
-  std::vector<std::vector<std::string>> testCase = {
-          {"key7", "value7"},
-          {"key6", "value6"},
-          {"key5", "value5"},
-          {"key4", "value4"},
-          {"key3", "value3"},
-          {"key2", "value2"},
-          {"key1", "value1"}
-  };
+
   FlatMap<std::string, std::string> testMap;
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase2 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase2 ) {
     EXPECT_EQ(testMap.erase(params[0]), 1);
     EXPECT_FALSE(testMap.contains(params[0]));
   }
@@ -57,20 +100,38 @@ TEST(FlatMapTest, Erase_2) {
 }
 
 TEST(FlatMapTest, Erase_3) {
-  std::vector<std::vector<std::string>> testCase = {
-          {"key7", "value7"},
-          {"key1", "value1"},
-          {"key6", "value6"},
-          {"key2", "value2"},
-          {"key5", "value5"},
-          {"key3", "value3"},
-          {"key4", "value4"}
-  };
+
   FlatMap<std::string, std::string> testMap;
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase3 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase3 ) {
+    EXPECT_EQ(testMap.erase(params[0]), 1) << params[0];
+    EXPECT_FALSE(testMap.contains(params[0])) << params[0];
+  }
+  EXPECT_EQ(testMap.size(), 0);
+}
+
+TEST(FlatMapTest, Erase_4) {
+
+  FlatMap<std::string, std::string> testMap;
+  for( const auto &params: strTestCase4 ) {
+    testMap[(std::string)params[0]] = params[1];
+  }
+  for( const auto &params: strTestCase4 ) {
+    EXPECT_EQ(testMap.erase(params[0]), 1) << params[0];
+    EXPECT_FALSE(testMap.contains(params[0])) << params[0];
+  }
+  EXPECT_EQ(testMap.size(), 0);
+}
+
+TEST(FlatMapTest, Erase_5) {
+
+  FlatMap<std::string, std::string> testMap;
+  for( const auto &params: strTestCase5 ) {
+    testMap[(std::string)params[0]] = params[1];
+  }
+  for( const auto &params: strTestCase5 ) {
     EXPECT_EQ(testMap.erase(params[0]), 1) << params[0];
     EXPECT_FALSE(testMap.contains(params[0])) << params[0];
   }
@@ -78,143 +139,178 @@ TEST(FlatMapTest, Erase_3) {
 }
 
 TEST(FlatMapTest, Insert_1) {
-  std::vector<std::vector<std::string>> testCase = {
-          {"key1", "value1"},
-          {"key2", "value2"},
-          {"key3", "value3"},
-          {"key4", "value4"},
-          {"key5", "value5"},
-          {"key6", "value6"},
-          {"key7", "value7"}
-  };
+
   FlatMap<std::string, std::string> testMap;
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase1 ) {
     testMap[(std::string)params[0]] = params[1];
-  }
-  for( const auto &params: testCase ) {
+  }int a = 10;
+  EXPECT_EQ(a, 10);
+
+  for( const auto &params: strTestCase1 ) {
     EXPECT_EQ(testMap[params[0]], params[1]);
   }
 }
 
 TEST(FlatMapTest, Insert_2) {
-  std::vector<std::vector<std::string>> testCase = {
-          {"key7", "value7"},
-          {"key6", "value6"},
-          {"key5", "value5"},
-          {"key4", "value4"},
-          {"key3", "value3"},
-          {"key2", "value2"},
-          {"key1", "value1"}
-  };
+
   FlatMap<std::string, std::string> testMap;
-  for( auto &params: testCase ) {
+  for( auto &params: strTestCase2 ) {
     testMap[params[0]] = params[1];
   }
-  for( auto &params: testCase ) {
+  int a = 10;
+  EXPECT_EQ(a, 10);
+  for( auto &params: strTestCase2 ) {
     EXPECT_EQ(testMap[params[0]], params[1]);
   }
 }
 
 TEST(FlatMapTest, Insert_3) {
-  std::vector<std::vector<std::string>> testCase = {
-          {"key1", "value1"},
-          {"key7", "value7"},
-          {"key2", "value2"},
-          {"key6", "value6"},
-          {"key3", "value3"},
-          {"key5", "value5"},
-          {"key4", "value4"}
-  };
+
   FlatMap<std::string, std::string> testMap;
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase3 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  for( const auto &params: testCase ) {
+  int a = 10;
+  EXPECT_EQ(a, 10);
+  for( const auto &params: strTestCase3 ) {
     EXPECT_EQ(testMap[params[0]], params[1]);
   }
 }
 
 TEST(FlatMapTest, Insert_4) {
-  std::vector<std::vector<std::string>> testCase = {
-          {"key1", "value1"},
-          {"key2", "value2"},
-          {"key3", "value3"},
-          {"key5", "value5"},
-          {"key6", "value6"},
-          {"key7", "value7"},
-          {"key4", "value4"}
-  };
+
   FlatMap<std::string, std::string> testMap;
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase4 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  for( const auto &params: testCase ) {
+  int a = 10;
+  EXPECT_EQ(a, 10);
+
+  for( const auto &params: strTestCase4 ) {
     EXPECT_EQ(testMap[params[0]], params[1]);
   }
 }
 
 TEST(FlatMapTest, Insert_5) {
-  std::vector<std::vector<std::string>> testCase = {
-          {"key7", "value7"},
-          {"key1", "value1"},
-          {"key6", "value6"},
-          {"key2", "value2"},
-          {"key5", "value5"},
-          {"key3", "value3"},
-          {"key4", "value4"}
-  };
+
   FlatMap<std::string, std::string> testMap;
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase5 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  for( const auto &params: testCase ) {
+  int a = 10;
+  EXPECT_EQ(a, 10);
+
+  for( const auto &params: strTestCase5 ) {
     EXPECT_EQ(testMap[params[0]], params[1]);
   }
 }
 
-TEST(FlatMapTest, Clear) {
-  std::vector<std::vector<std::string>> testCase = {
-          {"key7", "value7"},
-          {"key1", "value1"},
-          {"key6", "value6"},
-          {"key2", "value2"},
-          {"key5", "value5"},
-          {"key3", "value3"},
-          {"key4", "value4"}
-  };
+TEST(FlatMapTest, Clear1) {
+
   FlatMap<std::string, std::string> testMap;
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase1 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  EXPECT_EQ(testMap.size(), testCase.size());
+  int a = 10;
+  EXPECT_EQ(a, 10);
+
+  EXPECT_EQ(testMap.size(), strTestCase1.size());
   testMap.clear();
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase1 ) {
     EXPECT_FALSE(testMap.contains(params[0]));
   }
   EXPECT_EQ(testMap.size(), 0);
 }
 
-TEST(FlatMapTest, CopyConstructor) {
+
+TEST(FlatMapTest, Clear2) {
+
+  FlatMap<std::string, std::string> testMap;
+  for( const auto &params: strTestCase2 ) {
+    testMap[(std::string)params[0]] = params[1];
+  }
+  int a = 10;
+  EXPECT_EQ(a, 10);
+
+  EXPECT_EQ(testMap.size(), strTestCase2.size());
+  testMap.clear();
+  for( const auto &params: strTestCase2 ) {
+    EXPECT_FALSE(testMap.contains(params[0]));
+  }
+  EXPECT_EQ(testMap.size(), 0);
+}
+
+
+TEST(FlatMapTest, Clear3) {
+
+  FlatMap<std::string, std::string> testMap;
+  for( const auto &params: strTestCase3 ) {
+    testMap[(std::string)params[0]] = params[1];
+  }
+  int a = 10;
+  EXPECT_EQ(a, 10);
+
+  EXPECT_EQ(testMap.size(), strTestCase3.size());
+  testMap.clear();
+  for( const auto &params: strTestCase3) {
+    EXPECT_FALSE(testMap.contains(params[0]));
+  }
+  EXPECT_EQ(testMap.size(), 0);
+}
+
+
+TEST(FlatMapTest, Clear4) {
+
+  FlatMap<std::string, std::string> testMap;
+  for( const auto &params: strTestCase4 ) {
+    testMap[(std::string)params[0]] = params[1];
+  }
+  int a = 10;
+  EXPECT_EQ(a, 10);
+
+  EXPECT_EQ(testMap.size(), strTestCase4.size());
+  testMap.clear();
+  for( const auto &params: strTestCase4 ) {
+    EXPECT_FALSE(testMap.contains(params[0]));
+  }
+  EXPECT_EQ(testMap.size(), 0);
+}
+
+TEST(FlatMapTest, CopyConstructor1) {
   FlatMap<std::string, std::string> testMap1;
 
   FlatMap testMap2 = testMap1;
-  std::vector<std::vector<std::string>> testCase = {
-          {"key7", "value7"},
-          {"key1", "value1"},
-          {"key6", "value6"},
-          {"key2", "value2"},
-          {"key5", "value5"},
-          {"key3", "value3"},
-          {"key4", "value4"}
-  };
-  for( const auto &params: testCase ) {
+
+  for( const auto &params: strTestCase1 ) {
     testMap1[(std::string)params[0]] = params[1];
   }
-  for( const auto &params: testCase ) {
+  int a = 10;
+  EXPECT_EQ(a, 10);
+  for( const auto &params: strTestCase1 ) {
     EXPECT_NE(testMap1[params[0]], testMap2[params[0]]);
   }
   testMap2 = testMap1;
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase1 ) {
+    EXPECT_EQ(testMap1[params[0]], testMap2[params[0]]);
+  }
+}
+
+
+TEST(FlatMapTest, CopyConstructor4) {
+  FlatMap<std::string, std::string> testMap1;
+
+  FlatMap testMap2 = testMap1;
+
+  for( const auto &params: strTestCase4 ) {
+    testMap1[(std::string)params[0]] = params[1];
+  }
+  int a = 10;
+  EXPECT_EQ(a, 10);
+  for( const auto &params: strTestCase4 ) {
+    EXPECT_NE(testMap1[params[0]], testMap2[params[0]]);
+  }
+  testMap2 = testMap1;
+  for( const auto &params: strTestCase4 ) {
     EXPECT_EQ(testMap1[params[0]], testMap2[params[0]]);
   }
 }
@@ -222,19 +318,11 @@ TEST(FlatMapTest, CopyConstructor) {
 TEST(FlatMapTest, Iterator) {
   FlatMap<std::string, std::string> tmp;
 
-  std::vector<std::vector<std::string>> testCase = {
-          {"key7", "value7"},
-          {"key1", "value1"},
-          {"key6", "value6"},
-          {"key2", "value2"},
-          {"key5", "value5"},
-          {"key3", "value3"},
-          {"key4", "value4"}
-  };
-  for( const auto &params: testCase ) {
+
+  for( const auto &params: strTestCase1 ) {
     tmp[(std::string)params[0]] = params[1];
   }
-  for( const auto &params: testCase ) {
+  for( const auto &params: strTestCase1 ) {
     EXPECT_EQ(tmp[params[0]], params[1]);
   }
   EXPECT_EQ(tmp.size(), 7);
@@ -243,16 +331,8 @@ TEST(FlatMapTest, Iterator) {
 TEST(FlatMapTest, Find_1) {
   FlatMap<std::string, std::string> testMap1;
 
-  std::vector<std::vector<std::string>> testCase = {
-          {"key7", "value7"},
-          {"key1", "value1"},
-          {"key6", "value6"},
-          {"key2", "value2"},
-          {"key5", "value5"},
-          {"key3", "value3"},
-          {"key4", "value4"}
-  };
-  for( const auto &params: testCase ) {
+
+  for( const auto &params: strTestCase1 ) {
     testMap1[(std::string)params[0]] = params[1];
   }
 
@@ -285,19 +365,11 @@ TEST(FlatMapTest, Find_1) {
 TEST(FlatMapTest, Find_2) {
   FlatMap<int, int> tmp;
 
-  std::vector<std::vector<int>> testCase = {
-          {7, 7},
-          {1, 1},
-          {6, 6},
-          {2, 2},
-          {5, 5},
-          {3, 3},
-          {4, 4}
-  };
-  for( const auto &params: testCase ) {
+
+  for( const auto &params: intTestCase1 ) {
     tmp[params[0]] = params[1];
   }
-  for( const auto &params: testCase ) {
+  for( const auto &params: intTestCase1 ) {
     EXPECT_EQ(tmp[params[0]], params[1]);
   }
   EXPECT_EQ(tmp.size(), 7);
