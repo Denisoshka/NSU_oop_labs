@@ -6,7 +6,7 @@ message(STATUS ${PROJECT_NAME})
 set(CMAKE_CXX_STANDARD 20)
 set(SOURCE_LIB src/flat_map.cpp)
 #set(CMAKE_CXX_COMPILER "clang++")
-#add_compile_options(-Wall -Wextra -pedantic -Werror)
+add_compile_options(-Wall -Wextra -pedantic -Werror)
 add_library(${PROJECT_NAME} SHARED ${SOURCE_LIB})
 target_include_directories(${PROJECT_NAME} PUBLIC headers)
 
