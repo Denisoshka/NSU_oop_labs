@@ -14,8 +14,6 @@ private:
     valueT value;
   };
 
-  int a = sizeof(pair_);
-
   // возвращает индекс элемента и в случае если такой элемент существует, то 2рое значение true,
   // иначе false
   struct FoundInf {
