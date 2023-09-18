@@ -1,9 +1,4 @@
 cmake-build-**
 .idea
-<<<<<<< Updated upstream
 .clang-format
 CMakeFiles
-_*
-=======
-#.clang-format
->>>>>>> Stashed changes
