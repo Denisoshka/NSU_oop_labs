@@ -100,11 +100,13 @@ public:
     if( this == &otherMap ) {
       return *this;
     }
-    delete[] Array_;
 
+    auto tmp = new pair_[otherMap.MaxSize_];
+
+    delete[] Array_;
     CurSize_ = otherMap.CurSize_;
     MaxSize_ = otherMap.MaxSize_;
-    Array_ = new pair_[otherMap.MaxSize_];
+    Array_ = tmp;
 
     for( size_t i = 0; i < CurSize_; ++i ) {
       Array_[i] = otherMap.Array_[i];
