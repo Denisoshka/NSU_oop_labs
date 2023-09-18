@@ -8,17 +8,12 @@ project(${LIBRARY_NAME} CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(TEST_NAME "test_${LIBRARY_NAME}")
 
-<<<<<<< Updated upstream
 file(GLOB SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/wav_*/*.cpp")
-=======
-file(GLOB SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/wav_*/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/**_src/*.cpp")
->>>>>>> Stashed changes
 message(STATUS ${SOURCE_DIRS})
 
 message(STATUS "project name: ${PROJECT_NAME}")
 add_library(${LIBRARY_NAME} SHARED ${SOURCE_DIRS})
 target_include_directories(${LIBRARY_NAME} PUBLIC include)
-
 
 message(STATUS "Found libraries")
 find_package(GTest)
