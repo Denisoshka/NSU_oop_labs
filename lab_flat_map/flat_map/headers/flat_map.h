@@ -13,7 +13,9 @@ private:
     keyT key;
     valueT value;
   };
+
   int a = sizeof(pair_);
+
   // возвращает индекс элемента и в случае если такой элемент существует, то 2рое значение true,
   // иначе false
   struct FoundInf {
@@ -39,11 +41,11 @@ private:
     if( Array_[0].key == key ) {
       return {0, true};
     }
-    if(CurSize_ == 0){
+    if( CurSize_ == 0 ) {
       return {0, false};
     }
     size_t left = 0;
-    size_t right = CurSize_-1;
+    size_t right = CurSize_ - 1;
     while( left <= right ) {
       size_t mid = (left + right) / 2;
       if( Array_[mid].key == key ) {
@@ -53,7 +55,7 @@ private:
         left = mid + 1;
       }
       else {
-        if (mid == 0){
+        if( mid == 0 ) {
           break;
         }
         right = mid - 1;
@@ -220,14 +222,11 @@ public:
   */
 
 
-
   class iterator {
   private:
     pair_* cur_;
 
   public:
-
-
     explicit iterator(pair_* i)
         : cur_(i) {
     }
