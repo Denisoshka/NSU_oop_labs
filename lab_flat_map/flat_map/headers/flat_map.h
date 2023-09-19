@@ -192,84 +192,24 @@ public:
     Array_ = new pair_[StartSize];
   }
 
-  /*
-  class iterator {
-  private:
-    pair_* cur_;
-
-  public:
-    explicit iterator(pair_* i)
-        : cur_(i) {
-    }
-  };
-  */
-  /*
-    auto end() {
-      return std::end(*Array_);
-    }
-
-    auto begin() {
-      return std::begin(*Array_);
-    }
-
-    auto find(const keyT& key) {
-      FoundInf keyIndex = getIndex(key);
-      if(keyIndex.IsFound) {
-        return std::begin(Array_ + keyIndex);
-      }
-      return std::end(*Array_);
-    }
-  */
-
-
-  class iterator {
-  private:
-    pair_* cur_;
-
-  public:
-    explicit iterator(pair_* i)
-        : cur_(i) {
-    }
-
-    bool operator==(const iterator& other_it) const {
-      return cur_ == other_it.cur_;
-    }
-
-    bool operator!=(const iterator& other_it) const {
-      return cur_ != other_it.cur_;
-    }
-
-    iterator& operator++() {
-      ++cur_;
-      return *this;
-    };
-
-    iterator operator++(int) {
-      iterator tmp = *this;
-      ++cur_;
-
-      return tmp;
-    };
-  };
-
   // Получить итератор на первый элемент
-  [[nodiscard]] iterator begin() const {
-    return iterator(Array_);
+  [[nodiscard]] pair_* begin() const {
+    return Array_;
   }
 
   // Получить итератор на элемент, следующий за последним
-  [[nodiscard]] iterator end() const {
-    return iterator(Array_ + CurSize_);
+  [[nodiscard]] pair_* end() const {
+    return Array_+CurSize_;
   }
 
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
-  [[nodiscard]] iterator find(const keyT& key) {
-    FoundInf foundIndex = getIndex(key);
-    if( foundIndex.IsFound ) {
-      return iterator(Array_ + foundIndex.index);
+  [[nodiscard]] pair_* find(const keyT& key) const{
+    FoundInf inf = getIndex(key);
+    if (inf.IsFound){
+      return Array_+inf.index;
     }
-    return end();
+    return Array_+CurSize_;
   }
 };
 
