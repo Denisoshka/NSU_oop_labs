@@ -3,6 +3,7 @@
 
 #include <array>
 #include <iostream>
+#include <vector>
 
 std::vector<std::vector<std::string>> strTestCase1 = {
         {"key1", "value1"},
@@ -143,9 +144,7 @@ TEST(FlatMapTest, Insert_1) {
   FlatMap<std::string, std::string> testMap;
   for( const auto &params: strTestCase1 ) {
     testMap[(std::string)params[0]] = params[1];
-  }int a = 10;
-  EXPECT_EQ(a, 10);
-
+  }
   for( const auto &params: strTestCase1 ) {
     EXPECT_EQ(testMap[params[0]], params[1]);
   }
@@ -157,21 +156,16 @@ TEST(FlatMapTest, Insert_2) {
   for( auto &params: strTestCase2 ) {
     testMap[params[0]] = params[1];
   }
-  int a = 10;
-  EXPECT_EQ(a, 10);
   for( auto &params: strTestCase2 ) {
     EXPECT_EQ(testMap[params[0]], params[1]);
   }
 }
 
 TEST(FlatMapTest, Insert_3) {
-
   FlatMap<std::string, std::string> testMap;
   for( const auto &params: strTestCase3 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  int a = 10;
-  EXPECT_EQ(a, 10);
   for( const auto &params: strTestCase3 ) {
     EXPECT_EQ(testMap[params[0]], params[1]);
   }
@@ -183,9 +177,6 @@ TEST(FlatMapTest, Insert_4) {
   for( const auto &params: strTestCase4 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  int a = 10;
-  EXPECT_EQ(a, 10);
-
   for( const auto &params: strTestCase4 ) {
     EXPECT_EQ(testMap[params[0]], params[1]);
   }
@@ -197,9 +188,6 @@ TEST(FlatMapTest, Insert_5) {
   for( const auto &params: strTestCase5 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  int a = 10;
-  EXPECT_EQ(a, 10);
-
   for( const auto &params: strTestCase5 ) {
     EXPECT_EQ(testMap[params[0]], params[1]);
   }
@@ -211,9 +199,6 @@ TEST(FlatMapTest, Clear1) {
   for( const auto &params: strTestCase1 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  int a = 10;
-  EXPECT_EQ(a, 10);
-
   EXPECT_EQ(testMap.size(), strTestCase1.size());
   testMap.clear();
   for( const auto &params: strTestCase1 ) {
@@ -222,16 +207,11 @@ TEST(FlatMapTest, Clear1) {
   EXPECT_EQ(testMap.size(), 0);
 }
 
-
 TEST(FlatMapTest, Clear2) {
-
   FlatMap<std::string, std::string> testMap;
   for( const auto &params: strTestCase2 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  int a = 10;
-  EXPECT_EQ(a, 10);
-
   EXPECT_EQ(testMap.size(), strTestCase2.size());
   testMap.clear();
   for( const auto &params: strTestCase2 ) {
@@ -240,24 +220,19 @@ TEST(FlatMapTest, Clear2) {
   EXPECT_EQ(testMap.size(), 0);
 }
 
-
 TEST(FlatMapTest, Clear3) {
 
   FlatMap<std::string, std::string> testMap;
   for( const auto &params: strTestCase3 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  int a = 10;
-  EXPECT_EQ(a, 10);
-
   EXPECT_EQ(testMap.size(), strTestCase3.size());
   testMap.clear();
-  for( const auto &params: strTestCase3) {
+  for( const auto &params: strTestCase3 ) {
     EXPECT_FALSE(testMap.contains(params[0]));
   }
   EXPECT_EQ(testMap.size(), 0);
 }
-
 
 TEST(FlatMapTest, Clear4) {
 
@@ -265,9 +240,6 @@ TEST(FlatMapTest, Clear4) {
   for( const auto &params: strTestCase4 ) {
     testMap[(std::string)params[0]] = params[1];
   }
-  int a = 10;
-  EXPECT_EQ(a, 10);
-
   EXPECT_EQ(testMap.size(), strTestCase4.size());
   testMap.clear();
   for( const auto &params: strTestCase4 ) {
@@ -284,8 +256,6 @@ TEST(FlatMapTest, CopyConstructor1) {
   for( const auto &params: strTestCase1 ) {
     testMap1[(std::string)params[0]] = params[1];
   }
-  int a = 10;
-  EXPECT_EQ(a, 10);
   for( const auto &params: strTestCase1 ) {
     EXPECT_NE(testMap1[params[0]], testMap2[params[0]]);
   }
@@ -295,7 +265,6 @@ TEST(FlatMapTest, CopyConstructor1) {
   }
 }
 
-
 TEST(FlatMapTest, CopyConstructor4) {
   FlatMap<std::string, std::string> testMap1;
 
@@ -304,8 +273,6 @@ TEST(FlatMapTest, CopyConstructor4) {
   for( const auto &params: strTestCase4 ) {
     testMap1[(std::string)params[0]] = params[1];
   }
-  int a = 10;
-  EXPECT_EQ(a, 10);
   for( const auto &params: strTestCase4 ) {
     EXPECT_NE(testMap1[params[0]], testMap2[params[0]]);
   }
@@ -330,8 +297,6 @@ TEST(FlatMapTest, Iterator) {
 
 TEST(FlatMapTest, Find_1) {
   FlatMap<std::string, std::string> testMap1;
-
-
   for( const auto &params: strTestCase1 ) {
     testMap1[(std::string)params[0]] = params[1];
   }
@@ -411,11 +376,11 @@ TEST(FlatMapTest, Find_3) {
   for( std::size_t i = 0; i < testCase_0.size(); i++ ) {
     EXPECT_EQ(tmp[testCase_0[i]], testCase_1[i]);
   }
-  /*
-  for (const auto &params : testCase) {
-    EXPECT_EQ(tmp[params[0]], params[1]);
+
+  for( auto it: tmp ) {
+    EXPECT_EQ(tmp[it.key], it.value);
   }
-   */
+
   EXPECT_EQ(tmp.size(), 7);
 
   size_t count = 0;
@@ -444,7 +409,7 @@ TEST(FlatMapTest, Find_3) {
   EXPECT_FALSE(tmp.contains(8));
 }
 
-/*
+
 TEST(FlatMapTest, postfix_incr) {
   FlatMap<std::string, std::string> testMap1;
 
@@ -452,7 +417,7 @@ TEST(FlatMapTest, postfix_incr) {
           = {{"key7", "value7"}, {"key1", "value1"}, {"key6", "value6"}, {"key2", "value2"},
              {"key5", "value5"}, {"key3", "value3"}, {"key4", "value4"}};
   for (const auto &params : testCase) {
-    testMap1[(std::string) params[0]] = params[1];
+    testMap1[ params[0]] = params[1];
   }
 
   size_t count = 0;
@@ -461,10 +426,12 @@ TEST(FlatMapTest, postfix_incr) {
   for (; it != testMap1.end(); ++it) {
     count++;
   }
+
   EXPECT_EQ(count, 6);
-  for (; sub != testMap1.end(); ++it) {
+  count = 0;
+  for (; sub != testMap1.end(); ++sub) {
     count++;
   }
   EXPECT_EQ(count, 7);
 }
-*/
+
