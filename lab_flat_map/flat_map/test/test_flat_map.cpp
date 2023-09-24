@@ -5,6 +5,11 @@
 #include <iostream>
 #include <vector>
 
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
+
 std::vector<std::vector<std::string>> strTestCase1 = {
         {"key1", "value1"},
         {"key2", "value2"},
@@ -14,7 +19,6 @@ std::vector<std::vector<std::string>> strTestCase1 = {
         {"key6", "value6"},
         {"key7", "value7"}
 };
-
 std::vector<std::vector<std::string>> strTestCase2 = {
         {"key7", "value7"},
         {"key6", "value6"},
@@ -33,6 +37,7 @@ std::vector<std::vector<std::string>> strTestCase3 = {
         {"key3", "value3"},
         {"key4", "value4"}
 };
+
 std::vector<std::vector<std::string>> strTestCase4 = {
         {"key1", "value1"},
         {"key7", "value7"},
@@ -62,11 +67,6 @@ std::vector<std::vector<int>> intTestCase1 = {
         {3, 3},
         {4, 4}
 };
-
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
 
 TEST(test_constructors, constructor_without_args) {
   FlatMap<std::string, std::string> tmp;

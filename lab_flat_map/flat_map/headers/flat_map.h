@@ -1,5 +1,5 @@
-#ifndef FLAT_MAP_LAB_FLAT_MAP_H
-#define FLAT_MAP_LAB_FLAT_MAP_H
+#ifndef WAV_FLAT_MAP_H
+#define WAV_FLAT_MAP_H
 
 #include <iostream>
 #include <memory>
@@ -75,7 +75,15 @@ public:
   explicit FlatMap()
       : Array_(nullptr)
       , CurSize_(0)
-      , MaxSize_(StartSize) {
+      , MaxSize_(0) {
+    try {
+      Array_ = new pair_[StartSize];
+    }
+    catch (...){
+      Array_ = nullptr;
+      throw;
+    }
+    MaxSize_ = StartSize;
   }
 
   // конструктор копирования
@@ -166,6 +174,16 @@ public:
       return Array_[InsertIndex.index].value;
     }
 
+    if (!MaxSize_){
+      try{
+        Array_ = new pair_[StartSize];
+      }catch(...){
+        Array_ = nullptr;
+        throw ;
+      }
+      MaxSize_ = StartSize;
+    }
+
     if( MaxSize_ == CurSize_ ) {
       resize(static_cast<size_t>(static_cast<double>(MaxSize_) * ResizeRate_));
     }
@@ -234,4 +252,4 @@ public:
   }
 };
 
-#endif// NSU_OOP_LABS_FLAT_MAP_H
+#endif// WAV_FLAT_MAP_H
