@@ -2,6 +2,7 @@
 #define FLAT_MAP_LAB_FLAT_MAP_H
 
 #include <iostream>
+#include <memory>
 
 template<typename keyT, typename valueT>
 class FlatMap {
@@ -26,13 +27,20 @@ private:
   size_t MaxSize_;
 
   void resize(size_t new_size) {
-    auto buf_array = new pair_[new_size];
-    MaxSize_ = new_size;
-    for( std::size_t i = 0; i < CurSize_; ++i ) {
-      buf_array[i] = Array_[i];
+    auto tmp = new pair_[new_size];
+
+    try {
+      for( std::size_t i = 0; i < CurSize_; ++i ) {
+        tmp[i] = Array_[i];
+      }
+    } catch( ... ) {
+      delete[] tmp;
+      throw;
     }
+
     delete[] Array_;
-    Array_ = buf_array;
+    MaxSize_ = new_size;
+    Array_ = tmp;
   }
 
   [[nodiscard]] FoundInf getIndex(const keyT& key) const {
@@ -65,26 +73,30 @@ private:
 public:
   // стандартный конструктор
   explicit FlatMap()
-      : Array_(new pair_[StartSize])
+      : Array_(nullptr)
       , CurSize_(0)
       , MaxSize_(StartSize) {
   }
 
   // конструктор копирования
   FlatMap(const FlatMap& otherMap)
-      : Array_(new pair_[otherMap.MaxSize_])
-      , CurSize_(otherMap.CurSize_)
-      , MaxSize_(otherMap.MaxSize_) {
+      : Array_(nullptr)
+      , CurSize_(0)
+      , MaxSize_(0) {
+    auto tmp = new pair_[otherMap.MaxSize_];
 
-    size_t i = 0;
     try {
-      for( ; i < CurSize_; ++i ) {
-        Array_[i] = std::copy(otherMap.Array_[i]);
+      for( size_t i = 0; i < CurSize_; ++i ) {
+        tmp[i] = otherMap.Array_[i];
       }
-    } catch( const std::exception& e ) {
-      CurSize_ = i;
-      throw e;
+    } catch( ... ) {
+      delete[] tmp;
+      throw;
     }
+
+    Array_ = tmp;
+    CurSize_ = otherMap.CurSize_;
+    MaxSize_ = otherMap.MaxSize_;
   }
 
   // конструктор перемещения
@@ -99,9 +111,6 @@ public:
 
   // деструктор
   ~FlatMap() {
-    for( size_t i = 0; i < CurSize_; ++i ) {
-      delete Array_[i];
-    }
     delete[] Array_;
   }
 
@@ -112,15 +121,19 @@ public:
     }
 
     auto tmp = new pair_[otherMap.MaxSize_];
+    try {
+      for( size_t i = 0; i < CurSize_; ++i ) {
+        tmp[i] = otherMap.Array_[i];
+      }
+    } catch( ... ) {
+      delete[] tmp;
+      throw;
+    }
 
     delete[] Array_;
     CurSize_ = otherMap.CurSize_;
     MaxSize_ = otherMap.MaxSize_;
     Array_ = tmp;
-
-    for( size_t i = 0; i < CurSize_; ++i ) {
-      Array_[i] = otherMap.Array_[i];
-    }
 
     return *this;
   }
@@ -162,7 +175,7 @@ public:
       if( !StartShift ) {
         break;
       }
-      Array_[StartShift] = Array_[StartShift - 1];
+      Array_[StartShift] = std::move(Array_[StartShift - 1]);
     }
 
     Array_[InsertIndex.index].key = key;
