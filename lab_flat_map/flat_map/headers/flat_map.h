@@ -75,8 +75,15 @@ public:
       : Array_(new pair_[otherMap.MaxSize_])
       , CurSize_(otherMap.CurSize_)
       , MaxSize_(otherMap.MaxSize_) {
-    for( size_t i = 0; i < CurSize_; i++ ) {
-      Array_[i] = otherMap.Array_[i];
+
+    size_t i = 0;
+    try {
+      for( ; i < CurSize_; ++i ) {
+        Array_[i] = std::copy(otherMap.Array_[i]);
+      }
+    } catch( const std::exception& e ) {
+      CurSize_ = i;
+      throw e;
     }
   }
 
@@ -92,6 +99,9 @@ public:
 
   // деструктор
   ~FlatMap() {
+    for( size_t i = 0; i < CurSize_; ++i ) {
+      delete Array_[i];
+    }
     delete[] Array_;
   }
 
@@ -146,9 +156,7 @@ public:
     if( MaxSize_ == CurSize_ ) {
       resize(static_cast<size_t>(static_cast<double>(MaxSize_) * ResizeRate_));
     }
-    /*size_t insertIndex = 0;
-    for( ; insertIndex < CurSize_ && key > Array_[insertIndex].key; insertIndex++ ) {
-    }*/
+
     size_t StartShift = CurSize_;
     for( ; InsertIndex.index < StartShift; --StartShift ) {
       if( !StartShift ) {
@@ -199,17 +207,17 @@ public:
 
   // Получить итератор на элемент, следующий за последним
   [[nodiscard]] pair_* end() const {
-    return Array_+CurSize_;
+    return Array_ + CurSize_;
   }
 
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
-  [[nodiscard]] pair_* find(const keyT& key) const{
+  [[nodiscard]] pair_* find(const keyT& key) const {
     FoundInf inf = getIndex(key);
-    if (inf.IsFound){
-      return Array_+inf.index;
+    if( inf.IsFound ) {
+      return Array_ + inf.index;
     }
-    return Array_+CurSize_;
+    return Array_ + CurSize_;
   }
 };
 
