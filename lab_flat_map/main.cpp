@@ -20,14 +20,14 @@ int main() {
     int a;
     int b;
   };
-  pair * array = new pair[10];
-  int * iarray = new int[10];
+//  pair * array = new pair[10];
+//  int * ?iarray = new int[10];
   /*for(auto it = std::begin(iarray);;){
 
   };*/
   int a[3] = {1, 2, 3};
   for( auto it = std::begin(a); it != std::end(a); it++ ) {
-      std::cout << *it;
+//      std::cout << i;
   }
 
 
