@@ -36,11 +36,11 @@ private:
   }
 
   [[nodiscard]] FoundInf getIndex(const keyT& key) const {
-    if( Array_[0].key == key ) {
-      return {0, true};
-    }
     if( CurSize_ == 0 ) {
       return {0, false};
+    }
+    if( Array_[0].key == key ) {
+      return {0, true};
     }
     size_t left = 0;
     size_t right = CurSize_ - 1;
