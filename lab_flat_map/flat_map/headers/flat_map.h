@@ -92,7 +92,7 @@ public:
 
   // конструктор перемещения
   FlatMap(FlatMap&& otherMap) noexcept
-      : Array_(otherMap.Array_)
+      : Array_(std::move(otherMap.Array_))
       , CurSize_(otherMap.CurSize_)
       , MaxSize_(otherMap.MaxSize_) {
     otherMap.CurSize_ = 0;
