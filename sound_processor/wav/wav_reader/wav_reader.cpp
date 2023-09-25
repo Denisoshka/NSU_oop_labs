@@ -4,7 +4,6 @@
 //
 
 #include "wav_reader.h"
-=======
 #include "wav_reader.h"
 #include "../help_include/wav_types.h"
 #include "../help_include/wav_errors.h.h"
