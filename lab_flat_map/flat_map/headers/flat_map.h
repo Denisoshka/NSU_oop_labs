@@ -22,25 +22,18 @@ private:
     bool IsFound;
   };
 
-  pair_* Array_;
+  std::unique_ptr<pair_[]> Array_;
   size_t CurSize_;
   size_t MaxSize_;
 
   void resize(size_t new_size) {
-    auto tmp = new pair_[new_size];
-
-    try {
-      for( std::size_t i = 0; i < CurSize_; ++i ) {
-        tmp[i] = Array_[i];
-      }
-    } catch( ... ) {
-      delete[] tmp;
-      throw;
+    std::unique_ptr<pair_[]> tmp = std::make_unique<pair_[]>(new_size);
+    for( std::size_t i = 0; i < CurSize_; ++i ) {
+      tmp[i] = Array_[i];
     }
 
-    delete[] Array_;
     MaxSize_ = new_size;
-    Array_ = tmp;
+    Array_ = std::move(tmp);
   }
 
   [[nodiscard]] FoundInf getIndex(const keyT& key) const {
@@ -76,14 +69,9 @@ public:
       : Array_(nullptr)
       , CurSize_(0)
       , MaxSize_(0) {
-    try {
-      Array_ = new pair_[StartSize];
-    }
-    catch (...){
-      Array_ = nullptr;
-      throw;
-    }
+    std::unique_ptr<pair_[]> tmp = std::make_unique<pair_[]>(StartSize);
     MaxSize_ = StartSize;
+    Array_ = std::move(tmp);
   }
 
   // конструктор копирования
@@ -91,18 +79,13 @@ public:
       : Array_(nullptr)
       , CurSize_(0)
       , MaxSize_(0) {
-    auto tmp = new pair_[otherMap.MaxSize_];
-
-    try {
-      for( size_t i = 0; i < CurSize_; ++i ) {
-        tmp[i] = otherMap.Array_[i];
-      }
-    } catch( ... ) {
-      delete[] tmp;
-      throw;
+    std::unique_ptr<pair_[]> tmp = std::make_unique<pair_[]>(otherMap.MaxSize_);
+    for( size_t i = 0; i < CurSize_; ++i ) {
+      tmp[i] = otherMap.Array_[i];
     }
 
-    Array_ = tmp;
+
+    Array_ = std::move(tmp);
     CurSize_ = otherMap.CurSize_;
     MaxSize_ = otherMap.MaxSize_;
   }
@@ -119,7 +102,7 @@ public:
 
   // деструктор
   ~FlatMap() {
-    delete[] Array_;
+    Array_.reset();
   }
 
   // оператор присваивания
@@ -128,20 +111,14 @@ public:
       return *this;
     }
 
-    auto tmp = new pair_[otherMap.MaxSize_];
-    try {
-      for( size_t i = 0; i < CurSize_; ++i ) {
-        tmp[i] = otherMap.Array_[i];
-      }
-    } catch( ... ) {
-      delete[] tmp;
-      throw;
+    std::unique_ptr<pair_[]> tmp{std::make_unique<pair_[]>(MaxSize_)};
+    for( size_t i = 0; i < CurSize_; ++i ) {
+      tmp[i] = otherMap.Array_[i];
     }
 
-    delete[] Array_;
     CurSize_ = otherMap.CurSize_;
     MaxSize_ = otherMap.MaxSize_;
-    Array_ = tmp;
+    Array_ = std::move(tmp);
 
     return *this;
   }
@@ -153,9 +130,8 @@ public:
     }
     CurSize_ = OtherMap.CurSize_;
     MaxSize_ = OtherMap.MaxSize_;
-    delete[] Array_;
-    Array_ = OtherMap.Array_;
-    OtherMap.Array_ = nullptr;
+    Array_.reset();
+    Array_ = std::move(OtherMap.Array_);
     OtherMap.CurSize_ = 0;
     OtherMap.MaxSize_ = 0;
     return *this;
@@ -174,13 +150,10 @@ public:
       return Array_[InsertIndex.index].value;
     }
 
-    if (!MaxSize_){
-      try{
-        Array_ = new pair_[StartSize];
-      }catch(...){
-        Array_ = nullptr;
-        throw ;
-      }
+    if( !MaxSize_ ) {
+      std::unique_ptr<pair_[]> tmp = std::make_unique<pair_[]>(StartSize);
+
+      Array_ = std::move(tmp);
       MaxSize_ = StartSize;
     }
 
@@ -217,28 +190,28 @@ public:
       Array_[index] = Array_[index + 1];
     }
     --CurSize_;
-    if( CurSize_ < static_cast<size_t>(static_cast<double>(MaxSize_) / ResizeRate_) ) {
-      resize(static_cast<size_t>(static_cast<double>(MaxSize_) / ResizeRate_));
-    }
+
     return 1;
   }
 
   // очистка таблицы, после которой maxSize_() возвращает 0, а contains() - false на любой ключ
   void clear() {
-    delete[] Array_;
-    MaxSize_ = StartSize;
+    Array_.reset();
+    MaxSize_ = 0;
     CurSize_ = 0;
-    Array_ = new pair_[StartSize];
+
+    Array_ = std::make_unique<pair_[]>(StartSize);
+    MaxSize_ = StartSize;
   }
 
   // Получить итератор на первый элемент
   [[nodiscard]] pair_* begin() const {
-    return Array_;
+    return Array_.get();
   }
 
   // Получить итератор на элемент, следующий за последним
   [[nodiscard]] pair_* end() const {
-    return Array_ + CurSize_;
+    return Array_.get() + CurSize_;
   }
 
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
@@ -246,9 +219,9 @@ public:
   [[nodiscard]] pair_* find(const keyT& key) const {
     FoundInf inf = getIndex(key);
     if( inf.IsFound ) {
-      return Array_ + inf.index;
+      return Array_.get() + inf.index;
     }
-    return Array_ + CurSize_;
+    return Array_.get() + CurSize_;
   }
 };
 

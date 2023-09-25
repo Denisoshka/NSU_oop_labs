@@ -254,7 +254,7 @@ TEST(FlatMapTest, CopyConstructor1) {
   FlatMap testMap2 = testMap1;
 
   for( const auto &params: strTestCase1 ) {
-    testMap1[(std::string)params[0]] = params[1];
+    testMap1[params[0]] = params[1];
   }
   for( const auto &params: strTestCase1 ) {
     EXPECT_NE(testMap1[params[0]], testMap2[params[0]]);
