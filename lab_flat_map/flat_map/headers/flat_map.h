@@ -8,7 +8,7 @@ template<typename keyT, typename valueT>
 class FlatMap {
 private:
   const double ResizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
-  const size_t StartSize = 2;
+  const size_t StartSize_ = 2;
 
   struct pair_ {
     keyT key;
@@ -69,9 +69,8 @@ public:
       : Array_(nullptr)
       , CurSize_(0)
       , MaxSize_(0) {
-    std::unique_ptr<pair_[]> tmp = std::make_unique<pair_[]>(StartSize);
-    MaxSize_ = StartSize;
-    Array_ = std::move(tmp);
+    Array_ = std::make_unique<pair_[]>(StartSize_);
+    MaxSize_ = StartSize_;
   }
 
   // конструктор копирования
@@ -83,7 +82,6 @@ public:
     for( size_t i = 0; i < CurSize_; ++i ) {
       tmp[i] = otherMap.Array_[i];
     }
-
 
     Array_ = std::move(tmp);
     CurSize_ = otherMap.CurSize_;
@@ -151,10 +149,8 @@ public:
     }
 
     if( !MaxSize_ ) {
-      std::unique_ptr<pair_[]> tmp = std::make_unique<pair_[]>(StartSize);
-
-      Array_ = std::move(tmp);
-      MaxSize_ = StartSize;
+      Array_ = std::make_unique<pair_[]>(StartSize_);
+      MaxSize_ = StartSize_;
     }
 
     if( MaxSize_ == CurSize_ ) {
@@ -187,7 +183,7 @@ public:
       return 0;
     }
     for( size_t index = foundIndex.index; index < CurSize_ - 1; ++index ) {
-      Array_[index] = Array_[index + 1];
+      Array_[index] = std::move(Array_[index + 1]);
     }
     --CurSize_;
 
@@ -200,8 +196,8 @@ public:
     MaxSize_ = 0;
     CurSize_ = 0;
 
-    Array_ = std::make_unique<pair_[]>(StartSize);
-    MaxSize_ = StartSize;
+    Array_ = std::make_unique<pair_[]>(StartSize_);
+    MaxSize_ = StartSize_;
   }
 
   // Получить итератор на первый элемент
