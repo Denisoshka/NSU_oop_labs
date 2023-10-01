@@ -1,5 +1,5 @@
-#ifndef WAV_FLAT_MAP_H
-#define WAV_FLAT_MAP_H
+#ifndef FLAT_MAP_FLAT_MAP_H
+#define FLAT_MAP_FLAT_MAP_H
 
 #include <iostream>
 #include <memory>
@@ -221,4 +221,4 @@ public:
   }
 };
 
-#endif// WAV_FLAT_MAP_H
+#endif// FLAT_MAP_FLAT_MAP_H
