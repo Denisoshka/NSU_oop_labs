@@ -65,7 +65,7 @@ private:
 
 public:
   // стандартный конструктор
-  explicit FlatMap()
+  FlatMap()
       : Array_(nullptr)
       , CurSize_(0)
       , MaxSize_(0) {
