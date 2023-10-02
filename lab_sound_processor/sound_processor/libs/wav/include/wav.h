@@ -26,11 +26,12 @@ struct FormatChunk{
   uint16_t BitsPerSample;
 };
 
-class wav{
+class WAV {
 public:
   void readWav(std::string && FilePath);
   void readHeader();
   void findData(uint32_t chunkId );
+  void getSample(uint16_t * SampleBuffer, size_t SampleBufferLen, size_t start, size_t end);
 private:
   RIFFChunk HeaderRiff_{};
   FormatChunk HeaderFormat_{};
