@@ -1,0 +1,4 @@
+#ifndef WAV_WAV_READER_H
+#define WAV_WAV_READER_H
+
+#endif// WAV_WAV_READER_H
