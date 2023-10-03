@@ -1,21 +1,21 @@
 #ifndef WAV_WAV_H
 #define WAV_WAV_H
 
-#include <string>
 #include <fstream>
+#include <string>
 
-struct RIFFChunk{
+struct RIFFChunk {
   uint32_t Id;
   uint32_t Size;
   uint32_t Format;
 };
 
-struct  DataChunk{
+struct DataChunk {
   uint32_t Id;
   uint32_t Size;
 };
 
-struct FormatChunk{
+struct FormatChunk {
   uint32_t Id;
   uint32_t Size;
   uint16_t AudioFormat;
@@ -26,12 +26,13 @@ struct FormatChunk{
   uint16_t BitsPerSample;
 };
 
-class WAV {
+class WAVReader {
 public:
-  void readWav(std::string && FilePath);
+  void readWav(std::string &&FilePath);
   void readHeader();
-  void findData(uint32_t chunkId );
-  void getSample(uint16_t * SampleBuffer, size_t SampleBufferLen, size_t start, size_t end);
+  void findData(uint32_t chunkId);
+  void getSample(uint16_t *SampleBuffer, size_t SampleBufferLen, size_t start, size_t end);
+
 private:
   RIFFChunk HeaderRiff_{};
   FormatChunk HeaderFormat_{};
@@ -40,4 +41,13 @@ private:
   std::string FilePath_;
 };
 
+class WAVWriter {
+public:
+//  void readWav(std::string &&FilePath);
+  void writeSample(uint16_t *sampleBuffer, size_t sampleBufferLen, size_t start, size_t end);
+  void writeHeader();
+private:
+  std::ofstream FileOut_;
+  size_t dataStart_;
+};
 #endif// WAV_WAV_H

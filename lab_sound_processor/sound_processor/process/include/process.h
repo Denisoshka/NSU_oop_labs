@@ -3,21 +3,24 @@
 
 // #include "wav"
 
+#include <array>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <vector>
 
-
-
 class process {
 public:
-  bool getTasks();
-  void startConversion(std::string &&FilePath);
+  process(size_t sampleRate);
+
+  void executeConversions(std::string &&FilePath);
 
 private:
-  //  std::vector
+  const uint32_t sampleRate_;
+  std::unique_ptr<uint16_t[]> sample_;
   std::string SettingsFile_;
   std::string FilePath_;
+  std::ifstream SettingsIn_;
   std::ofstream FileOut_;
 };
 

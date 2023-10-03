@@ -8,7 +8,7 @@ project(${LIBRARY_NAME} CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(TEST_NAME "test_${LIBRARY_NAME}")
 
-file(GLOB SOURCE_DIRS  "${CMAKE_CURRENT_SOURCE_DIR}/**/*.cpp")
+file(GLOB SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/**/*.cpp")
 message(STATUS ${SOURCE_DIRS})
 
 message(STATUS "project name: ${PROJECT_NAME}")

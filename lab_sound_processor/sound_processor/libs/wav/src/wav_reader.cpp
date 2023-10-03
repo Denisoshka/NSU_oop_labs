@@ -1,7 +1,7 @@
 #include "wav.h"
 #include "wav_types.h"
 
-void wav::readWav(std::string &&FilePath) {
+void WAVReader::readWav(std::string &&FilePath) {
   FilePath_ = std::move(FilePath);
   if( FilePath_.find(".wav") == std::string::npos ) {
     throw;// todo make ex
@@ -17,8 +17,8 @@ void wav::readWav(std::string &&FilePath) {
   findData(DATA);
 }
 
-void wav::readHeader() {
-//  RIFFChunk headerRiff{};
+void WAVReader::readHeader() {
+  //  RIFFChunk headerRiff{};
   FileIn_.read((char *)&HeaderRiff_, sizeof(HeaderRiff_));
   if( FileIn_.fail() ) {
     throw;// todo make ex
@@ -30,7 +30,7 @@ void wav::readHeader() {
     throw;// todo make ex
   }
 
-//  FormatChunk headerFormat{};
+  //  FormatChunk headerFormat{};
   FileIn_.read((char *)&HeaderFormat_, sizeof(HeaderFormat_));
   if( FileIn_.fail() ) {
     throw;// todo make ex
@@ -52,7 +52,7 @@ void wav::readHeader() {
   }
 }
 
-void wav::findData(uint32_t chunkId) {
+void WAVReader::findData(uint32_t chunkId) {
   while( true ) {
     FileIn_.read((char *)&Data_, sizeof(Data_));
     if( FileIn_.fail() ) {
@@ -66,3 +66,13 @@ void wav::findData(uint32_t chunkId) {
     FileIn_.seekg(Data_.Size, std::fstream::cur);
   }
 }
+
+void WAVReader::getSample(uint16_t *SampleBuffer, size_t SampleBufferLen, size_t start,
+                          size_t end) {
+  FileIn_.seekg(start, std::fstream::cur);
+  FileIn_.read(reinterpret_cast<char *>(&SampleBuffer), sizeof(*SampleBuffer) * SampleBufferLen);
+  if( FileIn_.fail() ) {
+    throw;// todo make ex
+  }
+}
+
