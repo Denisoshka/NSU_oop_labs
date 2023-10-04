@@ -1,7 +1,14 @@
 #include "wav.h"
 #include "wav_types.h"
 
-void WAVReader::readWav(std::string &&FilePath) {
+WAV::WAVReader::WAVReader():dataStart_(0){
+}
+
+void WAV::WAVReader::open(std::string &&FilePath) {
+  if (FilePath_ == FilePath){
+    findData(DATA);
+    return;
+  }
   FilePath_ = std::move(FilePath);
   if( FilePath_.find(".wav") == std::string::npos ) {
     throw;// todo make ex
@@ -17,9 +24,10 @@ void WAVReader::readWav(std::string &&FilePath) {
   findData(DATA);
 }
 
-void WAVReader::readHeader() {
+void WAV::WAVReader::readHeader() {
   //  RIFFChunk headerRiff{};
   FileIn_.read((char *)&HeaderRiff_, sizeof(HeaderRiff_));
+  dataStart_ += sizeof(HeaderRiff_);
   if( FileIn_.fail() ) {
     throw;// todo make ex
   }
@@ -32,6 +40,7 @@ void WAVReader::readHeader() {
 
   //  FormatChunk headerFormat{};
   FileIn_.read((char *)&HeaderFormat_, sizeof(HeaderFormat_));
+  dataStart_ += sizeof(HeaderFormat_);
   if( FileIn_.fail() ) {
     throw;// todo make ex
   }
@@ -52,9 +61,16 @@ void WAVReader::readHeader() {
   }
 }
 
-void WAVReader::findData(uint32_t chunkId) {
+void WAV::WAVReader::findData(uint32_t chunkId) {
+  if (dataStart_){
+    FileIn_.seekg(dataStart_, std::fstream::cur);
+    return;
+  }
+
   while( true ) {
     FileIn_.read((char *)&Data_, sizeof(Data_));
+    dataStart_ += sizeof(Data_);
+//    todo блять я чот сомнеавюсь что дата с этого момента начинается
     if( FileIn_.fail() ) {
       throw;// todo make ex
     }
@@ -64,15 +80,18 @@ void WAVReader::findData(uint32_t chunkId) {
     }
 
     FileIn_.seekg(Data_.Size, std::fstream::cur);
+    dataStart_ += Data_.Size;
   }
 }
 
-void WAVReader::getSample(uint16_t *SampleBuffer, size_t SampleBufferLen, size_t start,
-                          size_t end) {
-  FileIn_.seekg(start, std::fstream::cur);
-  FileIn_.read(reinterpret_cast<char *>(&SampleBuffer), sizeof(*SampleBuffer) * SampleBufferLen);
+void WAV::WAVReader::getSample(SampleBuffer &sample, size_t second) {
+  FileIn_.seekg(second * sizeof(*sample.sample_), std::fstream::cur);
+  FileIn_.read(reinterpret_cast<char *>(sample.sample_), sizeof(*sample.sample_) * sample.len_);
   if( FileIn_.fail() ) {
     throw;// todo make ex
   }
 }
 
+size_t WAV::WAVReader::getDuration() const {
+  return Data_.Size / HeaderFormat_.BlockAlign;
+}

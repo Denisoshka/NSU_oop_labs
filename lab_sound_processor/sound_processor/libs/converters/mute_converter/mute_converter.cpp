@@ -1,10 +1,16 @@
+#include <cstring>
 #include "converters.h"
-#include <string.h>
 
-MuteConverter::MuteConverter(uint16_t *sampleBuffer, size_t sampleBufferLen, size_t start,
-                             size_t end, size_t fileSIze){};
-
-void MuteConverter::convert(uint16_t *sampleBuffer, size_t sampleBufferLen, size_t start,
-                            size_t end, size_t fileStart, size_t fileEnd) {
-  memset()
+// params{taskFinished(0), secondsStart(1), secondsEnd(2), changedSeconds(3), totalSeconds(4)}
+// sample1 = FinalStream
+// sample2 = array of inputSamples
+void conv::MuteConverter::process(sampleBuffer& sample1, std::vector<sampleBuffer&> &samples,
+                            std::vector<size_t>& params) {
+  size_t curSecond = params[1] + params[3];
+  if( curSecond < params[2] ) {
+    memset(sample1.sample_, 0, sample1.curLen_);
+  }
+  params[0] = curSecond == params[2];
 }
+
+
