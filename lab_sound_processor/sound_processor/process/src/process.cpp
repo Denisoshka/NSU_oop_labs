@@ -5,10 +5,9 @@
 
 // #include "converters/converter_tmp/converter_tmp.h"
 
-conv::sampleBuffer convertFromWAVSampleBuffer(WAV::SampleBuffer& tmp){
+conv::sampleBuffer convertFromWAVSampleBuffer(WAV::SampleBuffer &tmp) {
   return {tmp.get(), tmp.size(), tmp.size()};
 }
-
 
 process::process(const size_t sampleRate)
     : sampleRate_(sampleRate)
@@ -29,7 +28,7 @@ void process::executeConversions(std::string &&FilePath) {
 
   conv::ConverterInterface interface;
   conv::sampleBuffer mainBufOut{};
-//  conv::sampleBuffer mainBuf;
+  //  conv::sampleBuffer mainBuf;
   conv::sampleBuffer subBufIn{};
 
 
@@ -40,14 +39,14 @@ void process::executeConversions(std::string &&FilePath) {
   WAV::SampleBuffer mainSampleIn{sampleRate_};
   WAV::SampleBuffer subSampleIn{sampleRate_};
 
-//  std::string task;
-//  size_t FileIn;
-//  size_t start;
-//  size_t end;
+  //  std::string task;
+  //  size_t FileIn;
+  //  size_t start;
+  //  size_t end;
 
   // todo fix algo
   while( true ) {
-    if (!interface.getTask()){
+    if( !interface.setTask() ) {
       break;
     }
     wavReaderSub.open(interface.getCurFile());
@@ -58,10 +57,9 @@ void process::executeConversions(std::string &&FilePath) {
 
       mainBufOut = convertFromWAVSampleBuffer(mainSampleOut);
 
-      interface.executeTask(mainBufOut, );
+      interface.executeTask(mainBufOut, nullptr);
       wavWriterOut.writeSample(mainSampleOut, interface.getCurSec());
     }
-
   }
   wavWriterOut.writeHeader();
 }

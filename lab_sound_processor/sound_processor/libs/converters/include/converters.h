@@ -1,29 +1,24 @@
 #ifndef WAV_CONVERTERS_H
 #define WAV_CONVERTERS_H
 
+#include <boost/tokenizer.hpp>
 #include <fstream>
 #include <map>
 #include <memory>
 #include <queue>
+#include <regex>
 #include <string>
 #include <vector>
 
 namespace conv {
+  class Converter;
+  class MuteConverter;
+  class MixConverter;
+
   enum ConverterNums {
     noConverter,
     mix,
     mute,
-  };
-
-  std::map<std::string, ConverterNums> converterIndex{
-          {"mix",  mix },
-          {"mute", mute}
-  };
-
-  struct TaskInf_ {
-    ConverterNums converter = noConverter;
-    size_t thread = 0;
-    std::vector<size_t> params{};
   };
 
   struct sampleBuffer {
@@ -41,13 +36,9 @@ namespace conv {
     }
 
   private:
-    //  uint16_t *sampleBuffer_;
-    //  size_t sampleBufferLen_;
-    //  size_t start_;
-    //  size_t end_;
   };
 
-  class MuteConverter: Converter {
+  class MuteConverter: public Converter {
   public:
     MuteConverter() = default;
     void process(sampleBuffer &sample1, std::vector<sampleBuffer &> &samples,
@@ -59,8 +50,7 @@ namespace conv {
   class MixConverter: public Converter {
   public:
     MixConverter() = default;
-    //  MixConverter(sampleBuffer sample1, sampleBuffer sample2, std::vector<size_t> params);
-    void process(sampleBuffer &AddSample, std::vector<sampleBuffer &> &samples,
+    void process(sampleBuffer &sample1, std::vector<sampleBuffer &> &samples,
                  std::vector<size_t> &params) override;
 
   private:
@@ -70,31 +60,51 @@ namespace conv {
   public:
     //  std::string getTask(size_t &FileIn, size_t &start, size_t &end);
     ConverterInterface() = default;
-    void open(std::string &&SettingsFile);
-    bool getTask();
-    void filTaskList();
+    //    void open(std::string &&SettingsFile);
+    bool setTask();
+    void setSettings(std::string &&FilePath, std::vector<std::string> &&fileLinks);
+    void setFileLinks(const std::vector<std::string> &fileLinks);
+    void fillPipeline();
     void executeTask(sampleBuffer &sampleOut, std::vector<sampleBuffer &> &samples);
 
     bool taskFinished() const;
 
-    std::string getCurFile();
-    size_t getCurSec() const;
+    std::string curFile();
+    size_t curSec() const;
 
   private:
-    const int TasksCount_ = 10;
-    bool taskFinished_ = false;
+    void setFileLinks(std::vector<std::string> &&fileLinks);
 
+    const int TasksCount_ = 10;
+    bool TaskFinished_ = false;
+
+    struct TaskInf_ {
+      std::shared_ptr<Converter> converter = nullptr;
+      size_t stream = 0;
+      std::vector<size_t> params{};
+    }curTask_;
+
+    /*
     struct task {
       Converter converter;
       std::vector<size_t> params;
-    } task_;
+    } Task_;*/
 
     struct {
-      size_t CurFile_;
-      size_t CurSecond_;
-    } fileInf_;
+      size_t CurFile_ = 0;
+      size_t CurSecond_ = 0;
+    } FileInf_;
 
-    std::queue<TaskInf_> taskList_;
+    std::map<std::string, std::shared_ptr<Converter>> converters_{
+            {"mix",  std::make_shared<MixConverter>() },
+            {"mute", std::make_shared<MuteConverter>()}
+    };
+
+    std::regex ConverterName_ = std::regex(R"(\w+)");
+    std::regex StreamName_ = std::regex(R"($\d+)");
+    std::regex Time_ = std::regex(R"(\d+)");
+
+    std::queue<TaskInf_> Pipeline_;
     std::vector<std::string> FileLinks_;
     std::string SettingsPath_;
     std::ifstream SettingsStream_;

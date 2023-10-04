@@ -4,12 +4,13 @@
 WAV::WAVReader::WAVReader():dataStart_(0){
 }
 
-void WAV::WAVReader::open(std::string &&FilePath) {
+void WAV::WAVReader::open(const std::string &FilePath) {
   if (FilePath_ == FilePath){
     findData(DATA);
     return;
   }
-  FilePath_ = std::move(FilePath);
+
+  FilePath_ = FilePath;
   if( FilePath_.find(".wav") == std::string::npos ) {
     throw;// todo make ex
   }

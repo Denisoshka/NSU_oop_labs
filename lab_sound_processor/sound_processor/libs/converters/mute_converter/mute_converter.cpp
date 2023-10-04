@@ -10,7 +10,8 @@ void conv::MuteConverter::process(sampleBuffer& sample1, std::vector<sampleBuffe
   if( curSecond < params[2] ) {
     memset(sample1.sample_, 0, sample1.curLen_);
   }
-  params[0] = curSecond == params[2];
+  ++params[3];
+  params[0] = curSecond == params[4];
 }
 
 
