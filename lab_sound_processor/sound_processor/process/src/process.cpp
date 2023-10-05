@@ -1,7 +1,7 @@
 #include <process.h>
 
 #include "converters/include/converters.h"
-#include "wav/include/wav.h"
+#include "wav/"
 
 // #include "converters/converter_tmp/converter_tmp.h"
 // namespace pt = boost::property_tree;
@@ -10,13 +10,8 @@ conv::sampleBuffer convertFromWAVSampleBuffer(WAV::SampleBuffer &tmp) {
   return {tmp.get(), tmp.size(), tmp.size()};
 }
 
-process::process(const size_t sampleRate)
-    : sampleRate_(sampleRate) {
-}
-
-process::process(const size_t sampleRate, po::variables_map &vm)
-    : sampleRate_(sampleRate)
-    , SettingsFile_(vm["config"].as<std::string>())
+process::process(po::variables_map &vm)
+    : SettingsFile_(vm["config"].as<std::string>())
     , FileOutPath_(vm["output"].as<std::string>())
     , FileLinks_(vm["input"].as<std::vector<std::string>>()) {
 }
@@ -52,17 +47,17 @@ void process::executeConversions() {
     if( !interface.setTask() ) {
       break;
     }
-//    wavReaderSub.open(interface.curFile());
+    //    wavReaderSub.open(interface.curFile());
 
     std::vector<conv::sampleBuffer> samples;
     while( !interface.taskFinished() || interface.curSec() < wavReaderSub.getDuration() ) {
 
-//      todo переделать эту поеботу на нормыльный выбор сэмплов
-      if (interface.curFile() != FileOutPath_){
+      //      todo переделать эту поеботу на нормыльный выбор сэмплов
+      if( interface.curFile() != FileOutPath_ ) {
         wavReaderSub.getSample(subSampleIn, interface.curSec());
         samples[0] = convertFromWAVSampleBuffer(subSampleIn);
       }
-      else{
+      else {
         wavReaderOut.getSample(mainSampleOut, interface.curSec());
         samples[0] = convertFromWAVSampleBuffer(mainSampleOut);
       }

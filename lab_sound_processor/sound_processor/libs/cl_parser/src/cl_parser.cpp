@@ -1,10 +1,8 @@
 #include "cl_parser.h"
 
 #include <boost/program_options.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 namespace po = boost::program_options;
-namespace pt = boost::property_tree;
 
 bool clParser::parseOptions(int argc, char **argv) {
   po::options_description desc("General options");
@@ -23,14 +21,21 @@ bool clParser::parseOptions(int argc, char **argv) {
 
   if( vm.count("help") ) {
     // todo add desc show
-    std::cout << "sound_processor [-h] [-c config.txt output.wav input1.wav [input2.wav …]]" << std::endl;
     return false;
   }
   else{
+    vm_ = vm;
     return true;
   }
-
 }
+
+po::variables_map clParser::getVariablesMap() {
+  return vm_;
+}
+
+
 
 void clParser::printConverterDesc() {
+  std::cout << "sound_processor [-h] [-c config.txt output.wav input1.wav [input2.wav …]]" << std::endl;
 }
+

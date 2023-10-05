@@ -14,13 +14,13 @@ namespace po = boost::program_options;
 
 class process {
 public:
-  process(size_t sampleRate);
-  process(size_t sampleRate, po::variables_map &vm);
+  process() = default;
+  process(po::variables_map &vm);
   void setSettings(po::variables_map &vm);
   void executeConversions();
 
 private:
-  const uint32_t sampleRate_;
+  uint32_t sampleRate_;
 
   std::string SettingsFile_;
   std::string FileOutPath_;
