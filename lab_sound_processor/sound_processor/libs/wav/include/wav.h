@@ -41,8 +41,9 @@ namespace WAV {
 
   class WAVReader {
   public:
-    WAVReader();
-    void open(std::string &&FilePath);
+    WAVReader() = default;
+    WAVReader(std::string &FilePath);
+    void open(std::string &FilePath);
     void getSample(SampleBuffer &sample, size_t second);
     size_t getDuration() const;
 
@@ -55,12 +56,14 @@ namespace WAV {
     DataChunk Data_{};
     std::ifstream FileIn_;
     std::string FilePath_;
-    size_t dataStart_;
+    size_t dataStart_ = 0;
   };
 
   class WAVWriter {
   public:
-    void open(std::string &&FilePath);
+    WAVWriter() = default;
+    WAVWriter(std::string &FilePath);
+    void open(std::string &FilePath);
     //  void readWav(std::string &&FilePath);
     void writeSample(SampleBuffer &sample, size_t second);
     void writeHeader();
@@ -68,7 +71,8 @@ namespace WAV {
   private:
     std::string FilePath_;
     std::ofstream FileOut_;
-    size_t dataStart_;
+    size_t dataStart_ = 0;
+    // todo add data start
   };
 }// namespace WAV
 #endif// WAV_WAV_H

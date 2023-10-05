@@ -1,10 +1,29 @@
 #include "wav.h"
 #include "wav_types.h"
+/*
 
-WAV::WAVReader::WAVReader():dataStart_(0){
+WAV::WAVReader::WAVReader(){
+}
+*/
+
+
+WAV::WAVReader::WAVReader(std::string &FilePath){
+  FilePath_ = FilePath;
+  if( FilePath_.find(".wav") == std::string::npos ) {
+    throw;// todo make ex
+  }
+
+  FileIn_.open(FilePath_, std::ios_base::binary);
+  if( FileIn_.fail() ) {
+    throw;// todo make ex
+  }
+
+  readHeader();
+
+  findData(DATA);
 }
 
-void WAV::WAVReader::open(const std::string &FilePath) {
+void WAV::WAVReader::open(std::string &FilePath) {
   if (FilePath_ == FilePath){
     findData(DATA);
     return;
@@ -85,9 +104,9 @@ void WAV::WAVReader::findData(uint32_t chunkId) {
   }
 }
 
-void WAV::WAVReader::getSample(SampleBuffer &sample, size_t second) {
-  FileIn_.seekg(second * sizeof(*sample.sample_), std::fstream::cur);
-  FileIn_.read(reinterpret_cast<char *>(sample.sample_), sizeof(*sample.sample_) * sample.len_);
+void WAV::WAVReader::getSample(WAV::SampleBuffer &sample, size_t second) {
+  FileIn_.seekg(second * sizeof(*sample.get()), std::fstream::cur);
+  FileIn_.read(reinterpret_cast<char *>(sample.get()), sizeof(*sample.get()) * sample.size());
   if( FileIn_.fail() ) {
     throw;// todo make ex
   }
@@ -96,3 +115,4 @@ void WAV::WAVReader::getSample(SampleBuffer &sample, size_t second) {
 size_t WAV::WAVReader::getDuration() const {
   return Data_.Size / HeaderFormat_.BlockAlign;
 }
+

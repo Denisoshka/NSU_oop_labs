@@ -31,7 +31,7 @@ namespace conv {
   public:
     Converter() = default;
 
-    virtual void process(sampleBuffer &sample1, std::vector<sampleBuffer &> &samples,
+    virtual void process(sampleBuffer &sample1, std::vector<sampleBuffer> &samples,
                          std::vector<size_t> &params) {
     }
 
@@ -41,7 +41,7 @@ namespace conv {
   class MuteConverter: public Converter {
   public:
     MuteConverter() = default;
-    void process(sampleBuffer &sample1, std::vector<sampleBuffer &> &samples,
+    void process(sampleBuffer &sample1, std::vector<sampleBuffer> &samples,
                  std::vector<size_t> &params) override;
 
   private:
@@ -50,7 +50,7 @@ namespace conv {
   class MixConverter: public Converter {
   public:
     MixConverter() = default;
-    void process(sampleBuffer &sample1, std::vector<sampleBuffer &> &samples,
+    void process(sampleBuffer &sample1, std::vector<sampleBuffer> &samples,
                  std::vector<size_t> &params) override;
 
   private:
@@ -62,10 +62,10 @@ namespace conv {
     ConverterInterface() = default;
     //    void open(std::string &&SettingsFile);
     bool setTask();
-    void setSettings(std::string &&FilePath, std::vector<std::string> &&fileLinks);
+    void setSettings(std::string &FilePath, std::vector<std::string> &fileLinks);
     void setFileLinks(const std::vector<std::string> &fileLinks);
     void fillPipeline();
-    void executeTask(sampleBuffer &sampleOut, std::vector<sampleBuffer &> &samples);
+    void executeTask(sampleBuffer &sampleOut, std::vector<sampleBuffer> &samples);
 
     bool taskFinished() const;
 
@@ -105,8 +105,10 @@ namespace conv {
     std::regex Time_ = std::regex(R"(\d+)");
 
     std::queue<TaskInf_> Pipeline_;
+
     std::vector<std::string> FileLinks_;
     std::string SettingsPath_;
+
     std::ifstream SettingsStream_;
   };
 }// namespace conv

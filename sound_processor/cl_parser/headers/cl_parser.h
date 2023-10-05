@@ -6,13 +6,13 @@
 
 
 class clParser {
-  private:
+private:
   std::string outputFileName_;
   std::string configFileName_;
   std::vector<std::string> inputFilesName_;
 
 
-  public:
+public:
   //  explicit clParser();
   bool getOptions(int argc, char **argv);
   void printConverterDesc();

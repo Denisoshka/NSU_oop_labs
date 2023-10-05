@@ -19,15 +19,15 @@ bool conv::ConverterInterface::setTask() {
 }
 
 void conv::ConverterInterface::executeTask(sampleBuffer &sampleOut,
-                                           std::vector<sampleBuffer &> &samples) {
+                                           std::vector<sampleBuffer> &samples) {
   //  std::vector<size_t> params{secondsStart_, secondsEnd_, changedSeconds_, totalSeconds_};
   curTask_.converter->process(sampleOut, samples, curTask_.params);
   TaskFinished_ = curTask_.params[0];
 }
 
-void conv::ConverterInterface::setSettings(std::string &&FilePath,
-                                           std::vector<std::string> &&fileLinks) {
-  SettingsPath_ = std::move(FilePath);
+void conv::ConverterInterface::setSettings(std::string &FilePath,
+                                           std::vector<std::string> &fileLinks) {
+  SettingsPath_ = FilePath;
   SettingsStream_.open(SettingsPath_, std::ios_base::in);
   if( SettingsStream_.fail() ) {
     throw;// todo make ex
@@ -55,6 +55,7 @@ void conv::ConverterInterface::fillPipeline() {
     TaskInf_ taskInf_;
 
     boost::tokenizer<boost::char_separator<char>> tokens(taskTmp, sep);
+    // todo переписать на boost po
     for( const auto &token: tokens ) {
       if( regex_match(token, ConverterName_) ) {
         if( taskInf_.converter ) {
@@ -95,7 +96,7 @@ std::string conv::ConverterInterface::curFile() {
 
 size_t conv::ConverterInterface::curSec() const {
   // params{taskFinished(0), secondsStart(1), secondsEnd(2), changedSeconds(3), totalSeconds(4)}
-  return curTask_.params[1] + curTask_.params[3];
+  return curTask_.params[3];
 }
 
 /*

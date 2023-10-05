@@ -6,15 +6,14 @@
 namespace po = boost::program_options;
 namespace pt = boost::property_tree;
 
-
-bool clParser::getOptions(int argc, char **argv) {
+bool clParser::parseOptions(int argc, char **argv) {
   po::options_description desc("General options");
   std::string task_type;
   desc.add_options()("help,h", "Show options description")(
-          "config,c", po::value<std::string>(&configFileName_)->required(), "Configuration file")(
-          "output,O", po::value<std::string>(&outputFileName_)->required(), "Output file")(
+          "config,c", po::value<std::string>(&SettingsFile_)->required(), "Configuration file")(
+          "output,O", po::value<std::string>(&OutFile_)->required(), "Output file")(
           "input,I",
-          po::value<std::vector<std::string>>(&inputFilesName_)->multitoken()->required(),
+          po::value<std::vector<std::string>>(&inputFiles_)->multitoken()->required(),
           "Input files");
 
   po::variables_map vm;
@@ -22,15 +21,16 @@ bool clParser::getOptions(int argc, char **argv) {
   po::store(parsed, vm);
   po::notify(vm);
 
-  if (vm.count("help")){
-
-    std::cout << desc << std::endl;
-    printConverterDesc();
-
+  if( vm.count("help") ) {
+    // todo add desc show
+    std::cout << "sound_processor [-h] [-c config.txt output.wav input1.wav [input2.wav …]]" << std::endl;
     return false;
   }
+  else{
+    return true;
+  }
+
 }
 
-void clParser::printConverterDesc(){
-
+void clParser::printConverterDesc() {
 }
