@@ -103,6 +103,7 @@ namespace conv {
     std::regex ConverterName_ = std::regex(R"(\w+)");
     std::regex StreamName_ = std::regex(R"($\d+)");
     std::regex Time_ = std::regex(R"(\d+)");
+    std::regex PassTime_ = std::regex(R"(-)");
 
     std::queue<TaskInf_> Pipeline_;
 

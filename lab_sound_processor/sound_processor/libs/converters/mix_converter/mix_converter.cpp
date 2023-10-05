@@ -1,6 +1,6 @@
 #include "converters.h"
 /*
-params{taskFinished(0), secondsStart(1), secondsEnd(2), changedSeconds(3), totalSeconds(4)}
+params{taskFinished(0), secondsStart(1), secondsEnd(2), changedSeconds(3)}
 sample1 = FinalStream
 sample2 = array of inputSamples
 */

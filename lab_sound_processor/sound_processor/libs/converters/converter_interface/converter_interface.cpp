@@ -63,12 +63,23 @@ void conv::ConverterInterface::fillPipeline() {
         }
         taskInf_.converter = converters_[token];
       }
-      else if( regex_match(token, ConverterName_) ) {
+      else if( regex_match(token, StreamName_) ) {
         taskInf_.stream = std::atoll(token.data());
       }
       else if( regex_match(token, Time_) ) {
         size_t paramTime = std::atoll(token.data());
         taskInf_.params.push_back(paramTime);
+      }
+      else if (regex_match(token, PassTime_)){
+        if (!taskInf_.params.size()){
+          taskInf_.params.push_back(0);
+        }
+        else if (taskInf_.params.size() == 1){
+          taskInf_.params.push_back(SIZE_MAX);
+        }
+        else {
+          throw;// (todo) make ex
+        }
       }
       else {
         throw;// (todo) make ex
