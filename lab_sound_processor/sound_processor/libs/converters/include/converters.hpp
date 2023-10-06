@@ -1,5 +1,5 @@
-#ifndef WAV_CONVERTERS_H
-#define WAV_CONVERTERS_H
+#ifndef CONVERTERS_CONVERTERS_HPP
+#define CONVERTERS_CONVERTERS_HPP
 
 #include <boost/tokenizer.hpp>
 #include <fstream>
@@ -12,8 +12,6 @@
 
 namespace conv {
   class Converter;
-  class MuteConverter;
-  class MixConverter;
 
   enum ConverterNums {
     noConverter,
@@ -30,19 +28,11 @@ namespace conv {
   class Converter {
   public:
     Converter() = default;
-
+    virtual ~Converter() = default;
     virtual void process(sampleBuffer &sample1, std::vector<sampleBuffer> &samples,
-                         std::vector<size_t> &params) {
-    }
+                         std::vector<size_t> &params){
 
-  private:
-  };
-
-  class MuteConverter: public Converter {
-  public:
-    MuteConverter() = default;
-    void process(sampleBuffer &sample1, std::vector<sampleBuffer> &samples,
-                 std::vector<size_t> &params) override;
+    };
 
   private:
   };
@@ -50,11 +40,23 @@ namespace conv {
   class MixConverter: public Converter {
   public:
     MixConverter() = default;
+    ~MixConverter() override= default;
     void process(sampleBuffer &sample1, std::vector<sampleBuffer> &samples,
                  std::vector<size_t> &params) override;
 
   private:
   };
+
+  class MuteConverter: public conv::Converter {
+  public:
+    MuteConverter() = default;
+    ~MuteConverter() override = default;
+    void process(conv::sampleBuffer &sample1, std::vector<conv::sampleBuffer> &samples,
+                 std::vector<size_t> &params) override;
+  private:
+  };
+  class MuteConverter;
+  class MixConverter;
 
   class ConverterInterface {
   public:
@@ -82,7 +84,7 @@ namespace conv {
       std::shared_ptr<Converter> converter = nullptr;
       size_t stream = 0;
       std::vector<size_t> params{};
-    }curTask_;
+    } curTask_;
 
     /*
     struct task {
@@ -113,4 +115,5 @@ namespace conv {
     std::ifstream SettingsStream_;
   };
 }// namespace conv
-#endif// WAV_CONVERTERS_H
+
+#endif// CONVERTERS_CONVERTERS_HPP

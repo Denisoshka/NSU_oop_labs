@@ -1,5 +1,4 @@
-#include <cstring>
-#include "converters.h"
+#include "converters.hpp"
 /*
 params{taskFinished(0), secondsStart(1), secondsEnd(2), changedSeconds(3), totalSeconds(4)}
 sample1 = FinalStream

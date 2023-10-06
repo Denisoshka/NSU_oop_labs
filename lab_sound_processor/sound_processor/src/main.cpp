@@ -1,7 +1,8 @@
-#include "process/include/process.h"
-#include "cl_parser/include/cl_parser.h"
-
 #include <boost/program_options.hpp>
+
+#include "process.hpp"
+
+namespace po = boost::program_options;
 
 int main(int argc, char **argv){
   clParser parser{};
@@ -9,7 +10,7 @@ int main(int argc, char **argv){
     parser.printConverterDesc();
     return 0;
   }
-  boost::program_options::variables_map vm = parser.getVariablesMap();
+  po::variables_map vm = parser.getVariablesMap();
   process soundProcessor{vm};
   soundProcessor.executeConversions();
 

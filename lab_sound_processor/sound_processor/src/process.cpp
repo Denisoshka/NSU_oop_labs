@@ -1,7 +1,6 @@
-#include <process.h>
-
-#include "converters/include/converters.h"
-#include "wav"
+#include "process.hpp"
+#include "converters.hpp"
+#include "wav.hpp"
 
 // #include "converters/converter_tmp/converter_tmp.h"
 // namespace pt = boost::property_tree;

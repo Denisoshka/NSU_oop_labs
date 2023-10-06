@@ -1,11 +1,28 @@
-#ifndef WAV_WAV_H
-#define WAV_WAV_H
+#ifndef WAV_WAV_HPP
+#define WAV_WAV_HPP
 
 #include <fstream>
 #include <string>
 #include <memory>
 
 namespace WAV {
+
+#include <array>
+#include <cstdint>
+
+  const uint32_t RIFF = 0x46464952;
+  const uint32_t WAVE = 0x45564157;
+  const uint32_t FMT = 0x20746d66;
+  const uint32_t DATA = 0x61746164;
+
+  const uint16_t AUDIO_FORMAT_PCM = 0x0001;
+  const uint16_t NUM_CHANNELS = 1;
+  const uint32_t SAMPLING_RATE = 44100;
+  const uint16_t BITS_PER_BYTE = 8;
+  const uint16_t BITS_PER_SAMPLE = BITS_PER_BYTE * sizeof(int16_t);
+  const uint16_t BLOCK_ALIGN = BITS_PER_SAMPLE * NUM_CHANNELS / BITS_PER_BYTE;
+  const uint32_t BYTE_RATE = BLOCK_ALIGN * SAMPLING_RATE;
+
   struct RIFFChunk {
     uint32_t Id;
     uint32_t Size;
@@ -75,4 +92,4 @@ namespace WAV {
     // todo add data start
   };
 }// namespace WAV
-#endif// WAV_WAV_H
+#endif// WAV_WAV_HPP

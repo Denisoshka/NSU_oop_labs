@@ -1,4 +1,4 @@
-#include "wav.h"
+#include "wav.hpp"
 
 WAV::WAVWriter::WAVWriter(std::string &FilePath) {
   FilePath_ = FilePath;

@@ -1,7 +1,7 @@
 #ifndef WAV_PROCESS_H
 #define WAV_PROCESS_H
 
-// #include "wav"
+#include "cl_parser.hpp"
 
 #include <array>
 #include <boost/program_options.hpp>
