@@ -30,9 +30,7 @@ namespace conv {
     Converter() = default;
     virtual ~Converter() = default;
     virtual void process(sampleBuffer &sample1, std::vector<sampleBuffer> &samples,
-                         std::vector<size_t> &params){
-
-    };
+                         std::vector<size_t> &params) = 0;
 
   private:
   };

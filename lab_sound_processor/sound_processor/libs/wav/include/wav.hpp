@@ -1,14 +1,13 @@
 #ifndef WAV_WAV_HPP
 #define WAV_WAV_HPP
 
-#include <fstream>
-#include <string>
-#include <memory>
-
-namespace WAV {
-
 #include <array>
 #include <cstdint>
+#include <fstream>
+#include <memory>
+#include <string>
+
+namespace WAV {
 
   const uint32_t RIFF = 0x46464952;
   const uint32_t WAVE = 0x45564157;
@@ -50,8 +49,9 @@ namespace WAV {
     explicit SampleBuffer(size_t sampleRate);
     uint16_t *get();
     [[nodiscard]] size_t size() const;
+
   private:
-    std::unique_ptr< uint16_t[]> sample_;
+    std::unique_ptr<uint16_t[]> sample_;
     size_t curLen_;
     size_t len_;
   };

@@ -1,4 +1,4 @@
-#include "cl_parser.h"
+#include "cl_parser.hpp"
 
 #include <boost/program_options.hpp>
 
@@ -11,7 +11,7 @@ bool clParser::parseOptions(int argc, char **argv) {
           "config,c", po::value<std::string>(&SettingsFile_)->required(), "Configuration file")(
           "output,O", po::value<std::string>(&OutFile_)->required(), "Output file")(
           "input,I",
-          po::value<std::vector<std::string>>(&inputFiles_)->multitoken()->required(),
+          po::value<std::vector<std::string>>(&InputFiles_)->multitoken()->required(),
           "Input files");
 
   po::variables_map vm;
@@ -24,13 +24,13 @@ bool clParser::parseOptions(int argc, char **argv) {
     return false;
   }
   else{
-    vm_ = vm;
+    VM_ = vm;
     return true;
   }
 }
 
 po::variables_map clParser::getVariablesMap() {
-  return vm_;
+  return VM_;
 }
 
 

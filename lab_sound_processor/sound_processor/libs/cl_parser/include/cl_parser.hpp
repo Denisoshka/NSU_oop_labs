@@ -9,7 +9,7 @@ namespace po = boost::program_options;
 
 class clParser {
 public:
-  explicit clParser() = default;
+  clParser() = default;
   bool parseOptions(int argc, char **argv);
   void printConverterDesc();
   po::variables_map getVariablesMap();
@@ -17,8 +17,8 @@ public:
 private:
   std::string OutFile_;
   std::string SettingsFile_;
-  std::vector<std::string> inputFiles_;
-  po::variables_map vm_;
+  std::vector<std::string> InputFiles_;
+  po::variables_map VM_;
 };
 
 

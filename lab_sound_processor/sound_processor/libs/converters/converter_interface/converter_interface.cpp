@@ -17,11 +17,13 @@ bool conv::ConverterInterface::setTask() {
   curTask_ = std::move(Pipeline_.front());
   Pipeline_.pop();
   TaskFinished_ = false;
+
+  return true;
 }
 
 void conv::ConverterInterface::executeTask(sampleBuffer &sampleOut,
                                            std::vector<sampleBuffer> &samples) {
-  //  std::vector<size_t> params{secondsStart_, secondsEnd_, changedSeconds_, totalSeconds_};
+  //  std::vector<size_t> params{secondsStart_, secondsEnd_, changedSeconds_};
   curTask_.converter->process(sampleOut, samples, curTask_.params);
   TaskFinished_ = curTask_.params[0];
 }
