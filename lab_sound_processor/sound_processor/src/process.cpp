@@ -48,7 +48,7 @@ void process::executeConversions() {
 
     std::vector<conv::sampleBuffer> samples;
     while( !interface.taskFinished() || interface.curSec() < wavReaderSub.getDuration() ) {
-      //      todo переделать эту поеботу на нормыльный выбор сэмплов
+      //      todo переделать эту @@@ на нормыльный выбор сэмплов
       if( interface.curFile() != FileOutPath_ ) {
         wavReaderSub.readSample(subSampleIn, interface.curSec());
         samples[0] = convertFromWAVSampleBuffer(subSampleIn);

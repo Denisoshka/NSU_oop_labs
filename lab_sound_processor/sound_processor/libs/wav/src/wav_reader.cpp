@@ -81,7 +81,7 @@ void WAV::WAVReader::findData(uint32_t chunkId) {
       throw StreamFailure(FilePath_);
     }
     dataStart_ += sizeof(Data_);
-    //    todo блять я чот сомнеавюсь что дата с этого момента начинается
+    //    todo я чот сомнеавюсь что дата с этого момента начинается
     if( Data_.Id == chunkId ) {
       return;
     }
