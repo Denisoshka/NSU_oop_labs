@@ -13,17 +13,20 @@ process::process(const po::variables_map& vm)
 }
 
 void process::setSettings(po::variables_map& vm) {
+  sampleRate_ = WAV::SAMPLE_RATE;
   SettingsFile_ = vm["config"].as<std::string>();
   FileOutPath_ = vm["output"].as<std::string>();
-  FileLinks_ = vm["Input files"].as<std::vector<std::string>>();
+  FileLinks_ = vm["input"].as<std::vector<std::string>>();
 }
 
 void process::executeConversions() {
   conv::ConverterInterface interface;
 
+  WAV::WAVWriter wavWriterOut{FileOutPath_};
+  wavWriterOut.writeHeader(WAV::stdRIFFChunk, WAV::stdFormatChunk, WAV::stdDataChunk);
+
   WAV::WAVReader wavReaderSub;
   WAV::WAVReader wavReaderOut{FileOutPath_};
-  WAV::WAVWriter wavWriterOut{FileOutPath_};
 
   std::vector<int16_t> mainSampleOut;
   mainSampleOut.reserve(sampleRate_);
@@ -32,9 +35,8 @@ void process::executeConversions() {
   std::vector<int16_t> subSampleIn;
   subSampleIn.reserve(sampleRate_);
 
-  wavWriterOut.writeHeader(WAV::stdRIFFChunk, WAV::stdFormatChunk, WAV::stdDataChunk);
   // todo fix algo
-  size_t duration = 0;
+  interface.setSettings(FileOutPath_, FileLinks_);
   while( !interface.setTask() ) {
     wavReaderSub.open(interface.curFile());
 
@@ -52,15 +54,15 @@ void process::executeConversions() {
       interface.executeTask(mainSampleOut, samples);
       wavWriterOut.writeSample(mainSampleOut, interface.curSec());
     }
-    duration = (interface.curSec() > duration) ? interface.curSec() : duration;
+    duration_ = (interface.curSec() > duration_) ? interface.curSec() : duration_;
   }
 
   WAV::RIFFChunk finalRiffChunk{WAV::stdRIFFChunk};
   finalRiffChunk.Size = (sizeof(WAV::stdRIFFChunk)
                          - (sizeof(WAV::stdRIFFChunk.Id) + sizeof(WAV::stdRIFFChunk.Size)))
                       + sizeof(WAV::stdFormatChunk) + sizeof(WAV::DataChunk)
-                      + (duration * sizeof(uint16_t) * sampleRate_);
+                      + (duration_ * sizeof(uint16_t) * sampleRate_);
   WAV::DataChunk finalDataChunk{WAV::stdDataChunk};
-  finalDataChunk.Size = duration * sizeof(uint16_t) * sampleRate_;
+  finalDataChunk.Size = duration_ * sizeof(uint16_t) * sampleRate_;
   wavWriterOut.writeHeader(finalRiffChunk, WAV::stdFormatChunk, finalDataChunk);
 }
