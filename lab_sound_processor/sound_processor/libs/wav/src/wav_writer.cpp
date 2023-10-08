@@ -1,16 +1,12 @@
 #include "wav.hpp"
 #include "wav_exceptions.hpp"
 
-WAV::WAVWriter::WAVWriter(std::string &FilePath) {
+WAV::WAVWriter::WAVWriter(const std::string& FilePath) {
   open(FilePath);
   FilePath_ = FilePath;
 }
 
-WAV::WAVWriter::~WAVWriter() {
-  FileOut_.close();
-}
-
-void WAV::WAVWriter::open(std::string &FilePath) {
+void WAV::WAVWriter::open(const std::string& FilePath) {
   if( FilePath_ == FilePath ) {
     return;
   }
@@ -23,33 +19,34 @@ void WAV::WAVWriter::open(std::string &FilePath) {
   }
 }
 
-void WAV::WAVWriter::writeSample(SampleBuffer &sample, size_t second) {
-  if( FileOut_.seekp(dataStart_ + second * sample.size() * sizeof(*sample.get()),
+void WAV::WAVWriter::writeSample(const std::vector<int16_t>& sample, const size_t second) {
+  if( FileOut_.seekp(dataStart_ + second * sample.size() * sizeof(*sample.data()),
                      std::ios_base::beg)
               .fail() ) {
     throw StreamFailure(FilePath_);
   }
-  if( FileOut_.write(reinterpret_cast<char *>(sample.get()), sample.size() * sizeof(*sample.get()))
+  if( FileOut_.write(reinterpret_cast<const char*>(sample.data()),
+                     sample.size() * sizeof(*sample.data()))
               .fail() ) {
     throw StreamFailure(FilePath_);
   }
 }
 
-void WAV::WAVWriter::writeHeader(RIFFChunk &riffChunk, FormatChunk &formatChunk,
-                                 DataChunk &dataChunk) {
+void WAV::WAVWriter::writeHeader(const RIFFChunk& riffChunk, const FormatChunk& formatChunk,
+                                 const DataChunk& dataChunk) {
   FileOut_.seekp(std::ios_base::beg);
   dataStart_ = 0;
-  if( FileOut_.write(reinterpret_cast<char *>(&riffChunk), sizeof(riffChunk)).fail() ) {
+  if( FileOut_.write(reinterpret_cast<const char*>(&riffChunk), sizeof(riffChunk)).fail() ) {
     throw StreamFailure(FilePath_);
   }
   dataStart_ += sizeof(riffChunk);
 
-  if( FileOut_.write(reinterpret_cast<char *>(&formatChunk), sizeof(formatChunk)).fail() ) {
+  if( FileOut_.write(reinterpret_cast<const char*>(&formatChunk), sizeof(formatChunk)).fail() ) {
     throw StreamFailure(FilePath_);
   }
   dataStart_ += sizeof(formatChunk);
 
-  if( FileOut_.write(reinterpret_cast<char *>(&dataChunk), sizeof(dataChunk)).fail() ) {
+  if( FileOut_.write(reinterpret_cast<const char*>(&dataChunk), sizeof(dataChunk)).fail() ) {
     throw StreamFailure(FilePath_);
   }
   dataStart_ += sizeof(dataChunk);

@@ -1,16 +1,16 @@
 #ifndef PROCESS_CL_PARSER_H
 #define PROCESS_CL_PARSER_H
 
+#include <boost/program_options.hpp>
 #include <iostream>
 #include <vector>
-#include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
 
 class clParser {
 public:
   clParser() = default;
-  bool parseOptions(int argc, char **argv);
+  bool parseOptions(int argc, char** argv);
   void printConverterDesc();
   po::variables_map getVariablesMap();
 

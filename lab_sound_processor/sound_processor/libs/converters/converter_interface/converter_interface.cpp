@@ -3,59 +3,57 @@
 
 #include <boost/tokenizer.hpp>
 #include <regex>
+
 const int TaskTmpLen_ = 100;
 
 bool conv::ConverterInterface::setTask() {
   if( Pipeline_.empty() ) {
-    fillPipeline();
+    fillPipeline_();
   }
-  if (Pipeline_.empty()){
+  if( Pipeline_.empty() ) {
     return false;
   }
 
   curTask_ = std::move(Pipeline_.front());
   Pipeline_.pop();
-  TaskFinished_ = false;
 
   return true;
 }
 
-void conv::ConverterInterface::executeTask(sampleBuffer &sampleOut,
-                                           std::vector<sampleBuffer> &samples) {
-  //  std::vector<size_t> params{secondsStart_, secondsEnd_, changedSeconds_};
-  curTask_.converter->process(sampleOut, samples, curTask_.params);
-  TaskFinished_ = curTask_.params[0];
+void conv::ConverterInterface::executeTask(std::vector<int16_t>& sampleOut,
+                                           const std::vector<std::vector<int16_t>>& samples) {
+  curTask_.converter->process(sampleOut, samples, curTask_);
 }
 
-void conv::ConverterInterface::setSettings(std::string &FilePath,
-                                           std::vector<std::string> &fileLinks) {
+void conv::ConverterInterface::setSettings(const std::string& FilePath,
+                                           const std::vector<std::string>& fileLinks) {
   SettingsPath_ = FilePath;
   SettingsStream_.open(SettingsPath_, std::ios_base::in);
   if( SettingsStream_.fail() ) {
-    throw StreamFailure(SettingsPath_);// todo make ex
+    throw StreamFailure(SettingsPath_);
   }
 
-  setFileLinks(fileLinks);
-  fillPipeline();
+  FileLinks_ = fileLinks;
+  fillPipeline_();
 }
 
-void conv::ConverterInterface::fillPipeline() {
-  std::array<char, TaskTmpLen_> taskTmp{};
+void conv::ConverterInterface::fillPipeline_() {
+  std::string task;
   //  std::string taskTmp;
   boost::char_separator<char> sep(" ");
 
-  while( Pipeline_.size() != TasksCount_ || !SettingsStream_.eof() ) {
-    if( SettingsStream_.getline(taskTmp.data(), TaskTmpLen_).fail() ) {
-      throw StreamFailure(SettingsPath_);// (todo) make ex
+  while( Pipeline_.size() != TasksCount_ && std::getline(SettingsStream_, task) ) {
+    if( SettingsStream_.fail() ) {
+      throw StreamFailure(SettingsPath_);
     }
-    if( taskTmp.front() == '#' ) {
+    if( task.empty() || task[0] == '#' ) {
       continue;
     }
-    TaskInf_ taskInf_;
-    boost::tokenizer<boost::char_separator<char>> tokens(taskTmp, sep);
+    TaskInf taskInf_;
+    boost::tokenizer<boost::char_separator<char>> tokens(task, sep);
     size_t tokenPosition = 0;
     // todo переписать на boost po
-    for( const std::string &token: tokens ) {
+    for( const std::string& token: tokens ) {
       if( tokenPosition == settingsPos::converter && regex_match(token, ConverterName_) ) {
         if( !converters_.contains(token) ) {
           throw UnckonwConverter(token);
@@ -65,16 +63,19 @@ void conv::ConverterInterface::fillPipeline() {
       else if( regex_match(token, Pass_) ) {
       }
       else if( tokenPosition == settingsPos::stream && (regex_match(token, StreamName_)) ) {
-        taskInf_.stream = std::atoll(token.data());
+        taskInf_.stream = std::atoll(token.data() + 1);
       }
       else if( tokenPosition == settingsPos::timeStart && regex_match(token, Time_) ) {
         taskInf_.startTime = std::atoll(token.data());
       }
-      else if( tokenPosition == settingsPos::timeEnd ) {
+      else if( tokenPosition == settingsPos::timeEnd && regex_match(token, Time_) ) {
         taskInf_.endTime = std::atoll(token.data());
       }
+      else if( tokenPosition > settingsPos::timeEnd && regex_match(token, Time_) ) {
+        taskInf_.otherParams.push_back(std::atoll(token.data()));
+      }
       else {
-        throw IncorrectSettingsFormat(token);
+        throw IncorrectSettingsFormat(task);
       }
       tokenPosition++;
     }
@@ -82,16 +83,12 @@ void conv::ConverterInterface::fillPipeline() {
   }
 }
 
-void conv::ConverterInterface::setFileLinks(std::vector<std::string> &fileLinks) {
-  FileLinks_ = fileLinks;
-}
-
-void conv::ConverterInterface::setFileLinks(const std::vector<std::string> &fileLinks) {
+void conv::ConverterInterface::setFileLinks_(const std::vector<std::string>& fileLinks) {
   FileLinks_ = fileLinks;
 }
 
 bool conv::ConverterInterface::taskFinished() const {
-  return TaskFinished_;
+  return curTask_.taskFinished;
 }
 
 std::string conv::ConverterInterface::curFile() {
@@ -99,23 +96,5 @@ std::string conv::ConverterInterface::curFile() {
 }
 
 size_t conv::ConverterInterface::curSec() const {
-  // params{taskFinished(0), secondsStart(1), secondsEnd(2), changedSeconds(3), totalSeconds(4)}
-  return curTask_.params[3];
+  return curTask_.curSec;
 }
-
-/*
-void conv::ConverterInterface::open(std::string &&SettingsFile) {
-  //  todo rvalue?
-  SettingsPath_ = std::move(SettingsFile);
-  SettingsStream_.open(SettingsPath_, std::ios_base::in);
-  if( SettingsStream_.fail() ) {
-    throw;
-  }
-}
-*/
-
-/*conv::sampleBuffer::sampleBuffer(size_t sampleRate)
-    : sample_(std::make_unique<uint16_t[]>(sampleRate))
-    , curLen_(sampleRate)
-    , len_(sampleRate) {
-}*/

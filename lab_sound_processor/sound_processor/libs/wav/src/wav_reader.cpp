@@ -1,16 +1,12 @@
 #include "wav.hpp"
 #include "wav_exceptions.hpp"
 
-WAV::WAVReader::WAVReader(std::string &FilePath) {
+WAV::WAVReader::WAVReader(std::string& FilePath) {
   open(FilePath);
   FilePath_ = FilePath;
 }
-/*
-WAV::WAVReader::~WAVReader() {
-  FileIn_.close();
-}*/
 
-void WAV::WAVReader::open(std::string &FilePath) {
+void WAV::WAVReader::open(const std::string& FilePath) {
   if( FilePath_ == FilePath ) {
     findData(DATA);
     return;
@@ -32,8 +28,7 @@ void WAV::WAVReader::open(std::string &FilePath) {
 }
 
 void WAV::WAVReader::readHeader() {
-  //  RIFFChunk headerRiff{};
-  FileIn_.read(reinterpret_cast<char *>(&HeaderRiff_), sizeof(HeaderRiff_));
+  FileIn_.read(reinterpret_cast<char*>(&HeaderRiff_), sizeof(HeaderRiff_));
   dataStart_ += sizeof(HeaderRiff_);
   if( FileIn_.fail() ) {
     throw StreamFailure(FilePath_);
@@ -45,8 +40,7 @@ void WAV::WAVReader::readHeader() {
     throw IncorrectFormatType(FilePath_);
   }
 
-  //  FormatChunk headerFormat{};
-  FileIn_.read(reinterpret_cast<char *>(&HeaderFormat_), sizeof(HeaderFormat_));
+  FileIn_.read(reinterpret_cast<char*>(&HeaderFormat_), sizeof(HeaderFormat_));
   dataStart_ += sizeof(HeaderFormat_);
   if( FileIn_.fail() ) {
     throw StreamFailure(FilePath_);
@@ -77,7 +71,7 @@ void WAV::WAVReader::findData(uint32_t chunkId) {
   }
 
   while( !FileIn_.eof() ) {
-    if( FileIn_.read(reinterpret_cast<char *>(&Data_), sizeof(Data_)).fail() ) {
+    if( FileIn_.read(reinterpret_cast<char*>(&Data_), sizeof(Data_)).fail() ) {
       throw StreamFailure(FilePath_);
     }
     dataStart_ += sizeof(Data_);
@@ -92,12 +86,12 @@ void WAV::WAVReader::findData(uint32_t chunkId) {
   throw ChunkNotFound(FilePath_, chunkId);
 }
 
-void WAV::WAVReader::readSample(SampleBuffer &sample, size_t second) {
-  if( FileIn_.seekg(dataStart_ + second * sample.size() * sizeof(*sample.get()), std::fstream::cur)
+void WAV::WAVReader::readSample(std::vector<int16_t>& sample, const size_t second) {
+  if( FileIn_.seekg(dataStart_ + second * sample.size() * sizeof(*sample.data()), std::fstream::cur)
               .fail() ) {
     throw StreamFailure(FilePath_);
   }
-  if( FileIn_.read(reinterpret_cast<char *>(sample.get()), sample.size() * sizeof(*sample.get()))
+  if( FileIn_.read(reinterpret_cast<char*>(sample.data()), sample.size() * sizeof(*sample.data()))
               .fail() ) {
     throw StreamFailure(FilePath_);
   }

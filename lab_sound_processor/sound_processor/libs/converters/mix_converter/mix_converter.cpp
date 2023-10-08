@@ -1,17 +1,22 @@
 #include "converters.hpp"
-//#include
+
+// #include
 /*
 params{taskFinished(0), secondsStart(1), secondsEnd(2), changedSeconds(3)}
 sample1 = FinalStream
 sample2 = array of inputSamples
 */
-void conv::MixConverter::process(sampleBuffer &sample1, std::vector<sampleBuffer> &samples,
-                           std::vector<size_t> &params) {
-  if (params[1] <= params[3] && params[3] < params[2]) {
-    for( size_t i = 0; i < sample1.curLen_; ++i ) {
-      sample1.sample_[i] = sample1.sample_[i] / 2 + samples[0].sample_[i] / 2;
+void conv::MixConverter::process(std::vector<int16_t>& sample1,
+                                 const std::vector<std::vector<int16_t>>& samples,
+                                 TaskInf& params) {
+  params.curSec = (!params.curSec) ? params.startTime : params.curSec;
+
+  if( params.startTime <= params.curSec && params.curSec < params.endTime ) {
+    for( size_t i = 0; i < sample1.size(); ++i ) {
+      sample1[i] = sample1[i] / 2 + samples[0][i] / 2;
     }
+    params.curSec++;
   }
-  ++params[3];
-  params[0] = params[3] == (params[2] - params[1] + 1);
+
+  params.taskFinished = params.curSec == params.endTime;
 }

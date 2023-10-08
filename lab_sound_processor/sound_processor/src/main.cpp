@@ -4,9 +4,9 @@
 
 namespace po = boost::program_options;
 
-int main(int argc, char **argv){
+int main(int argc, char** argv) {
   clParser parser{};
-  if (!parser.parseOptions(argc, argv)){
+  if( !parser.parseOptions(argc, argv) ) {
     parser.printConverterDesc();
     return 0;
   }

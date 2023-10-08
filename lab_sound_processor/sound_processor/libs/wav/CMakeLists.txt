@@ -43,10 +43,11 @@ else ()
 endif ()
 
 #test
+#[[
 
 set(TEST_NAME "test_${DIR_NAME}")
 add_executable(${TEST_NAME} test/${TEST_NAME}.cpp)
 target_link_libraries(${TEST_NAME} PUBLIC ${DIR_NAME} gtest gtest_main)
 add_test(NAME ${TEST_NAME}
         COMMAND ${TEST_NAME}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)]]

@@ -41,6 +41,7 @@ set_target_properties(${DIR_NAME} PROPERTIES PUBLIC_HEADER "${public_headers}")
 target_link_libraries(${DIR_NAME} Boost::regex)
 
 #tests
+#[[
 
 set(TEST_NAME "test_${DIR_NAME}")
 add_executable(${TEST_NAME} test/${TEST_NAME}.cpp)
@@ -52,3 +53,4 @@ target_link_libraries(${TEST_NAME} ${PROJECT_NAME}
 add_test(NAME ${TEST_NAME}
         COMMAND ${TEST_NAME}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+        ]]

@@ -15,19 +15,15 @@ namespace po = boost::program_options;
 class process {
 public:
   process() = default;
-  process(po::variables_map &vm);
-  void setSettings(po::variables_map &vm);
+  process(const po::variables_map& vm);
+  void setSettings(po::variables_map& vm);
   void executeConversions();
 
 private:
-  uint32_t sampleRate_;
-
+  int32_t sampleRate_;
   std::string SettingsFile_;
   std::string FileOutPath_;
   std::vector<std::string> FileLinks_;
-
-  std::ifstream SettingsIn_;
-  std::ofstream FileOut_;
 };
 
 #endif// WAV_PROCESS_H

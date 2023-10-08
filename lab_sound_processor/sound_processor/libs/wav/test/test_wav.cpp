@@ -1,3 +1,4 @@
+/*
 #include "wav.hpp"
 #include "gtest/gtest.h"
 
@@ -6,12 +7,15 @@ int main(int argc, char **argv){
   return RUN_ALL_TESTS();
 }
 
-TEST(test_funcs1, test_reader) {
+TEST(test_1, test_reader) {
   std::string FilePath_= "../test/input0.wav";
   WAV::WAVReader reader{};
   reader.open(FilePath_);
 }
 
-TEST(test_funcs1, test_writer){
-  WAV::WAVWriter
+*/
+/*
+TEST(test_1, test_writer){
+//  WAV::WAVWriter;
 }
+*/

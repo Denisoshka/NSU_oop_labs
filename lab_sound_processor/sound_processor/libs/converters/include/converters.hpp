@@ -19,7 +19,7 @@ namespace conv {
     mute,
   };
 
-  enum settingsPos{
+  enum settingsPos {
     converter,
     stream,
     timeStart,
@@ -27,17 +27,27 @@ namespace conv {
   };
 
   struct sampleBuffer {
-    uint16_t *sample_;
+    uint16_t* sample_;
     size_t curLen_;
     size_t len_;
+  };
+
+  struct TaskInf {
+    std::shared_ptr<Converter> converter = nullptr;
+    std::vector<size_t> otherParams{};
+    size_t stream = 0;
+    size_t startTime = 0;
+    size_t curSec = 0;
+    size_t endTime = SIZE_MAX;
+    bool taskFinished = false;
   };
 
   class Converter {
   public:
     Converter() = default;
     virtual ~Converter() = default;
-    virtual void process(sampleBuffer &sample1, std::vector<sampleBuffer> &samples,
-                         std::vector<size_t> &params) = 0;
+    virtual void process(std::vector<int16_t>& sample1,
+                         const std::vector<std::vector<int16_t>>& samples, TaskInf& params) = 0;
 
   private:
   };
@@ -45,9 +55,9 @@ namespace conv {
   class MixConverter: public Converter {
   public:
     MixConverter() = default;
-    ~MixConverter() override= default;
-    void process(sampleBuffer &sample1, std::vector<sampleBuffer> &samples,
-                 std::vector<size_t> &params) override;
+    ~MixConverter() override = default;
+    void process(std::vector<int16_t>& sample1, const std::vector<std::vector<int16_t>>& samples,
+                 TaskInf& params) override;
 
   private:
   };
@@ -56,54 +66,30 @@ namespace conv {
   public:
     MuteConverter() = default;
     ~MuteConverter() override = default;
-    void process(conv::sampleBuffer &sample1, std::vector<conv::sampleBuffer> &samples,
-                 std::vector<size_t> &params) override;
+    void process(std::vector<int16_t>& sample1, const std::vector<std::vector<int16_t>>& samples,
+                 TaskInf& params) override;
+
   private:
   };
-  class MuteConverter;
-  class MixConverter;
 
   class ConverterInterface {
   public:
-    //  std::string getTask(size_t &FileIn, size_t &start, size_t &end);
     ConverterInterface() = default;
-    //    void open(std::string &&SettingsFile);
     bool setTask();
-    void setSettings(std::string &FilePath, std::vector<std::string> &fileLinks);
-    void setFileLinks(const std::vector<std::string> &fileLinks);
-    void fillPipeline();
-    void executeTask(sampleBuffer &sampleOut, std::vector<sampleBuffer> &samples);
-
+    void setSettings(const std::string& FilePath, const std::vector<std::string>& fileLinks);
+    void executeTask(std::vector<int16_t>& sampleOut,
+                     const std::vector<std::vector<int16_t>>& samples);
     bool taskFinished() const;
-
     std::string curFile();
     size_t curSec() const;
 
   private:
-    void setFileLinks(std::vector<std::string> &fileLinks);
+    void fillPipeline_();
+    void setFileLinks_(const std::vector<std::string>& fileLinks);
+    //    void setFileLinks(std::vector<std::string> &fileLinks);
 
     const int TasksCount_ = 10;
-    bool TaskFinished_ = false;
-
-    struct TaskInf_ {
-      std::shared_ptr<Converter> converter = nullptr;
-      size_t stream = 0;
-      bool taskFinished = false;
-      size_t startTime = 0;
-      size_t endTime = SIZE_MAX;
-      std::vector<size_t> params{};
-    } curTask_;
-
-    /*
-    struct task {
-      Converter converter;
-      std::vector<size_t> params;
-    } Task_;*/
-
-    struct {
-      size_t CurFile_ = 0;
-      size_t CurSecond_ = 0;
-    } FileInf_;
+    TaskInf curTask_;
 
     std::map<std::string, std::shared_ptr<Converter>> converters_{
             {"mix",  std::make_shared<MixConverter>() },
@@ -111,11 +97,11 @@ namespace conv {
     };
 
     std::regex ConverterName_ = std::regex(R"(\w+)");
-    std::regex StreamName_ = std::regex(R"($\d+)");
+    std::regex StreamName_ = std::regex(R"(\$\d+)");
     std::regex Time_ = std::regex(R"(\d+)");
     std::regex Pass_ = std::regex(R"(--)");
 
-    std::queue<TaskInf_> Pipeline_;
+    std::queue<TaskInf> Pipeline_;
 
     std::vector<std::string> FileLinks_;
     std::string SettingsPath_;
