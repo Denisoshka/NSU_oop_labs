@@ -5,10 +5,10 @@ WAV::WAVReader::WAVReader(std::string &FilePath) {
   open(FilePath);
   FilePath_ = FilePath;
 }
-
+/*
 WAV::WAVReader::~WAVReader() {
   FileIn_.close();
-}
+}*/
 
 void WAV::WAVReader::open(std::string &FilePath) {
   if( FilePath_ == FilePath ) {

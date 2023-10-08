@@ -65,7 +65,7 @@ namespace WAV {
   public:
     WAVReader() = default;
     WAVReader(std::string &FilePath);
-    ~WAVReader();
+    ~WAVReader() = default;
     void open(std::string &FilePath);
     void readSample(SampleBuffer &sample, size_t second);
     size_t getDuration() const;

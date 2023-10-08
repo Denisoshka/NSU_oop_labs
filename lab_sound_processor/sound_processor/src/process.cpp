@@ -44,7 +44,7 @@ void process::executeConversions() {
   wavWriterOut.writeHeader(stdRIFFChunk, stdFormatChunk, stdDataChunk);
   // todo fix algo
   while( !interface.setTask() ) {
-    //    wavReaderSub.open(interface.curFile());
+    wavReaderSub.open(interface.curFile());
 
     std::vector<conv::sampleBuffer> samples;
     while( !interface.taskFinished() || interface.curSec() < wavReaderSub.getDuration() ) {
@@ -63,5 +63,4 @@ void process::executeConversions() {
       wavWriterOut.writeSample(mainSampleOut, interface.curSec());
     }
   }
-//  wavWriterOut.writeHeader();
 }
