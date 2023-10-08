@@ -19,6 +19,13 @@ namespace conv {
     mute,
   };
 
+  enum settingsPos{
+    converter,
+    stream,
+    timeStart,
+    timeEnd,
+  };
+
   struct sampleBuffer {
     uint16_t *sample_;
     size_t curLen_;
@@ -73,7 +80,7 @@ namespace conv {
     size_t curSec() const;
 
   private:
-    void setFileLinks(std::vector<std::string> &&fileLinks);
+    void setFileLinks(std::vector<std::string> &fileLinks);
 
     const int TasksCount_ = 10;
     bool TaskFinished_ = false;
@@ -81,6 +88,9 @@ namespace conv {
     struct TaskInf_ {
       std::shared_ptr<Converter> converter = nullptr;
       size_t stream = 0;
+      bool taskFinished = false;
+      size_t startTime = 0;
+      size_t endTime = SIZE_MAX;
       std::vector<size_t> params{};
     } curTask_;
 
@@ -103,7 +113,7 @@ namespace conv {
     std::regex ConverterName_ = std::regex(R"(\w+)");
     std::regex StreamName_ = std::regex(R"($\d+)");
     std::regex Time_ = std::regex(R"(\d+)");
-    std::regex PassTime_ = std::regex(R"(-)");
+    std::regex Pass_ = std::regex(R"(--)");
 
     std::queue<TaskInf_> Pipeline_;
 

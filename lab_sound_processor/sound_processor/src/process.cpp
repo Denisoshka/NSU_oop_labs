@@ -41,22 +41,20 @@ void process::executeConversions() {
   WAV::SampleBuffer mainSampleIn{sampleRate_};
   WAV::SampleBuffer subSampleIn{sampleRate_};
 
+  wavWriterOut.writeHeader(stdRIFFChunk, stdFormatChunk, stdDataChunk);
   // todo fix algo
-  while( true ) {
-    if( !interface.setTask() ) {
-      break;
-    }
+  while( !interface.setTask() ) {
     //    wavReaderSub.open(interface.curFile());
 
     std::vector<conv::sampleBuffer> samples;
     while( !interface.taskFinished() || interface.curSec() < wavReaderSub.getDuration() ) {
       //      todo переделать эту поеботу на нормыльный выбор сэмплов
       if( interface.curFile() != FileOutPath_ ) {
-        wavReaderSub.getSample(subSampleIn, interface.curSec());
+        wavReaderSub.readSample(subSampleIn, interface.curSec());
         samples[0] = convertFromWAVSampleBuffer(subSampleIn);
       }
       else {
-        wavReaderOut.getSample(mainSampleOut, interface.curSec());
+        wavReaderOut.readSample(mainSampleOut, interface.curSec());
         samples[0] = convertFromWAVSampleBuffer(mainSampleOut);
       }
 

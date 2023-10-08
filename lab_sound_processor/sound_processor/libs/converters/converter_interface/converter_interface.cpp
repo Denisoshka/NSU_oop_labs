@@ -1,16 +1,15 @@
-#include "converter_interface.hpp"
+#include "converter_exceptions.hpp"
 #include "converters.hpp"
 
 #include <boost/tokenizer.hpp>
 #include <regex>
-
 const int TaskTmpLen_ = 100;
 
 bool conv::ConverterInterface::setTask() {
   if( Pipeline_.empty() ) {
     fillPipeline();
   }
-  if( Pipeline_.empty() ) {
+  if (Pipeline_.empty()){
     return false;
   }
 
@@ -33,67 +32,58 @@ void conv::ConverterInterface::setSettings(std::string &FilePath,
   SettingsPath_ = FilePath;
   SettingsStream_.open(SettingsPath_, std::ios_base::in);
   if( SettingsStream_.fail() ) {
-    throw;// todo make ex
+    throw StreamFailure(SettingsPath_);// todo make ex
   }
 
-  setFileLinks(std::move(fileLinks));
+  setFileLinks(fileLinks);
   fillPipeline();
 }
 
 void conv::ConverterInterface::fillPipeline() {
   std::array<char, TaskTmpLen_> taskTmp{};
+  //  std::string taskTmp;
   boost::char_separator<char> sep(" ");
 
-  SettingsStream_.eof();
-
-  while( Pipeline_.size() != TasksCount_ ) {
+  while( Pipeline_.size() != TasksCount_ || !SettingsStream_.eof() ) {
     if( SettingsStream_.getline(taskTmp.data(), TaskTmpLen_).fail() ) {
-      throw;// (todo) make ex
+      throw StreamFailure(SettingsPath_);// (todo) make ex
     }
-
     if( taskTmp.front() == '#' ) {
       continue;
     }
-
     TaskInf_ taskInf_;
-
     boost::tokenizer<boost::char_separator<char>> tokens(taskTmp, sep);
+    size_t tokenPosition = 0;
     // todo переписать на boost po
-    for( const auto &token: tokens ) {
-      if( regex_match(token, ConverterName_) ) {
-        if( taskInf_.converter ) {
-          throw;// (todo) make ex
+    for( const std::string &token: tokens ) {
+      if( tokenPosition == settingsPos::converter && regex_match(token, ConverterName_) ) {
+        if( !converters_.contains(token) ) {
+          throw UnckonwConverter(token);
         }
         taskInf_.converter = converters_[token];
       }
-      else if( regex_match(token, StreamName_) ) {
+      else if( regex_match(token, Pass_) ) {
+      }
+      else if( tokenPosition == settingsPos::stream && (regex_match(token, StreamName_)) ) {
         taskInf_.stream = std::atoll(token.data());
       }
-      else if( regex_match(token, Time_) ) {
-        if( !taskInf_.params.size() ) {
-          taskInf_.params.push_back(0);// пушим taskFinished
-        }
-        size_t paramTime = std::atoll(token.data());
-        taskInf_.params.push_back(paramTime);
+      else if( tokenPosition == settingsPos::timeStart && regex_match(token, Time_) ) {
+        taskInf_.startTime = std::atoll(token.data());
       }
-      else if( regex_match(token, PassTime_) ) {
-        if( !taskInf_.params.size() ) {
-          taskInf_.params.push_back(0);
-        }
-        else if( taskInf_.params.size() == 1 ) {
-          taskInf_.params.push_back(SIZE_MAX);
-        }
+      else if( tokenPosition == settingsPos::timeEnd ) {
+        taskInf_.endTime = std::atoll(token.data());
       }
       else {
-        throw;// (todo) make ex
+        throw IncorrectSettingsFormat(token);
       }
+      tokenPosition++;
     }
     Pipeline_.push(std::move(taskInf_));
   }
 }
 
-void conv::ConverterInterface::setFileLinks(std::vector<std::string> &&fileLinks) {
-  FileLinks_ = std::move(fileLinks);
+void conv::ConverterInterface::setFileLinks(std::vector<std::string> &fileLinks) {
+  FileLinks_ = fileLinks;
 }
 
 void conv::ConverterInterface::setFileLinks(const std::vector<std::string> &fileLinks) {

@@ -1,41 +1,29 @@
 #include "wav.hpp"
-/*
+#include "wav_exceptions.hpp"
 
-WAV::WAVReader::WAVReader(){
-}
-*/
-
-
-WAV::WAVReader::WAVReader(std::string &FilePath){
+WAV::WAVReader::WAVReader(std::string &FilePath) {
+  open(FilePath);
   FilePath_ = FilePath;
-  if( FilePath_.find(".wav") == std::string::npos ) {
-    throw;// todo make ex
-  }
+}
 
-  FileIn_.open(FilePath_, std::ios_base::binary);
-  if( FileIn_.fail() ) {
-    throw;// todo make ex
-  }
-
-  readHeader();
-
-  findData(DATA);
+WAV::WAVReader::~WAVReader() {
+  FileIn_.close();
 }
 
 void WAV::WAVReader::open(std::string &FilePath) {
-  if (FilePath_ == FilePath){
+  if( FilePath_ == FilePath ) {
     findData(DATA);
     return;
   }
 
   FilePath_ = FilePath;
   if( FilePath_.find(".wav") == std::string::npos ) {
-    throw;// todo make ex
+    throw IncorrectExtension(FilePath_);
   }
 
-  FileIn_.open(FilePath_, std::ios_base::binary);
+  FileIn_.open(FilePath_, std::ios::in | std::ios_base::binary);
   if( FileIn_.fail() ) {
-    throw;// todo make ex
+    throw StreamFailure(FilePath_);
   }
 
   readHeader();
@@ -45,73 +33,76 @@ void WAV::WAVReader::open(std::string &FilePath) {
 
 void WAV::WAVReader::readHeader() {
   //  RIFFChunk headerRiff{};
-  FileIn_.read((char *)&HeaderRiff_, sizeof(HeaderRiff_));
+  FileIn_.read(reinterpret_cast<char *>(&HeaderRiff_), sizeof(HeaderRiff_));
   dataStart_ += sizeof(HeaderRiff_);
   if( FileIn_.fail() ) {
-    throw;// todo make ex
+    throw StreamFailure(FilePath_);
   }
   if( HeaderRiff_.Id != RIFF ) {
-    throw;// todo make ex
+    throw IncorrectRIFFHeader(FilePath_);
   }
   if( HeaderRiff_.Format != WAVE ) {
-    throw;// todo make ex
+    throw IncorrectFormatType(FilePath_);
   }
 
   //  FormatChunk headerFormat{};
-  FileIn_.read((char *)&HeaderFormat_, sizeof(HeaderFormat_));
+  FileIn_.read(reinterpret_cast<char *>(&HeaderFormat_), sizeof(HeaderFormat_));
   dataStart_ += sizeof(HeaderFormat_);
   if( FileIn_.fail() ) {
-    throw;// todo make ex
+    throw StreamFailure(FilePath_);
   }
   if( HeaderFormat_.Id != FMT ) {
     throw;// todo make ex
   }
   if( HeaderFormat_.AudioFormat != AUDIO_FORMAT_PCM ) {
-    throw;// todo make ex
+    throw IncorrectEncodingFormat(FilePath_);
   }
   if( HeaderFormat_.NumChannels != NUM_CHANNELS ) {
-    throw;// todo make ex
+    throw IncorrectChannelsNumber(FilePath_);
   }
   if( HeaderFormat_.BitsPerSample != BITS_PER_SAMPLE ) {
-    throw;// todo make ex
+    throw IncorrectBitsPerSample(FilePath_);
   }
-  if( HeaderFormat_.SampleRate != SAMPLING_RATE ) {
-    throw;// todo make ex
+  if( HeaderFormat_.SampleRate != SAMPLE_RATE ) {
+    throw IncorrectSampleRate(FilePath_);
   }
 }
 
 void WAV::WAVReader::findData(uint32_t chunkId) {
-  if (dataStart_){
-    FileIn_.seekg(dataStart_, std::fstream::cur);
+  if( dataStart_ ) {
+    if( FileIn_.seekg(dataStart_, std::fstream::cur).fail() ) {
+      throw StreamFailure(FilePath_);
+    }
     return;
   }
 
-  while( true ) {
-    FileIn_.read((char *)&Data_, sizeof(Data_));
-    dataStart_ += sizeof(Data_);
-//    todo блять я чот сомнеавюсь что дата с этого момента начинается
-    if( FileIn_.fail() ) {
-      throw;// todo make ex
+  while( !FileIn_.eof() ) {
+    if( FileIn_.read(reinterpret_cast<char *>(&Data_), sizeof(Data_)).fail() ) {
+      throw StreamFailure(FilePath_);
     }
-
+    dataStart_ += sizeof(Data_);
+    //    todo блять я чот сомнеавюсь что дата с этого момента начинается
     if( Data_.Id == chunkId ) {
-      break;
+      return;
     }
 
     FileIn_.seekg(Data_.Size, std::fstream::cur);
     dataStart_ += Data_.Size;
   }
+  throw ChunkNotFound(FilePath_, chunkId);
 }
 
-void WAV::WAVReader::getSample(WAV::SampleBuffer &sample, size_t second) {
-  FileIn_.seekg(second * sizeof(*sample.get()), std::fstream::cur);
-  FileIn_.read(reinterpret_cast<char *>(sample.get()), sizeof(*sample.get()) * sample.size());
-  if( FileIn_.fail() ) {
-    throw;// todo make ex
+void WAV::WAVReader::readSample(SampleBuffer &sample, size_t second) {
+  if( FileIn_.seekg(dataStart_ + second * sample.size() * sizeof(*sample.get()), std::fstream::cur)
+              .fail() ) {
+    throw StreamFailure(FilePath_);
+  }
+  if( FileIn_.read(reinterpret_cast<char *>(sample.get()), sample.size() * sizeof(*sample.get()))
+              .fail() ) {
+    throw StreamFailure(FilePath_);
   }
 }
 
 size_t WAV::WAVReader::getDuration() const {
   return Data_.Size / HeaderFormat_.BlockAlign;
 }
-

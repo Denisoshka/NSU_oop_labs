@@ -13,5 +13,5 @@ void conv::MixConverter::process(sampleBuffer &sample1, std::vector<sampleBuffer
     }
   }
   ++params[3];
-  params[0] = params[3] == params[2] - params[1] + 1;
+  params[0] = params[3] == (params[2] - params[1] + 1);
 }

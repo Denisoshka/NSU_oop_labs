@@ -10,21 +10,6 @@ set(CMAKE_CXX_STANDARD 20)
 file(GLOB SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/**/*.cpp")
 message(STATUS ${SOURCE_DIRS})
 
-#[[
-find_package(Boost REQUIRED )
-if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-else()
-    include(FetchContent)
-    FetchContent_Declare(
-            Boost
-            GIT_REPOSITORY https://github.com/boostorg/boost.git
-            GIT_TAG boost-1.80.0
-    )
-    FetchContent_MakeAvailable(Boost)
-endif ()
-]]
-
 message(STATUS "project name: ${PROJECT_NAME}")
 add_library(${DIR_NAME} SHARED ${SOURCE_DIRS})
 target_compile_features(${DIR_NAME} INTERFACE cxx_std_20)
@@ -61,7 +46,7 @@ endif ()
 
 set(TEST_NAME "test_${DIR_NAME}")
 add_executable(${TEST_NAME} test/${TEST_NAME}.cpp)
-target_link_libraries(${TEST_NAME} ${PROJECT_NAME} gtest gtest_main)
+target_link_libraries(${TEST_NAME} PUBLIC ${DIR_NAME} gtest gtest_main)
 add_test(NAME ${TEST_NAME}
         COMMAND ${TEST_NAME}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
