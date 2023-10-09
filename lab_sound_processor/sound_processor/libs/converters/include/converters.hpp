@@ -46,8 +46,7 @@ namespace conv {
   public:
     Converter() = default;
     virtual ~Converter() = default;
-    virtual void process(std::vector<int16_t>& sample1,
-                         const std::vector<std::vector<int16_t>>& samples, TaskInf& params) = 0;
+    virtual void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample, TaskInf& params) = 0;
 
   private:
   };
@@ -56,7 +55,7 @@ namespace conv {
   public:
     MixConverter() = default;
     ~MixConverter() override = default;
-    void process(std::vector<int16_t>& sample1, const std::vector<std::vector<int16_t>>& samples,
+    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample,
                  TaskInf& params) override;
 
   private:
@@ -66,7 +65,7 @@ namespace conv {
   public:
     MuteConverter() = default;
     ~MuteConverter() override = default;
-    void process(std::vector<int16_t>& sample1, const std::vector<std::vector<int16_t>>& samples,
+    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample,
                  TaskInf& params) override;
 
   private:
@@ -77,10 +76,9 @@ namespace conv {
     ConverterInterface() = default;
     bool setTask();
     void setSettings(const std::string& SettingsPath, const std::vector<std::string>& FileInLinks);
-    void executeTask(std::vector<int16_t>& sampleOut,
-                     const std::vector<std::vector<int16_t>>& samples);
+    void executeTask(std::vector<int16_t>& sampleOut, std::vector<int16_t>& samples);
     bool taskFinished() const;
-    size_t curStream() const ;
+    size_t curStream() const;
     std::string curFile(const size_t stream) const;
     size_t curSec() const;
 

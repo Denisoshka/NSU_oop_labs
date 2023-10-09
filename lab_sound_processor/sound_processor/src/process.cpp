@@ -46,9 +46,8 @@ void process::executeConversions() {
     size_t curDuration = (curStreamIn) ? wavReaderSub.getDuration() : duration_;
     while( !interface.taskFinished() && interface.curSec() < curDuration ) {
       //      todo переделать эту @@@ на нормыльный выбор сэмплов
-      std::vector<std::vector<int16_t>> samples;
       size_t workSecond = interface.curSec();
-//отдебажить алгос 
+      // отдебажить алгос
       if( workSecond < duration_ ) {
         wavReaderOut.readSample(mainSampleOut, workSecond);
       }
@@ -58,13 +57,13 @@ void process::executeConversions() {
 
       if( curStreamIn ) {
         wavReaderSub.readSample(subSampleIn, workSecond);
-        samples.push_back(subSampleIn);
+        interface.executeTask(mainSampleOut, subSampleIn);
       }
       else {
-        samples.push_back(mainSampleOut);
+        interface.executeTask(mainSampleOut, mainSampleOut);
       }
       //    при mute мы читаем не наши секунды
-      interface.executeTask(mainSampleOut, samples);
+
       wavWriterOut.writeSample(mainSampleOut, workSecond);
 
       duration_ = (interface.curSec() > duration_) ? interface.curSec() : duration_;

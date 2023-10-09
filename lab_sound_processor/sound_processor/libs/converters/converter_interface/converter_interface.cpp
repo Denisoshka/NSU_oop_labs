@@ -21,7 +21,7 @@ bool conv::ConverterInterface::setTask() {
 }
 
 void conv::ConverterInterface::executeTask(std::vector<int16_t>& sampleOut,
-                                           const std::vector<std::vector<int16_t>>& samples) {
+                                           std::vector<int16_t>& samples) {
   curTask_.converter->process(sampleOut, samples, curTask_);
 }
 
@@ -109,3 +109,5 @@ std::string conv::ConverterInterface::curFile(const size_t stream) const {
 size_t conv::ConverterInterface::curSec() const {
   return curTask_.curSec;
 }
+
+
