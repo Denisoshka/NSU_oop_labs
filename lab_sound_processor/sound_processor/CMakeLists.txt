@@ -21,9 +21,9 @@ else ()
     )
     FetchContent_MakeAvailable(Boost)
 endif ()
-
 message(STATUS "project name: ${PROJECT_NAME}")
 add_executable(${LIBRARY_NAME} ${SOURCE_DIRS})
+target_compile_options(${LIBRARY_NAME} PRIVATE -pedantic -Wall -Werror)
 #add_compile_options(-Werror -Wall -Wextra -Wpedantic)
 
 include_directories(

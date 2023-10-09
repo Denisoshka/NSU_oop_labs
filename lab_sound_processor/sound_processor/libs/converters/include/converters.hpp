@@ -76,11 +76,12 @@ namespace conv {
   public:
     ConverterInterface() = default;
     bool setTask();
-    void setSettings(const std::string& FilePath, const std::vector<std::string>& fileLinks);
+    void setSettings(const std::string& SettingsPath, const std::vector<std::string>& FileInLinks);
     void executeTask(std::vector<int16_t>& sampleOut,
                      const std::vector<std::vector<int16_t>>& samples);
     bool taskFinished() const;
-    std::string curFile();
+    size_t curStream() const ;
+    std::string curFile(const size_t stream) const;
     size_t curSec() const;
 
   private:
@@ -104,8 +105,8 @@ namespace conv {
     std::queue<TaskInf> Pipeline_;
 
     std::vector<std::string> FileLinks_;
-    std::string SettingsPath_;
 
+    std::string SettingsPath_;
     std::ifstream SettingsStream_;
   };
 }// namespace conv

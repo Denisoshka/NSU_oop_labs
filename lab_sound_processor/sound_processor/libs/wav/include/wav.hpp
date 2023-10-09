@@ -35,7 +35,7 @@ namespace WAV {
     int16_t AudioFormat;
     int16_t NumChannels;
     int32_t SampleRate;
-    int32_t ByteRate;
+    int32_t ByteRate ;
     int16_t BlockAlign;
     int16_t BitsPerSample;
   };
@@ -58,6 +58,7 @@ namespace WAV {
     ~WAVReader() = default;
     void open(const std::string& FilePath);
     void readSample(std::vector<int16_t>& sample, const size_t second);
+    FormatChunk HeaderFormat_{.ByteRate = 1};
     size_t getDuration() const;
 
   private:
@@ -65,9 +66,10 @@ namespace WAV {
     void findData(uint32_t chunkId);
 
     RIFFChunk HeaderRiff_{};
-    FormatChunk HeaderFormat_{};
+//    FormatChunk HeaderFormat_{.ByteRate = 1};
+
     DataChunk Data_{};
-    std::ifstream FileIn_;
+    std::fstream FileIn_;
     std::string FilePath_;
     size_t dataStart_ = 0;
   };
@@ -86,6 +88,7 @@ namespace WAV {
     std::string FilePath_;
     std::fstream FileOut_;
     size_t dataStart_ = 0;
+    size_t writedData_ = 0;
   };
 }// namespace WAV
 #endif// WAV_WAV_HPP

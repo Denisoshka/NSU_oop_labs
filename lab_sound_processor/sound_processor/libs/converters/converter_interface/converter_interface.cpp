@@ -25,15 +25,21 @@ void conv::ConverterInterface::executeTask(std::vector<int16_t>& sampleOut,
   curTask_.converter->process(sampleOut, samples, curTask_);
 }
 
-void conv::ConverterInterface::setSettings(const std::string& FilePath,
-                                           const std::vector<std::string>& fileLinks) {
-  SettingsPath_ = FilePath;
+void conv::ConverterInterface::setSettings(const std::string& SettingsPath,
+                                           const std::vector<std::string>& FileInLinks) {
+  SettingsPath_ = SettingsPath;
   SettingsStream_.open(SettingsPath_, std::ios_base::in);
   if( SettingsStream_.fail() ) {
     throw StreamFailure(SettingsPath_);
   }
 
-  FileLinks_ = fileLinks;
+  FileLinks_.push_back("_");
+  for (const auto & link: FileInLinks ){
+    FileLinks_.push_back(link);
+  }
+
+//  FileLinks_ = FileInLinks;
+//  FileLinks_.
   fillPipeline_();
 }
 
@@ -42,7 +48,8 @@ void conv::ConverterInterface::fillPipeline_() {
   //  std::string taskTmp;
   boost::char_separator<char> sep(" ");
 
-  while( Pipeline_.size() != TasksCount_ && std::getline(SettingsStream_, task) ) {
+  while( Pipeline_.size() != TasksCount_ && !SettingsStream_.eof() ) {
+    std::getline(SettingsStream_, task);
     if( SettingsStream_.fail() ) {
       throw StreamFailure(SettingsPath_);
     }
@@ -91,8 +98,12 @@ bool conv::ConverterInterface::taskFinished() const {
   return curTask_.taskFinished;
 }
 
-std::string conv::ConverterInterface::curFile() {
-  return FileLinks_[curTask_.stream];
+size_t conv::ConverterInterface::curStream() const {
+  return curTask_.stream;
+}
+
+std::string conv::ConverterInterface::curFile(const size_t stream) const {
+  return FileLinks_[stream];
 }
 
 size_t conv::ConverterInterface::curSec() const {

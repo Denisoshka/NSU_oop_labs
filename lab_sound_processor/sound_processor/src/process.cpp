@@ -22,39 +22,53 @@ void process::setSettings(po::variables_map& vm) {
 void process::executeConversions() {
   conv::ConverterInterface interface;
 
-  WAV::WAVWriter wavWriterOut{FileOutPath_};
+  WAV::WAVWriter wavWriterOut(FileOutPath_);
   wavWriterOut.writeHeader(WAV::stdRIFFChunk, WAV::stdFormatChunk, WAV::stdDataChunk);
 
-  WAV::WAVReader wavReaderSub;
   WAV::WAVReader wavReaderOut{FileOutPath_};
+  WAV::WAVReader wavReaderSub;
 
   std::vector<int16_t> mainSampleOut;
-  mainSampleOut.reserve(sampleRate_);
+  mainSampleOut.resize(sampleRate_);
   std::vector<int16_t> mainSampleIn;
-  mainSampleIn.reserve(sampleRate_);
+  mainSampleIn.resize(sampleRate_);
   std::vector<int16_t> subSampleIn;
-  subSampleIn.reserve(sampleRate_);
-
+  subSampleIn.resize(sampleRate_);
   // todo fix algo
-  interface.setSettings(FileOutPath_, FileLinks_);
-  while( !interface.setTask() ) {
-    wavReaderSub.open(interface.curFile());
+  interface.setSettings(SettingsFile_, FileLinks_);
+  while( interface.setTask() ) {
+    size_t curStreamIn = interface.curStream();
 
-    std::vector<std::vector<int16_t>> samples;
-    while( !interface.taskFinished() || interface.curSec() < wavReaderSub.getDuration() ) {
+    if( curStreamIn ) {
+      wavReaderSub.open(interface.curFile(curStreamIn));
+    }
+
+    size_t curDuration = (curStreamIn) ? wavReaderSub.getDuration() : duration_;
+    while( !interface.taskFinished() && interface.curSec() < curDuration ) {
       //      todo переделать эту @@@ на нормыльный выбор сэмплов
-      if( interface.curFile() != FileOutPath_ ) {
-        wavReaderSub.readSample(subSampleIn, interface.curSec());
+      std::vector<std::vector<int16_t>> samples;
+      size_t workSecond = interface.curSec();
+//отдебажить алгос 
+      if( workSecond < duration_ ) {
+        wavReaderOut.readSample(mainSampleOut, workSecond);
+      }
+      else {
+        std::fill(mainSampleOut.begin(), mainSampleOut.end(), 0);
+      }
+
+      if( curStreamIn ) {
+        wavReaderSub.readSample(subSampleIn, workSecond);
         samples.push_back(subSampleIn);
       }
       else {
-        wavReaderOut.readSample(mainSampleOut, interface.curSec());
         samples.push_back(mainSampleOut);
       }
+      //    при mute мы читаем не наши секунды
       interface.executeTask(mainSampleOut, samples);
-      wavWriterOut.writeSample(mainSampleOut, interface.curSec());
+      wavWriterOut.writeSample(mainSampleOut, workSecond);
+
+      duration_ = (interface.curSec() > duration_) ? interface.curSec() : duration_;
     }
-    duration_ = (interface.curSec() > duration_) ? interface.curSec() : duration_;
   }
 
   WAV::RIFFChunk finalRiffChunk{WAV::stdRIFFChunk};
