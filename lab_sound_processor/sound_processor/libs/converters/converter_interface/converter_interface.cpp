@@ -13,8 +13,10 @@ bool conv::ConverterInterface::setTask() {
   if( Pipeline_.empty() ) {
     return false;
   }
-
-  curTask_ = std::move(Pipeline_.front());
+  TaskInf taskInf = std::move(Pipeline_.front());
+  curStream_ = taskInf.params.stream;
+  curTask_ = std::move(taskInf.converter);
+  curTask_->setParams(std::move(taskInf.params));
   Pipeline_.pop();
 
   return true;
@@ -22,7 +24,7 @@ bool conv::ConverterInterface::setTask() {
 
 void conv::ConverterInterface::executeTask(std::vector<int16_t>& sampleOut,
                                            std::vector<int16_t>& samples) {
-  curTask_.converter->process(sampleOut, samples, curTask_);
+  curTask_->process(sampleOut, samples);
 }
 
 void conv::ConverterInterface::setSettings(const std::string& SettingsPath,
@@ -34,12 +36,12 @@ void conv::ConverterInterface::setSettings(const std::string& SettingsPath,
   }
 
   FileLinks_.push_back("_");
-  for (const auto & link: FileInLinks ){
+  for( const auto& link: FileInLinks ) {
     FileLinks_.push_back(link);
   }
 
-//  FileLinks_ = FileInLinks;
-//  FileLinks_.
+  //  FileLinks_ = FileInLinks;
+  //  FileLinks_.
   fillPipeline_();
 }
 
@@ -70,16 +72,16 @@ void conv::ConverterInterface::fillPipeline_() {
       else if( regex_match(token, Pass_) ) {
       }
       else if( tokenPosition == settingsPos::stream && (regex_match(token, StreamName_)) ) {
-        taskInf_.stream = std::atoll(token.data() + 1);
+        taskInf_.params.stream = std::atoll(token.data() + 1);
       }
       else if( tokenPosition == settingsPos::timeStart && regex_match(token, Time_) ) {
-        taskInf_.startTime = std::atoll(token.data());
+        taskInf_.params.startTime = std::atoll(token.data());
       }
       else if( tokenPosition == settingsPos::timeEnd && regex_match(token, Time_) ) {
-        taskInf_.endTime = std::atoll(token.data());
+        taskInf_.params.endTime = std::atoll(token.data());
       }
       else if( tokenPosition > settingsPos::timeEnd && regex_match(token, Time_) ) {
-        taskInf_.otherParams.push_back(std::atoll(token.data()));
+        taskInf_.params.otherParams.push_back(std::atoll(token.data()));
       }
       else {
         throw IncorrectSettingsFormat(task);
@@ -95,19 +97,28 @@ void conv::ConverterInterface::setFileLinks_(const std::vector<std::string>& fil
 }
 
 bool conv::ConverterInterface::taskFinished() const {
-  return curTask_.taskFinished;
+  return curTask_->taskFinished();
 }
+//конструктор вызывает эту функцию при инициализации
 
 size_t conv::ConverterInterface::curStream() const {
-  return curTask_.stream;
+  return curStream_;
 }
 
 std::string conv::ConverterInterface::curFile(const size_t stream) const {
   return FileLinks_[stream];
 }
 
-size_t conv::ConverterInterface::curSec() const {
-  return curTask_.curSec;
+size_t conv::ConverterInterface::curReadSecond() const {
+  return curTask_->getReadSecond();
 }
 
+size_t conv::ConverterInterface::curWriteSecond() const {
+  return curTask_->getWriteSecond();
+}
 
+conv::ConverterInterface::ConverterInterface()
+    : TasksCount_(10)
+    , curTask_(nullptr)
+    , curStream_(0) {
+}

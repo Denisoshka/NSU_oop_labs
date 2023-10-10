@@ -16,7 +16,7 @@ class process {
 public:
   process() = default;
   process(const po::variables_map& vm);
-  void setSettings(po::variables_map& vm);
+  void setSettings(const po::variables_map& vm);
   void executeConversions();
 
 private:

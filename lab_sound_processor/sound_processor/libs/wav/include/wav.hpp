@@ -22,6 +22,13 @@ namespace WAV {
   const int16_t BLOCK_ALIGN = BITS_PER_SAMPLE * NUM_CHANNELS / BITS_PER_BYTE;
   const int32_t BYTE_RATE = BLOCK_ALIGN * SAMPLE_RATE;
   const int32_t FORMAT_CHUNK_LEN = 16;
+  const int32_t FINAL_RIFF_CHUNK_SIZE_WITHOUT_DATA_SIZE = 36;
+
+  /*
+         int a = (sizeof(WAV::stdRIFFChunk)
+           - (sizeof(WAV::stdRIFFChunk.Id) + sizeof(WAV::stdRIFFChunk.Size)))
+          + sizeof(WAV::stdFormatChunk) + sizeof(WAV::DataChunk);
+*/
 
   struct __attribute__((__packed__)) RIFFChunk {
     int32_t Id;
@@ -35,7 +42,7 @@ namespace WAV {
     int16_t AudioFormat;
     int16_t NumChannels;
     int32_t SampleRate;
-    int32_t ByteRate ;
+    int32_t ByteRate;
     int16_t BlockAlign;
     int16_t BitsPerSample;
   };
@@ -58,7 +65,7 @@ namespace WAV {
     ~WAVReader() = default;
     void open(const std::string& FilePath);
     void readSample(std::vector<int16_t>& sample, const size_t second);
-    FormatChunk HeaderFormat_{.ByteRate = 1};
+    //    FormatChunk HeaderFormat_{.ByteRate = 1};
     size_t getDuration() const;
 
   private:
@@ -66,7 +73,7 @@ namespace WAV {
     void findData(uint32_t chunkId);
 
     RIFFChunk HeaderRiff_{};
-//    FormatChunk HeaderFormat_{.ByteRate = 1};
+    FormatChunk HeaderFormat_{.ByteRate = 1};
 
     DataChunk Data_{};
     std::fstream FileIn_;

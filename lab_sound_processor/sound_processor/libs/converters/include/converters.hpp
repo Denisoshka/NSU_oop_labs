@@ -17,6 +17,8 @@ namespace conv {
     noConverter,
     mix,
     mute,
+    copy,
+    bass,
   };
 
   enum settingsPos {
@@ -26,14 +28,7 @@ namespace conv {
     timeEnd,
   };
 
-  struct sampleBuffer {
-    uint16_t* sample_;
-    size_t curLen_;
-    size_t len_;
-  };
-
-  struct TaskInf {
-    std::shared_ptr<Converter> converter = nullptr;
+  struct TaskParams {
     std::vector<size_t> otherParams{};
     size_t stream = 0;
     size_t startTime = 0;
@@ -42,45 +37,93 @@ namespace conv {
     bool taskFinished = false;
   };
 
+  struct TaskInf {
+    std::shared_ptr<Converter> converter = nullptr;
+    TaskParams params;
+  };
+
   class Converter {
   public:
     Converter() = default;
     virtual ~Converter() = default;
-    virtual void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample, TaskInf& params) = 0;
+    virtual void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) = 0;
+    virtual void setParams(TaskParams&& params);
+    virtual size_t getReadSecond();
+    virtual size_t getWriteSecond();
+    virtual bool taskFinished();
 
   private:
+    TaskParams taskInf_;
   };
 
   class MixConverter: public Converter {
   public:
     MixConverter() = default;
     ~MixConverter() override = default;
-    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample,
-                 TaskInf& params) override;
+    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
+    void setParams(TaskParams&& params) override;
+    //    size_t getReadSecond() ;
+    //    size_t getWriteSecond();
 
   private:
+    TaskParams taskInf_;
   };
 
-  class MuteConverter: public conv::Converter {
+  class MuteConverter: public Converter {
   public:
     MuteConverter() = default;
     ~MuteConverter() override = default;
-    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample,
-                 TaskInf& params) override;
+    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
+    //    void setParams(TaskParams&& params) override;
+    //    size_t getReadSecond() override;
+    //    size_t getWriteSecond() override;
 
   private:
+    TaskParams taskInf_;
+  };
+
+  class BassBoostConverter: public Converter {
+  public:
+    BassBoostConverter() = default;
+    ~BassBoostConverter() override = default;
+    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
+    //    void setParams(TaskParams&& params) override;
+    //    size_t getReadSecond() override;
+    //    size_t getWriteSecond() override;
+
+  private:
+    TaskParams taskInf_;
+  };
+
+  class CopyConverter: public Converter {
+  public:
+    CopyConverter() = default;
+    ~CopyConverter() override = default;
+    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
+    void setParams(TaskParams&& params) override;
+    //    size_t getReadSecond() override;
+    size_t getWriteSecond() override;
+
+  private:
+    TaskParams taskInf_;
+    size_t acceleration_;
   };
 
   class ConverterInterface {
   public:
-    ConverterInterface() = default;
+    ConverterInterface();
+
     bool setTask();
+    bool taskFinished() const;
+
     void setSettings(const std::string& SettingsPath, const std::vector<std::string>& FileInLinks);
     void executeTask(std::vector<int16_t>& sampleOut, std::vector<int16_t>& samples);
-    bool taskFinished() const;
-    size_t curStream() const;
+
     std::string curFile(const size_t stream) const;
-    size_t curSec() const;
+
+    size_t curStream() const;
+    size_t curReadSecond() const;
+    size_t curWriteSecond() const;
 
   private:
     void fillPipeline_();
@@ -88,12 +131,14 @@ namespace conv {
     //    void setFileLinks(std::vector<std::string> &fileLinks);
 
     const int TasksCount_ = 10;
-    TaskInf curTask_;
+    std::shared_ptr<Converter> curTask_ = nullptr;
 
     std::map<std::string, std::shared_ptr<Converter>> converters_{
             {"mix",  std::make_shared<MixConverter>() },
-            {"mute", std::make_shared<MuteConverter>()}
+            {"mute", std::make_shared<MuteConverter>()},
+            {"copy", std::make_shared<CopyConverter>()},
     };
+    //{"bass", std::make_shared<BassBoostConverter>()}
 
     std::regex ConverterName_ = std::regex(R"(\w+)");
     std::regex StreamName_ = std::regex(R"(\$\d+)");
@@ -101,6 +146,7 @@ namespace conv {
     std::regex Pass_ = std::regex(R"(--)");
 
     std::queue<TaskInf> Pipeline_;
+    size_t curStream_ = 0;
 
     std::vector<std::string> FileLinks_;
 

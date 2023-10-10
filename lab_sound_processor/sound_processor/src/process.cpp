@@ -2,9 +2,6 @@
 #include "converters.hpp"
 #include "wav.hpp"
 
-// #include "converters/converter_tmp/converter_tmp.h"
-// namespace pt = boost::property_tree;
-
 process::process(const po::variables_map& vm)
     : sampleRate_(WAV::SAMPLE_RATE)
     , SettingsFile_(vm["config"].as<std::string>())
@@ -12,7 +9,7 @@ process::process(const po::variables_map& vm)
     , FileLinks_(vm["input"].as<std::vector<std::string>>()) {
 }
 
-void process::setSettings(po::variables_map& vm) {
+void process::setSettings(const po::variables_map& vm) {
   sampleRate_ = WAV::SAMPLE_RATE;
   SettingsFile_ = vm["config"].as<std::string>();
   FileOutPath_ = vm["output"].as<std::string>();
@@ -20,8 +17,6 @@ void process::setSettings(po::variables_map& vm) {
 }
 
 void process::executeConversions() {
-  conv::ConverterInterface interface;
-
   WAV::WAVWriter wavWriterOut(FileOutPath_);
   wavWriterOut.writeHeader(WAV::stdRIFFChunk, WAV::stdFormatChunk, WAV::stdDataChunk);
 
@@ -35,6 +30,7 @@ void process::executeConversions() {
   subSampleIn.resize(sampleRate_);
 
   // todo fix algo
+  conv::ConverterInterface interface;
   interface.setSettings(SettingsFile_, FileLinks_);
   while( interface.setTask() ) {
     if( interface.curStream() ) {
@@ -42,30 +38,35 @@ void process::executeConversions() {
     }
 
     size_t curDuration = (interface.curStream()) ? wavReaderSub.getDuration() : outDuration_;
-    while( !interface.taskFinished() && interface.curSec() < curDuration ) {
-      size_t workSecond = interface.curSec();
-      if( workSecond < outDuration_ ) {
-        wavReaderOut.readSample(mainSampleIn, workSecond);
+    while( !interface.taskFinished() && interface.curReadSecond() < curDuration ) {
+      //      size_t workSecond = interface.curSec();
+      size_t readSecond = interface.curReadSecond();
+      size_t writeSecond = interface.curWriteSecond();
+      if( readSecond < outDuration_ ) {
+        wavReaderOut.readSample(mainSampleIn, readSecond);
       }
       else {
         std::fill(mainSampleIn.begin(), mainSampleIn.end(), 0);
       }
 
       std::vector<int16_t>& mainSampleOut = (interface.curStream()) ? subSampleIn : mainSampleIn;
-      wavReaderSub.readSample(mainSampleOut, workSecond);
+      wavReaderSub.readSample(mainSampleOut, readSecond);
       interface.executeTask(mainSampleOut, mainSampleIn);
-      wavWriterOut.writeSample(mainSampleOut, workSecond);
+      wavWriterOut.writeSample(mainSampleOut, writeSecond);
 
-      outDuration_ = (interface.curSec() > outDuration_) ? interface.curSec() : outDuration_;
+      outDuration_ = (interface.curWriteSecond() > outDuration_) ? interface.curWriteSecond()
+                                                                 : outDuration_;
     }
   }
 
-  WAV::RIFFChunk finalRiffChunk{WAV::stdRIFFChunk};
-  finalRiffChunk.Size = (sizeof(WAV::stdRIFFChunk)
-                         - (sizeof(WAV::stdRIFFChunk.Id) + sizeof(WAV::stdRIFFChunk.Size)))
-                      + sizeof(WAV::stdFormatChunk) + sizeof(WAV::DataChunk)
-                      + (outDuration_ * sizeof(uint16_t) * sampleRate_);
+
   WAV::DataChunk finalDataChunk{WAV::stdDataChunk};
   finalDataChunk.Size = outDuration_ * sizeof(uint16_t) * sampleRate_;
+
+  WAV::RIFFChunk finalRiffChunk{WAV::stdRIFFChunk};
+  finalRiffChunk.Size = WAV::FINAL_RIFF_CHUNK_SIZE_WITHOUT_DATA_SIZE
+                      + outDuration_ * sizeof(uint16_t) * sampleRate_;
+
+
   wavWriterOut.writeHeader(finalRiffChunk, WAV::stdFormatChunk, finalDataChunk);
 }
