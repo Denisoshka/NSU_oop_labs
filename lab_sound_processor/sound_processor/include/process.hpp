@@ -20,7 +20,7 @@ public:
   void executeConversions();
 
 private:
-  size_t duration_ = 0;
+  size_t outDuration_ = 0;
   int32_t sampleRate_;
   std::string SettingsFile_;
   std::string FileOutPath_;

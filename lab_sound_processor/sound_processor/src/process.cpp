@@ -28,45 +28,35 @@ void process::executeConversions() {
   WAV::WAVReader wavReaderOut{FileOutPath_};
   WAV::WAVReader wavReaderSub;
 
-  std::vector<int16_t> mainSampleOut;
-  mainSampleOut.resize(sampleRate_);
   std::vector<int16_t> mainSampleIn;
   mainSampleIn.resize(sampleRate_);
+
   std::vector<int16_t> subSampleIn;
   subSampleIn.resize(sampleRate_);
+
   // todo fix algo
   interface.setSettings(SettingsFile_, FileLinks_);
   while( interface.setTask() ) {
-    size_t curStreamIn = interface.curStream();
-
-    if( curStreamIn ) {
-      wavReaderSub.open(interface.curFile(curStreamIn));
+    if( interface.curStream() ) {
+      wavReaderSub.open(interface.curFile(interface.curStream()));
     }
 
-    size_t curDuration = (curStreamIn) ? wavReaderSub.getDuration() : duration_;
+    size_t curDuration = (interface.curStream()) ? wavReaderSub.getDuration() : outDuration_;
     while( !interface.taskFinished() && interface.curSec() < curDuration ) {
-      //      todo переделать эту @@@ на нормыльный выбор сэмплов
       size_t workSecond = interface.curSec();
-      // отдебажить алгос
-      if( workSecond < duration_ ) {
-        wavReaderOut.readSample(mainSampleOut, workSecond);
+      if( workSecond < outDuration_ ) {
+        wavReaderOut.readSample(mainSampleIn, workSecond);
       }
       else {
-        std::fill(mainSampleOut.begin(), mainSampleOut.end(), 0);
+        std::fill(mainSampleIn.begin(), mainSampleIn.end(), 0);
       }
 
-      if( curStreamIn ) {
-        wavReaderSub.readSample(subSampleIn, workSecond);
-        interface.executeTask(mainSampleOut, subSampleIn);
-      }
-      else {
-        interface.executeTask(mainSampleOut, mainSampleOut);
-      }
-      //    при mute мы читаем не наши секунды
-
+      std::vector<int16_t>& mainSampleOut = (interface.curStream()) ? subSampleIn : mainSampleIn;
+      wavReaderSub.readSample(mainSampleOut, workSecond);
+      interface.executeTask(mainSampleOut, mainSampleIn);
       wavWriterOut.writeSample(mainSampleOut, workSecond);
 
-      duration_ = (interface.curSec() > duration_) ? interface.curSec() : duration_;
+      outDuration_ = (interface.curSec() > outDuration_) ? interface.curSec() : outDuration_;
     }
   }
 
@@ -74,8 +64,8 @@ void process::executeConversions() {
   finalRiffChunk.Size = (sizeof(WAV::stdRIFFChunk)
                          - (sizeof(WAV::stdRIFFChunk.Id) + sizeof(WAV::stdRIFFChunk.Size)))
                       + sizeof(WAV::stdFormatChunk) + sizeof(WAV::DataChunk)
-                      + (duration_ * sizeof(uint16_t) * sampleRate_);
+                      + (outDuration_ * sizeof(uint16_t) * sampleRate_);
   WAV::DataChunk finalDataChunk{WAV::stdDataChunk};
-  finalDataChunk.Size = duration_ * sizeof(uint16_t) * sampleRate_;
+  finalDataChunk.Size = outDuration_ * sizeof(uint16_t) * sampleRate_;
   wavWriterOut.writeHeader(finalRiffChunk, WAV::stdFormatChunk, finalDataChunk);
 }

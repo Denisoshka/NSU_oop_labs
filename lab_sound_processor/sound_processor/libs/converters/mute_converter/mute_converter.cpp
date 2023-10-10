@@ -10,7 +10,7 @@ void conv::MuteConverter::process(std::vector<int16_t>& mainSample,
                                   TaskInf& params) {
   //  size_t curSecond = params[1] + params[3];
   if( params.startTime <= params.curSec && params.curSec < params.endTime ) {
-    memset(subSample.data(), 0, subSample.size() * sizeof(*subSample.data()));
+    memset(mainSample.data(), 0, mainSample.size() * sizeof(*mainSample.data()));
   }
   ++params.curSec;
   //  params[0] = curSecond == params[2];
