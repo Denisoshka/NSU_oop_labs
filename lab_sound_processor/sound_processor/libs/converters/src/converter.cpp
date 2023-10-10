@@ -1,8 +1,8 @@
 #include "converters.hpp"
 
 
-void conv::Converter::setParams(conv::TaskParams&& params) {
-  taskInf_ = std::move(params);
+void conv::Converter::setParams(conv::TaskParams& params) {
+  taskInf_ = params;
 }
 
 bool conv::Converter::taskFinished() {

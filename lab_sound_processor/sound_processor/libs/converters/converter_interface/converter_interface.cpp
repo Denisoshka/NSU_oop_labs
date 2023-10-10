@@ -13,10 +13,10 @@ bool conv::ConverterInterface::setTask() {
   if( Pipeline_.empty() ) {
     return false;
   }
-  TaskInf taskInf = std::move(Pipeline_.front());
-  curStream_ = taskInf.params.stream;
-  curTask_ = std::move(taskInf.converter);
-  curTask_->setParams(std::move(taskInf.params));
+//  TaskInf taskInf = std::move();
+  curStream_ = Pipeline_.front().params.stream;
+  curTask_ = Pipeline_.front().converter;
+  curTask_->setParams(Pipeline_.front().params);
   Pipeline_.pop();
 
   return true;
@@ -47,7 +47,6 @@ void conv::ConverterInterface::setSettings(const std::string& SettingsPath,
 
 void conv::ConverterInterface::fillPipeline_() {
   std::string task;
-  //  std::string taskTmp;
   boost::char_separator<char> sep(" ");
 
   while( Pipeline_.size() != TasksCount_ && !SettingsStream_.eof() ) {
@@ -91,12 +90,17 @@ void conv::ConverterInterface::fillPipeline_() {
     Pipeline_.push(std::move(taskInf_));
   }
 }
+/*
 
 void conv::ConverterInterface::setFileLinks_(const std::vector<std::string>& fileLinks) {
   FileLinks_ = fileLinks;
 }
+*/
 
-bool conv::ConverterInterface::taskFinished() const {
+bool conv::ConverterInterface::taskFinished() {
+  if (curTask_.get()){
+    return true;
+  }
   return curTask_->taskFinished();
 }
 //конструктор вызывает эту функцию при инициализации
@@ -116,9 +120,11 @@ size_t conv::ConverterInterface::curReadSecond() const {
 size_t conv::ConverterInterface::curWriteSecond() const {
   return curTask_->getWriteSecond();
 }
+/*
 
 conv::ConverterInterface::ConverterInterface()
     : TasksCount_(10)
     , curTask_(nullptr)
     , curStream_(0) {
 }
+*/

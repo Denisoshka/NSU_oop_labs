@@ -30,7 +30,7 @@ void process::executeConversions() {
   subSampleIn.resize(sampleRate_);
 
   // todo fix algo
-  conv::ConverterInterface interface;
+  conv::ConverterInterface interface{};
   interface.setSettings(SettingsFile_, FileLinks_);
   while( interface.setTask() ) {
     if( interface.curStream() ) {
@@ -58,6 +58,7 @@ void process::executeConversions() {
                                                                  : outDuration_;
     }
   }
+
 
 
   WAV::DataChunk finalDataChunk{WAV::stdDataChunk};

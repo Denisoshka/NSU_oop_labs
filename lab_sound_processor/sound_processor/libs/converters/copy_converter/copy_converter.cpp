@@ -15,7 +15,7 @@ void conv::CopyConverter::process(std::vector<int16_t>& mainSample,
   taskInf_.taskFinished = (taskInf_.curSec >= taskInf_.startTime + taskInf_.endTime);
 }
 
-void conv::CopyConverter::setParams(conv::TaskParams&& params) {
+void conv::CopyConverter::setParams(conv::TaskParams& params) {
   taskInf_ = std::move(params);
   taskInf_.curSec = (!taskInf_.curSec) ? taskInf_.startTime : taskInf_.curSec;
   acceleration_ = (!taskInf_.otherParams.empty()) ? 1 : taskInf_.otherParams.front();

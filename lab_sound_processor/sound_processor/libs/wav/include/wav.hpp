@@ -65,7 +65,6 @@ namespace WAV {
     ~WAVReader() = default;
     void open(const std::string& FilePath);
     void readSample(std::vector<int16_t>& sample, const size_t second);
-    //    FormatChunk HeaderFormat_{.ByteRate = 1};
     size_t getDuration() const;
 
   private:

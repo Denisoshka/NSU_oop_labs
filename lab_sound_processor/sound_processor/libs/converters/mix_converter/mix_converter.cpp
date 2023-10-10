@@ -11,7 +11,7 @@ void conv::MixConverter::process(std::vector<int16_t>& mainSample,
   taskInf_.taskFinished = taskInf_.curSec >= taskInf_.endTime;
 }
 
-void conv::MixConverter::setParams(conv::TaskParams&& params) {
+void conv::MixConverter::setParams(conv::TaskParams& params) {
   taskInf_ = std::move(params);
   taskInf_.curSec = (!taskInf_.curSec) ? taskInf_.startTime : taskInf_.curSec;
 }

@@ -38,7 +38,7 @@ namespace conv {
   };
 
   struct TaskInf {
-    std::shared_ptr<Converter> converter = nullptr;
+    std::shared_ptr<Converter> converter;
     TaskParams params;
   };
 
@@ -47,7 +47,7 @@ namespace conv {
     Converter() = default;
     virtual ~Converter() = default;
     virtual void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) = 0;
-    virtual void setParams(TaskParams&& params);
+    virtual void setParams(conv::TaskParams& params);
     virtual size_t getReadSecond();
     virtual size_t getWriteSecond();
     virtual bool taskFinished();
@@ -61,7 +61,7 @@ namespace conv {
     MixConverter() = default;
     ~MixConverter() override = default;
     void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
-    void setParams(TaskParams&& params) override;
+    void setParams(conv::TaskParams& params) override;
     //    size_t getReadSecond() ;
     //    size_t getWriteSecond();
 
@@ -100,7 +100,7 @@ namespace conv {
     CopyConverter() = default;
     ~CopyConverter() override = default;
     void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
-    void setParams(TaskParams&& params) override;
+    void setParams(conv::TaskParams& params) override;
     //    size_t getReadSecond() override;
     size_t getWriteSecond() override;
 
@@ -110,35 +110,16 @@ namespace conv {
   };
 
   class ConverterInterface {
-  public:
-    ConverterInterface();
-
-    bool setTask();
-    bool taskFinished() const;
-
-    void setSettings(const std::string& SettingsPath, const std::vector<std::string>& FileInLinks);
-    void executeTask(std::vector<int16_t>& sampleOut, std::vector<int16_t>& samples);
-
-    std::string curFile(const size_t stream) const;
-
-    size_t curStream() const;
-    size_t curReadSecond() const;
-    size_t curWriteSecond() const;
-
   private:
-    void fillPipeline_();
-    void setFileLinks_(const std::vector<std::string>& fileLinks);
-    //    void setFileLinks(std::vector<std::string> &fileLinks);
-
     const int TasksCount_ = 10;
-    std::shared_ptr<Converter> curTask_ = nullptr;
-
     std::map<std::string, std::shared_ptr<Converter>> converters_{
             {"mix",  std::make_shared<MixConverter>() },
             {"mute", std::make_shared<MuteConverter>()},
-            {"copy", std::make_shared<CopyConverter>()},
     };
-    //{"bass", std::make_shared<BassBoostConverter>()}
+
+    //{"bass", std::make_shared<BassBoostConverter>()},
+    //{"copy", std::make_shared<CopyConverter>()     },
+    std::shared_ptr<Converter> curTask_;
 
     std::regex ConverterName_ = std::regex(R"(\w+)");
     std::regex StreamName_ = std::regex(R"(\$\d+)");
@@ -152,6 +133,23 @@ namespace conv {
 
     std::string SettingsPath_;
     std::ifstream SettingsStream_;
+
+    void fillPipeline_();
+
+  public:
+    ConverterInterface() = default;
+
+    bool setTask();
+    bool taskFinished();
+
+    void setSettings(const std::string& SettingsPath, const std::vector<std::string>& FileInLinks);
+    void executeTask(std::vector<int16_t>& sampleOut, std::vector<int16_t>& samples);
+
+    std::string curFile(const size_t stream) const;
+
+    size_t curStream() const;
+    size_t curReadSecond() const;
+    size_t curWriteSecond() const;
   };
 }// namespace conv
 
