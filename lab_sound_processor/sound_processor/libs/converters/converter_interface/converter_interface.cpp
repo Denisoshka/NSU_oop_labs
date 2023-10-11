@@ -6,7 +6,7 @@
 
 const int TaskTmpLen_ = 100;
 
-bool conv::ConverterInterface::setTask() {
+bool conv::ConverterPipeline::setTask() {
   if( Pipeline_.empty() ) {
     fillPipeline_();
   }
@@ -22,13 +22,13 @@ bool conv::ConverterInterface::setTask() {
   return true;
 }
 
-void conv::ConverterInterface::executeTask(std::vector<int16_t>& sampleOut,
-                                           std::vector<int16_t>& samples) {
+void conv::ConverterPipeline::executeTask(std::vector<int16_t>& sampleOut,
+                                          std::vector<int16_t>& samples) {
   curTask_->process(sampleOut, samples);
 }
 
-void conv::ConverterInterface::setSettings(const std::string& SettingsPath,
-                                           const std::vector<std::string>& FileInLinks) {
+void conv::ConverterPipeline::setSettings(const std::string& SettingsPath,
+                                          const std::vector<std::string>& FileInLinks) {
   SettingsPath_ = SettingsPath;
   SettingsStream_.open(SettingsPath_, std::ios_base::in);
   if( SettingsStream_.fail() ) {
@@ -45,7 +45,7 @@ void conv::ConverterInterface::setSettings(const std::string& SettingsPath,
   fillPipeline_();
 }
 
-void conv::ConverterInterface::fillPipeline_() {
+void conv::ConverterPipeline::fillPipeline_() {
   std::string task;
   boost::char_separator<char> sep(" ");
 
@@ -87,7 +87,7 @@ void conv::ConverterInterface::fillPipeline_() {
       }
       tokenPosition++;
     }
-    Pipeline_.push(std::move(taskInf_));
+    Pipeline_.push(taskInf_);
   }
 }
 
@@ -98,32 +98,41 @@ void conv::ConverterInterface::setFileLinks_(const std::vector<std::string>& fil
 }
 */
 
-bool conv::ConverterInterface::taskFinished() {
+bool conv::ConverterPipeline::taskFinished() {
   return curTask_->taskFinished();
 }
+
 // что то не так в наследовании todo
 // конструктор вызывает эту функцию при инициализации
+/*
 
-size_t conv::ConverterInterface::curStream() const {
+size_t conv::ConverterPipeline::curStream() const {
   return curStream_;
 }
+*/
 
-std::string conv::ConverterInterface::curFile(const size_t stream) const {
+std::string conv::ConverterPipeline::curFile(const size_t stream) const {
   return FileLinks_[stream];
 }
 
-size_t conv::ConverterInterface::curReadSecond() const {
+size_t conv::ConverterPipeline::curReadSecond() const {
   return curTask_->getReadSecond();
 }
 
-size_t conv::ConverterInterface::curWriteSecond() const {
+size_t conv::ConverterPipeline::curWriteSecond() const {
   return curTask_->getWriteSecond();
 }
 
-conv::ConverterInterface::ConverterInterface()
+size_t conv::ConverterPipeline::curReadStream() const {
+  return curTask_->getReadStream();
+}
+
+conv::ConverterPipeline::ConverterPipeline()
     : converters_({
-            {"mix",  std::make_shared<MixConverter>() },
-            {"mute", std::make_shared<MuteConverter>()},
+            {"mix",  std::make_shared<MixConverter>()      },
+            {"mute", std::make_shared<MuteConverter>()     },
+            {"bass", std::make_shared<BassBoostConverter>()},
+            {"copy", std::make_shared<CopyConverter>()     },
 }),
     ConverterName_(std::regex(R"(\w+)")), StreamName_(std::regex(R"(\$\d+)")),
     Time_(std::regex(R"(\d+)")), Pass_(std::regex(R"(--)")), TasksCount_(10), curStream_(0) {

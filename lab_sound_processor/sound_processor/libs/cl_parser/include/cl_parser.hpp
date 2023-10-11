@@ -16,9 +16,6 @@ public:
 
 private:
   po::variables_map VM_;
-  std::string SettingsFile_;
-  std::string OutFile_;
-  std::vector<std::string > InputFiles_;
 };
 
 

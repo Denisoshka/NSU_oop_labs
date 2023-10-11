@@ -1,6 +1,6 @@
 #include "converters.hpp"
 
-
+/*
 void conv::Converter::setParams(conv::TaskParams& params) {
   taskInf_ = params;
 }
@@ -16,3 +16,4 @@ size_t conv::Converter::getReadSecond() {
 size_t conv::Converter::getWriteSecond() {
   return taskInf_.curSec;
 }
+*/

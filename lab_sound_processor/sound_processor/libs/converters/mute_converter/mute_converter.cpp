@@ -13,6 +13,31 @@ void conv::MuteConverter::process(std::vector<int16_t>& mainSample,
   ++taskInf_.curSec;
   //  params[0] = curSecond == params[2];
 }
+
+void conv::MuteConverter::setParams(conv::TaskParams& params) {
+  taskInf_ = params;
+}
+
+size_t conv::MuteConverter::getReadSecond() {
+  return taskInf_.curSec;
+}
+
+size_t conv::MuteConverter::getWriteSecond() {
+  return taskInf_.curSec;
+}
+
+bool conv::MuteConverter::taskFinished() {
+  return taskInf_.taskFinished;
+}
+
+size_t conv::MuteConverter::getReadStream() {
+  return taskInf_.stream;
+}
+/*
+size_t conv::MuteConverter::getWriteStream() {
+  return 0;
+}*/
+
 /*
 void conv::MuteConverter::setParams(conv::TaskParams&& params) {
   taskInf_ = std::move(params);
