@@ -29,7 +29,7 @@ bool conv::MixConverter::taskFinished() {
 }
 
 size_t conv::MixConverter::getReadStream() {
-  return taskInf_.stream;
+  return 0;
 }
 /*
 size_t conv::MixConverter::getWriteStream() {

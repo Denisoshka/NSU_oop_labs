@@ -61,8 +61,7 @@ void process::executeConversions() {
       pipeline.executeTask(mainSampleOut,subSampleIn);
       wavWriterOut.writeSample(mainSampleOut, writeSecond);
 
-      outDuration_ =
-              (pipeline.curWriteSecond() > outDuration_) ? pipeline.curWriteSecond() : outDuration_;
+      outDuration_ = (pipeline.curWriteSecond() > outDuration_) ? pipeline.curWriteSecond() : outDuration_;
     }
   }
 
