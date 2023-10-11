@@ -4,19 +4,20 @@
 #include <ios>
 #include <stdexcept>
 
-class StreamFailure: public std::ios_base::failure {
-public:
-  explicit StreamFailure(const std::string& filePath);
-};
+namespace conv {
+  class StreamFailure: public std::ios_base::failure {
+  public:
+    explicit StreamFailure(const std::string& filePath);
+  };
 
-class IncorrectSettingsFormat: public std::invalid_argument {
-public:
-  explicit IncorrectSettingsFormat(const std::string& settings);
-};
+  class IncorrectSettingsFormat: public std::invalid_argument {
+  public:
+    explicit IncorrectSettingsFormat(const std::string& settings);
+  };
 
-class UnckonwConverter: public std::invalid_argument {
-public:
-  explicit UnckonwConverter(const std::string& converter);
-};
-
+  class UnckonwConverter: public std::invalid_argument {
+  public:
+    explicit UnckonwConverter(const std::string& converter);
+  };
+}// namespace conv
 #endif// CONVERTERS_CONVERTER_EXCEPTIONS_HPP

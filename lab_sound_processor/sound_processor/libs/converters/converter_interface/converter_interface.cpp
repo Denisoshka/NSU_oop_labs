@@ -13,7 +13,7 @@ bool conv::ConverterInterface::setTask() {
   if( Pipeline_.empty() ) {
     return false;
   }
-//  TaskInf taskInf = std::move();
+  //  TaskInf taskInf = std::move();
   curStream_ = Pipeline_.front().params.stream;
   curTask_ = Pipeline_.front().converter;
   curTask_->setParams(Pipeline_.front().params);
@@ -32,7 +32,7 @@ void conv::ConverterInterface::setSettings(const std::string& SettingsPath,
   SettingsPath_ = SettingsPath;
   SettingsStream_.open(SettingsPath_, std::ios_base::in);
   if( SettingsStream_.fail() ) {
-    throw StreamFailure(SettingsPath_);
+    throw StreamFailure(SettingsPath_);// todo
   }
 
   FileLinks_.push_back("_");
@@ -52,7 +52,7 @@ void conv::ConverterInterface::fillPipeline_() {
   while( Pipeline_.size() != TasksCount_ && !SettingsStream_.eof() ) {
     std::getline(SettingsStream_, task);
     if( SettingsStream_.fail() ) {
-      throw StreamFailure(SettingsPath_);
+      throw StreamFailure(SettingsPath_);// todo
     }
     if( task.empty() || task[0] == '#' ) {
       continue;
@@ -90,6 +90,7 @@ void conv::ConverterInterface::fillPipeline_() {
     Pipeline_.push(std::move(taskInf_));
   }
 }
+
 /*
 
 void conv::ConverterInterface::setFileLinks_(const std::vector<std::string>& fileLinks) {
@@ -98,12 +99,10 @@ void conv::ConverterInterface::setFileLinks_(const std::vector<std::string>& fil
 */
 
 bool conv::ConverterInterface::taskFinished() {
-  if (curTask_.get()){
-    return true;
-  }
   return curTask_->taskFinished();
 }
-//конструктор вызывает эту функцию при инициализации
+// что то не так в наследовании todo
+// конструктор вызывает эту функцию при инициализации
 
 size_t conv::ConverterInterface::curStream() const {
   return curStream_;
@@ -120,11 +119,12 @@ size_t conv::ConverterInterface::curReadSecond() const {
 size_t conv::ConverterInterface::curWriteSecond() const {
   return curTask_->getWriteSecond();
 }
-/*
 
 conv::ConverterInterface::ConverterInterface()
-    : TasksCount_(10)
-    , curTask_(nullptr)
-    , curStream_(0) {
+    : converters_({
+            {"mix",  std::make_shared<MixConverter>() },
+            {"mute", std::make_shared<MuteConverter>()},
+}),
+    ConverterName_(std::regex(R"(\w+)")), StreamName_(std::regex(R"(\$\d+)")),
+    Time_(std::regex(R"(\d+)")), Pass_(std::regex(R"(--)")), TasksCount_(10), curStream_(0) {
 }
-*/

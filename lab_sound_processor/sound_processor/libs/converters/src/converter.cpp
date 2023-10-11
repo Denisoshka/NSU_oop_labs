@@ -5,7 +5,7 @@ void conv::Converter::setParams(conv::TaskParams& params) {
   taskInf_ = params;
 }
 
-bool conv::Converter::taskFinished() {
+bool conv::Converter::taskFinished() const {
   return taskInf_.taskFinished;
 }
 

@@ -8,9 +8,9 @@ bool clParser::parseOptions(int argc, char** argv) {
   po::options_description desc("General options");
   std::string task_type;
   desc.add_options()("help,h", "Show options description")(
-          "config,C", po::value<std::string>(&SettingsFile_)->required(), "Configuration file")(
-          "output,O", po::value<std::string>(&OutFile_)->required(), "Output file")(
-          "input,I", po::value<std::vector<std::string>>(&InputFiles_)->multitoken()->required(),
+          "config,C", po::value<std::string>()->required(), "Configuration file")(
+          "output,O", po::value<std::string>()->required(), "Output file")(
+          "input,I", po::value<std::vector<std::string>>()->multitoken()->required(),
           "Input files");
 
   po::variables_map vm;

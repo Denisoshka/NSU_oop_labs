@@ -50,7 +50,7 @@ namespace conv {
     virtual void setParams(conv::TaskParams& params);
     virtual size_t getReadSecond();
     virtual size_t getWriteSecond();
-    virtual bool taskFinished();
+    [[nodiscard]] bool taskFinished() const;
 
   private:
     TaskParams taskInf_;
@@ -87,7 +87,7 @@ namespace conv {
     BassBoostConverter() = default;
     ~BassBoostConverter() override = default;
     void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
-    //    void setParams(TaskParams&& params) override;
+//        void setParams(TaskParams&& params) ;
     //    size_t getReadSecond() override;
     //    size_t getWriteSecond() override;
 
@@ -112,13 +112,11 @@ namespace conv {
   class ConverterInterface {
   private:
     const int TasksCount_ = 10;
-    std::map<std::string, std::shared_ptr<Converter>> converters_{
-            {"mix",  std::make_shared<MixConverter>() },
-            {"mute", std::make_shared<MuteConverter>()},
-    };
+    std::map<std::string, std::shared_ptr<Converter>> converters_;
 
     //{"bass", std::make_shared<BassBoostConverter>()},
     //{"copy", std::make_shared<CopyConverter>()     },
+
     std::shared_ptr<Converter> curTask_;
 
     std::regex ConverterName_ = std::regex(R"(\w+)");
@@ -137,7 +135,7 @@ namespace conv {
     void fillPipeline_();
 
   public:
-    ConverterInterface() = default;
+    ConverterInterface();
 
     bool setTask();
     bool taskFinished();
