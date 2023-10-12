@@ -96,5 +96,7 @@ namespace WAV {
     size_t dataStart_ = 0;
     size_t writedData_ = 0;
   };
+
+  void makeWAVFile(const std::string& FilePath);
 }// namespace WAV
 #endif// WAV_WAV_HPP

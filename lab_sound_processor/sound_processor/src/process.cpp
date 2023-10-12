@@ -17,6 +17,7 @@ void process::setSettings(const po::variables_map& vm) {
 }
 
 void process::executeConversions() {
+  WAV::makeWAVFile(FileOutPath_);
   WAV::WAVWriter wavWriterOut(FileOutPath_);
   wavWriterOut.writeHeader(WAV::stdRIFFChunk, WAV::stdFormatChunk, WAV::stdDataChunk);
 
