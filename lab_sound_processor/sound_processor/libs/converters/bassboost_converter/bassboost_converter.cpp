@@ -25,6 +25,7 @@ size_t conv::BassBoostConverter::getWriteSecond() {
 
 void conv::BassBoostConverter::setParams(conv::TaskParams& params) {
   taskInf_ = params;
+  taskInf_.curSec = taskInf_.startTime;
   if (taskInf_.otherParams.size() == 2){
     bassFactor_ = taskInf_.otherParams[0];
     BassBoostCoeficent_ = taskInf_.otherParams[1];

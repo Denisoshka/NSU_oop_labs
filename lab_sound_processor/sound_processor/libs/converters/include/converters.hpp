@@ -100,7 +100,7 @@ namespace conv {
     bool taskFinished() override;
     size_t getReadStream() override;
     //    size_t getWriteStream() override;
-    
+
   private:
     void initLowPassFilter(size_t cutoffFrequency, size_t sampleRate = 44100);
     int16_t applyLowPassFilter(int16_t sample);
