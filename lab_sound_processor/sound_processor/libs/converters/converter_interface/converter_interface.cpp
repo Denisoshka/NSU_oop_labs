@@ -91,25 +91,9 @@ void conv::ConverterPipeline::fillPipeline_() {
   }
 }
 
-/*
-
-void conv::ConverterInterface::setFileLinks_(const std::vector<std::string>& fileLinks) {
-  FileLinks_ = fileLinks;
-}
-*/
-
 bool conv::ConverterPipeline::taskFinished() {
   return curTask_->taskFinished();
 }
-
-// что то не так в наследовании todo
-// конструктор вызывает эту функцию при инициализации
-/*
-
-size_t conv::ConverterPipeline::curStream() const {
-  return curStream_;
-}
-*/
 
 std::string conv::ConverterPipeline::curFile(const size_t stream) const {
   return FileLinks_[stream];
@@ -131,8 +115,10 @@ conv::ConverterPipeline::ConverterPipeline()
     : converters_({
             {"mix",  std::make_shared<MixConverter>()      },
             {"mute", std::make_shared<MuteConverter>()     },
-            {"bass", std::make_shared<BassBoostConverter>()},
+            {"lowpass", std::make_shared<LowPassConverter>()},
             {"copy", std::make_shared<CopyConverter>()     },
+            {"bass", std::make_shared<BassBoostConverter>()},
+
 }),
     ConverterName_(std::regex(R"(\w+)")), StreamName_(std::regex(R"(\$\d+)")),
     Time_(std::regex(R"(\d+)")), Pass_(std::regex(R"(--)")), TasksCount_(10), curStream_(0) {

@@ -23,18 +23,11 @@ void process::executeConversions() {
   WAV::WAVReader wavReaderOut{FileOutPath_};
   WAV::WAVReader wavReaderSub;
 
-/*
-  std::vector<int16_t> mainSampleIn;
-  mainSampleIn.resize(sampleRate_);
-*/
-
   std::vector<int16_t> subSampleIn;
   subSampleIn.resize(sampleRate_);
-
   std::vector<int16_t> mainSampleOut{};
   mainSampleOut.resize(sampleRate_);
 
-  // todo fix algo
   conv::ConverterPipeline pipeline{};
   pipeline.setSettings(SettingsFile_, FileLinks_);
   while( pipeline.setTask() ) {
@@ -58,16 +51,16 @@ void process::executeConversions() {
       }
 
       wavReaderSub.readSample(subSampleIn, readSecond);
-      pipeline.executeTask(mainSampleOut,subSampleIn);
+      pipeline.executeTask(mainSampleOut, subSampleIn);
       wavWriterOut.writeSample(mainSampleOut, writeSecond);
 
-      outDuration_ = (pipeline.curWriteSecond() > outDuration_) ? pipeline.curWriteSecond() : outDuration_;
+      outDuration_ =
+              (pipeline.curWriteSecond() > outDuration_) ? pipeline.curWriteSecond() : outDuration_;
     }
   }
 
   WAV::DataChunk finalDataChunk{WAV::stdDataChunk};
   finalDataChunk.Size = outDuration_ * sizeof(uint16_t) * sampleRate_;
-
   WAV::RIFFChunk finalRiffChunk{WAV::stdRIFFChunk};
   finalRiffChunk.Size = WAV::FINAL_RIFF_CHUNK_SIZE_WITHOUT_DATA_SIZE
                       + outDuration_ * sizeof(uint16_t) * sampleRate_;

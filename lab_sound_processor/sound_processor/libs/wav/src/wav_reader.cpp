@@ -51,7 +51,7 @@ void WAV::WAVReader::readHeader() {
   dataStart_ += sizeof(HeaderFormat_);
 
   if( HeaderFormat_.Id != FMT ) {
-    throw;// todo make ex
+    throw IncorrectAudioFormat(FilePath_);// todo make ex
   }
   if( HeaderFormat_.AudioFormat != AUDIO_FORMAT_PCM ) {
     throw IncorrectEncodingFormat(FilePath_);

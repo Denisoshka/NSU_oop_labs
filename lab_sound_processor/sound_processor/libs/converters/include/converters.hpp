@@ -52,7 +52,7 @@ namespace conv {
     virtual size_t getWriteSecond() = 0;
     [[nodiscard]] virtual bool taskFinished() = 0;
     virtual size_t getReadStream() = 0;
-//    virtual size_t getWriteStream() = 0;
+    //    virtual size_t getWriteStream() = 0;
 
   private:
   };
@@ -67,7 +67,7 @@ namespace conv {
     void setParams(conv::TaskParams& params) override;
     bool taskFinished() override;
     size_t getReadStream() override;
-//    size_t getWriteStream() override;
+    //    size_t getWriteStream() override;
 
   private:
     TaskParams taskInf_;
@@ -83,10 +83,32 @@ namespace conv {
     void setParams(TaskParams& params) override;
     bool taskFinished() override;
     size_t getReadStream() override;
-//    size_t getWriteStream() override;
+    //    size_t getWriteStream() override;
 
   private:
     TaskParams taskInf_;
+  };
+
+  class LowPassConverter: public Converter {
+  public:
+    LowPassConverter();
+    ~LowPassConverter() override = default;
+    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
+    size_t getReadSecond() override;
+    size_t getWriteSecond() override;
+    void setParams(TaskParams& params) override;
+    bool taskFinished() override;
+    size_t getReadStream() override;
+    //    size_t getWriteStream() override;
+    
+  private:
+    void initLowPassFilter(size_t cutoffFrequency, size_t sampleRate = 44100);
+    int16_t applyLowPassFilter(int16_t sample);
+    TaskParams taskInf_;
+    std::vector<double> coefficients;
+    std::vector<double> buffer;
+    size_t frequency;
+    int num_taps;
   };
 
   class BassBoostConverter: public Converter {
@@ -99,11 +121,12 @@ namespace conv {
     void setParams(TaskParams& params) override;
     bool taskFinished() override;
     size_t getReadStream() override;
-//    size_t getWriteStream() override;
-
 
   private:
     TaskParams taskInf_;
+    size_t BassBoostCoeficent_ = 2;
+    int16_t bassFactor_ = 1000;
+
   };
 
   class CopyConverter: public Converter {
@@ -116,7 +139,7 @@ namespace conv {
     void setParams(conv::TaskParams& params) override;
     bool taskFinished() override;
     size_t getReadStream() override;
-//    size_t getWriteStream() override;
+    //    size_t getWriteStream() override;
 
   private:
     TaskParams taskInf_;
@@ -159,7 +182,7 @@ namespace conv {
     size_t curReadSecond() const;
     size_t curWriteSecond() const;
     size_t curReadStream() const;
-//    size_t curWriteStream() const;
+    //    size_t curWriteStream() const;
   };
 }// namespace conv
 
