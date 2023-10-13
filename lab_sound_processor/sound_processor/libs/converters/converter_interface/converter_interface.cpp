@@ -113,12 +113,11 @@ size_t conv::ConverterPipeline::curReadStream() const {
 
 conv::ConverterPipeline::ConverterPipeline()
     : converters_({
-            {"mix",  std::make_shared<MixConverter>()      },
-            {"mute", std::make_shared<MuteConverter>()     },
-            {"lowpass", std::make_shared<LowPassConverter>()},
-            {"copy", std::make_shared<CopyConverter>()     },
-            {"bass", std::make_shared<BassBoostConverter>()},
-
+            {"mix",     std::make_shared<MixConverter>()      },
+            {"mute",    std::make_shared<MuteConverter>()     },
+            {"lowpass", std::make_shared<LowPassConverter>()  },
+            {"copy",    std::make_shared<CopyConverter>()     },
+            {"bass",    std::make_shared<BassBoostConverter>()},
 }),
     ConverterName_(std::regex(R"(\w+)")), StreamName_(std::regex(R"(\$\d+)")),
     Time_(std::regex(R"(\d+)")), Pass_(std::regex(R"(--)")), TasksCount_(10), curStream_(0) {
