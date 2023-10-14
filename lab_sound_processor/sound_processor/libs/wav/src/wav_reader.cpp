@@ -1,22 +1,11 @@
 #include "wav.hpp"
 #include "wav_exceptions.hpp"
 
-WAV::WAVReader::WAVReader(std::string& FilePath) {
+WAV::WAVReader::WAVReader(const std::string& FilePath) {
   open(FilePath);
 }
 
 void WAV::WAVReader::open(const std::string& FilePath) {
-  /*if( FilePath_ == FilePath ) {
-    FileIn_.seekg(dataStart_, std::ios::beg);
-    if( FileIn_.fail() ) {
-      throw StreamFailure(FilePath_);
-    }
-    return;
-  }*/
-
-  if( FilePath.find(".wav") == std::string::npos ) {
-    throw IncorrectExtension(FilePath_);
-  }
   FilePath_ = FilePath;
   dataStart_ = 0;
   if (FileIn_.is_open()){
@@ -50,7 +39,7 @@ void WAV::WAVReader::readHeader() {
   dataStart_ += sizeof(HeaderFormat_);
 
   if( HeaderFormat_.Id != FMT ) {
-    throw IncorrectAudioFormat(FilePath_);// todo make ex
+    throw IncorrectAudioFormat(FilePath_);
   }
   if( HeaderFormat_.AudioFormat != AUDIO_FORMAT_PCM ) {
     throw IncorrectEncodingFormat(FilePath_);
@@ -94,7 +83,6 @@ void WAV::WAVReader::readSample(std::vector<int16_t>& sample, const size_t secon
   }
 }
 
-// todo fix issue call func by default init
 size_t WAV::WAVReader::getDuration() const {
   return Data_.Size / HeaderFormat_.ByteRate;
 }

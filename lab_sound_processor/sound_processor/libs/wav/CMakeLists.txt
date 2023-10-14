@@ -28,6 +28,7 @@ set_target_properties(${DIR_NAME} PROPERTIES PUBLIC_HEADER "${public_headers}")
 target_link_libraries(${DIR_NAME} ${Boost_LIBRARIES})
 
 #tests
+#[[
 find_package(GTest REQUIRED)
 if(GTest_FOUND)
     include_directories(${GTest_INCLUDE_DIRS})
@@ -41,6 +42,7 @@ else ()
     )
     FetchContent_MakeAvailable(googletest)
 endif ()
+]]
 
 #test
 

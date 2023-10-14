@@ -24,11 +24,6 @@ namespace WAV {
   const int32_t FORMAT_CHUNK_LEN = 16;
   const int32_t FINAL_RIFF_CHUNK_SIZE_WITHOUT_DATA_SIZE = 36;
 
-  /*
-         int a = (sizeof(WAV::stdRIFFChunk)
-           - (sizeof(WAV::stdRIFFChunk.Id) + sizeof(WAV::stdRIFFChunk.Size)))
-          + sizeof(WAV::stdFormatChunk) + sizeof(WAV::DataChunk);
-*/
 
   struct __attribute__((__packed__)) RIFFChunk {
     int32_t Id;
@@ -61,7 +56,7 @@ namespace WAV {
   class WAVReader {
   public:
     WAVReader() = default;
-    WAVReader(std::string& FilePath);
+    WAVReader(const std::string& FilePath);
     ~WAVReader() = default;
     void open(const std::string& FilePath);
     void readSample(std::vector<int16_t>& sample, const size_t second);

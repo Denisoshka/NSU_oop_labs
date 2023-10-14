@@ -3,7 +3,7 @@
 
 void conv::BassBoostConverter::process(std::vector<int16_t>& mainSample,
                                        std::vector<int16_t>& subSample) {
-  if( taskInf_.curSec < taskInf_.endTime ) {
+  if( taskInf_.curTime < taskInf_.endTime ) {
     for( size_t i = 0; i < subSample.size(); ++i ) {
       int16_t sample = (subSample[i] < bassFactor_) ? subSample[i] : bassFactor_;
       sample = (llabs(sample) * BassBoostCoeficent_ > INT16_MAX)
@@ -11,21 +11,21 @@ void conv::BassBoostConverter::process(std::vector<int16_t>& mainSample,
       mainSample[i] = sample;
     }
   }
-  taskInf_.curSec++;
-  taskInf_.taskFinished = taskInf_.curSec >= taskInf_.endTime;
+  taskInf_.curTime++;
+  taskInf_.taskFinished = taskInf_.curTime >= taskInf_.endTime;
 }
 
 size_t conv::BassBoostConverter::getReadSecond() {
-  return taskInf_.curSec;
+  return taskInf_.curTime;
 }
 
 size_t conv::BassBoostConverter::getWriteSecond() {
-  return taskInf_.curSec;
+  return taskInf_.curTime;
 }
 
-void conv::BassBoostConverter::setParams(conv::TaskParams& params) {
+void conv::BassBoostConverter::setParams(conv::TaskParams&& params) {
   taskInf_ = params;
-  taskInf_.curSec = taskInf_.startTime;
+  taskInf_.curTime = taskInf_.startTime;
   if (taskInf_.otherParams.size() == 2){
     bassFactor_ = taskInf_.otherParams[0];
     BassBoostCoeficent_ = taskInf_.otherParams[1];

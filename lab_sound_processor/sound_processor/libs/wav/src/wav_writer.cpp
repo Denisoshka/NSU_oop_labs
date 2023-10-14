@@ -6,9 +6,6 @@ WAV::WAVWriter::WAVWriter(const std::string& FilePath) {
 }
 
 void WAV::WAVWriter::open(const std::string& FilePath) {
-  if( FilePath.find(".wav") == std::string::npos ) {
-    throw IncorrectExtension(FilePath);
-  }
   if( FileOut_.is_open() ) {
     FileOut_.close();
   }
