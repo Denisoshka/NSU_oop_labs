@@ -173,7 +173,7 @@ namespace conv {
 
     bool setTask();
     bool taskFinished();
-    void setSettings(const std::string& SettingsPath, const std::vector<std::string>& FileInLinks);
+    void setSettings(std::string&& SettingsPath, std::vector<std::string>&& FileInLinks);
     void executeTask(std::vector<int16_t>& sampleOut, std::vector<int16_t>& samples);
 
     std::string curFile(const size_t stream) const;

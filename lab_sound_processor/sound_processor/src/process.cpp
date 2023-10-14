@@ -2,14 +2,14 @@
 #include "converters.hpp"
 #include "wav.hpp"
 
-process::process(const po::variables_map& vm)
+process::process(po::variables_map& vm)
     : sampleRate_(WAV::SAMPLE_RATE)
     , SettingsFile_(vm["config"].as<std::string>())
     , FileOutPath_(vm["output"].as<std::string>())
     , FileLinks_(vm["input"].as<std::vector<std::string>>()) {
 }
 
-void process::setSettings(const po::variables_map& vm) {
+void process::setSettings(po::variables_map& vm) {
   sampleRate_ = WAV::SAMPLE_RATE;
   SettingsFile_ = vm["config"].as<std::string>();
   FileOutPath_ = vm["output"].as<std::string>();
@@ -30,7 +30,7 @@ void process::executeConversions() {
   mainSampleOut.resize(sampleRate_);
 
   conv::ConverterPipeline pipeline{};
-  pipeline.setSettings(SettingsFile_, FileLinks_);
+  pipeline.setSettings(std::move(SettingsFile_), std::move(FileLinks_));
   while( pipeline.setTask() ) {
     if( pipeline.curReadStream() ) {
       wavReaderSub.open(pipeline.curFile(pipeline.curReadStream()));

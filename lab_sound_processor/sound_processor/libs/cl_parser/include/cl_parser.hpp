@@ -10,12 +10,11 @@ namespace po = boost::program_options;
 class clParser {
 public:
   clParser() = default;
-  bool parseOptions(int argc, char** argv);
+  bool parseOptions(int argc, char** argv, po::variables_map& VM);
   void printConverterDesc();
   po::variables_map getVariablesMap();
 
 private:
-  po::variables_map VM_;
 };
 
 

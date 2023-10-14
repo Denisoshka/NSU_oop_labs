@@ -27,21 +27,19 @@ void conv::ConverterPipeline::executeTask(std::vector<int16_t>& sampleOut,
   curTask_->process(sampleOut, samples);
 }
 
-void conv::ConverterPipeline::setSettings(const std::string& SettingsPath,
-                                          const std::vector<std::string>& FileInLinks) {
-  SettingsPath_ = SettingsPath;
+void conv::ConverterPipeline::setSettings(std::string&& SettingsPath,
+                                          std::vector<std::string>&& FileInLinks) {
+  SettingsPath_ = std::move(SettingsPath);
   SettingsStream_.open(SettingsPath_, std::ios_base::in);
   if( SettingsStream_.fail() ) {
     throw StreamFailure(SettingsPath_);// todo
   }
 
   FileLinks_.push_back("_");
-  for( const auto& link: FileInLinks ) {
-    FileLinks_.push_back(link);
+  for( auto&& link: FileInLinks ) {
+    FileLinks_.push_back(std::move(link));
   }
 
-  //  FileLinks_ = FileInLinks;
-  //  FileLinks_.
   fillPipeline_();
 }
 

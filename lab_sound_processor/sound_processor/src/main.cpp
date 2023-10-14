@@ -5,13 +5,13 @@
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
+  po::variables_map VM;
   clParser parser{};
-  if( !parser.parseOptions(argc, argv) ) {
+  if( !parser.parseOptions(argc, argv, VM) ) {
     parser.printConverterDesc();
     return 0;
   }
-  po::variables_map vm = parser.getVariablesMap();
-  process soundProcessor{vm};
+  process soundProcessor{VM};
   soundProcessor.executeConversions();
 
   return 0;

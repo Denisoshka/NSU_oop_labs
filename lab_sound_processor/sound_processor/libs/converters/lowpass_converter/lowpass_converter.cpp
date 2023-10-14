@@ -90,7 +90,7 @@ size_t conv::LowPassConverter::getReadStream() {
 }
 
 conv::LowPassConverter::LowPassConverter()
-    : num_taps(500) {
+    : num_taps(200) {
   coefficients.resize(num_taps);
   buffer.resize(num_taps, 0.0);
 }
