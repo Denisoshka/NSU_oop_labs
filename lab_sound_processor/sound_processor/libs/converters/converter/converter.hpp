@@ -18,10 +18,10 @@ namespace conv {
   class Converter {
   public:
     Converter() = default;
-    Converter(TaskParams&& params);
+    Converter(std::vector<size_t>&& params);
     virtual ~Converter() = default;
     virtual void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) = 0;
-    virtual void setParams(conv::TaskParams&& params);
+    virtual void setParams(std::vector<size_t>&& params);
     virtual size_t getReadSecond();
     virtual size_t getWriteSecond();
     [[nodiscard]] virtual bool taskFinished();

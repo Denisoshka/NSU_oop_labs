@@ -1,8 +1,9 @@
 #include "process.hpp"
-#include <boost/tokenizer.hpp>
 #include "converters.hpp"
+#include "process_exceptions.hpp"
 #include "wav.hpp"
 
+#include <boost/tokenizer.hpp>
 #include <fstream>
 #include <map>
 #include <memory>
@@ -11,11 +12,25 @@
 #include <string>
 #include <vector>
 
+const std::regex ConverterName_{std::regex(R"(\w+)")};
+const std::regex StreamName_{std::regex(R"(\$\d+)")};
+const std::regex Time_{std::regex(R"(\d+)")};
+const std::regex Pass_{std::regex(R"(--)")};
+const size_t TasksCount_ = 10;
+
+enum settingsPos {
+  converter,
+  stream,
+  timeStart,
+  timeEnd,
+};
+
 process::process(boost::program_options::variables_map& vm)
     : SampleRate_(WAV::SAMPLE_RATE)
     , FileInPath_(vm["input"].as<std::vector<std::string>>())
     , SettingsPath_(vm["config"].as<std::string>())
-    , FileOutPath_(vm["output"].as<std::string>()) {
+    , FileOutPath_(vm["output"].as<std::string>())
+    , SettingsStream_(std::ifstream(vm["config"].as<std::string>())) {
 }
 
 void process::setSettings(boost::program_options::variables_map& vm) {
@@ -23,6 +38,7 @@ void process::setSettings(boost::program_options::variables_map& vm) {
   SettingsPath_ = vm["config"].as<std::string>();
   FileOutPath_ = vm["output"].as<std::string>();
   FileInPath_ = vm["input"].as<std::vector<std::string>>();
+  SettingsStream_ = std::ifstream(vm["config"].as<std::string>());
 }
 
 void process::executeConversions() {
@@ -38,13 +54,12 @@ void process::executeConversions() {
   std::vector<int16_t> mainSampleOut{};
   mainSampleOut.resize(SampleRate_);
 
-
+  fillPipeline();
   while( !Pipeline_.empty() ) {
     TaskInf task = Pipeline_.front();
     Pipeline_.pop();
-    conv::TaskParams params = conv::convertToCONVParams(std::move(task.params));
     std::unique_ptr<conv::Converter> converter =
-            conv::makeConverter(task.converter, std::move(params));
+            conv::makeConverter(task.converter, std::move(task.params));
 
     if( converter->getReadStream() ) {
       wavReaderSub.open(FileInPath_[converter->getReadStream()]);
@@ -73,6 +88,10 @@ void process::executeConversions() {
       OutDuration_ = (converter->getWriteSecond() > OutDuration_) ? converter->getWriteSecond()
                                                                   : OutDuration_;
     }
+
+    if (Pipeline_.empty()){
+      fillPipeline();
+    }
   }
 
   WAV::DataChunk finalDataChunk{WAV::stdDataChunk};
@@ -84,18 +103,11 @@ void process::executeConversions() {
   wavWriterOut.writeHeader(finalRiffChunk, WAV::stdFormatChunk, finalDataChunk);
 }
 
-const std::regex ConverterName_ = std::regex(R"(\w+)");
-const std::regex StreamName_ = std::regex(R"(\$\d+)");
-const std::regex Time_ = std::regex(R"(\d+)");
-const std::regex Pass_ = std::regex(R"(--)");
-const size_t TasksCount_ = 10;
-
-void fillPipeline_() {
-
-  std::string task;
+void process::fillPipeline() {
   boost::char_separator<char> sep(" ");
 
   while( Pipeline_.size() != TasksCount_ && !SettingsStream_.eof() ) {
+    std::string task;
     std::getline(SettingsStream_, task);
     if( SettingsStream_.fail() ) {
       throw StreamFailure(SettingsPath_);// todo
@@ -109,25 +121,21 @@ void fillPipeline_() {
     // todo переписать на boost po
     for( const std::string& token: tokens ) {
       if( tokenPosition == settingsPos::converter && regex_match(token, ConverterName_) ) {
-        taskInf_.converter = ;
-      }
-      else if( regex_match(token, Pass_) ) {
+        taskInf_.converter = std::move(token);
       }
       else if( tokenPosition == settingsPos::stream && (regex_match(token, StreamName_)) ) {
-        taskInf_.params.stream = std::atoll(token.data() + 1);
+        taskInf_.params.push_back(std::atoll(token.data() + 1));
       }
-      else if( tokenPosition == settingsPos::timeStart && regex_match(token, Time_) ) {
-        taskInf_.params.startTime = std::atoll(token.data());
+      else if( tokenPosition > settingsPos::stream && regex_match(token, Time_) ) {
+        taskInf_.params.push_back(std::atoll(token.data()));
       }
-      else if( tokenPosition == settingsPos::timeEnd && regex_match(token, Time_) ) {
-        taskInf_.params.endTime = std::atoll(token.data());
-      }
-      else if( tokenPosition > settingsPos::timeEnd && regex_match(token, Time_) ) {
-        taskInf_.params.otherParams.push_back(std::atoll(token.data()));
+      else if( regex_match(token, Pass_) ) {
+        taskInf_.params.push_back(SIZE_MAX);
       }
       else {
         throw IncorrectSettingsFormat(task);
       }
+
       tokenPosition++;
     }
     Pipeline_.push(taskInf_);

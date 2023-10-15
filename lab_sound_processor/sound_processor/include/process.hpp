@@ -6,11 +6,14 @@
 #include <boost/program_options.hpp>
 #include <string>
 #include <queue>
+#include <fstream>
 
 struct TaskInf {
   std::string converter;
   std::vector<size_t> params;
 };
+
+
 
 class process {
 public:
@@ -29,5 +32,7 @@ private:
   std::vector<std::string> FileInPath_;
   std::string SettingsPath_;
   std::string FileOutPath_;
+
+  std::ifstream SettingsStream_;
 };
 

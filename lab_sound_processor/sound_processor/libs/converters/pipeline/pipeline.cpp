@@ -1,3 +1,4 @@
+/*
 #include "pipeline.hpp"
 
 #include "converter_exceptions.hpp"
@@ -21,10 +22,6 @@ bool conv::ConverterPipeline::setTask() {
   return true;
 }
 
-void conv::ConverterPipeline::executeTask(std::vector<int16_t>& sampleOut,
-                                          std::vector<int16_t>& samples) {
-  curTask_->process(sampleOut, samples);
-}
 
 void conv::ConverterPipeline::setSettings(std::string&& SettingsPath,
                                           std::vector<std::string>&& FileInLinks) {
@@ -41,28 +38,4 @@ void conv::ConverterPipeline::setSettings(std::string&& SettingsPath,
 
   fillPipeline_();
 }
-
-bool conv::ConverterPipeline::taskFinished() {
-  return curTask_->taskFinished();
-}
-
-std::string conv::ConverterPipeline::curFile(const size_t stream) const {
-  return FileLinks_[stream];
-}
-
-size_t conv::ConverterPipeline::curReadSecond() const {
-  return curTask_->getReadSecond();
-}
-
-size_t conv::ConverterPipeline::curWriteSecond() const {
-  return curTask_->getWriteSecond();
-}
-
-size_t conv::ConverterPipeline::curReadStream() const {
-  return curTask_->getReadStream();
-}
-
-conv::ConverterPipeline::ConverterPipeline()
-    : TasksCount_(10)
-    , curStream_(0) {
-}
+*/

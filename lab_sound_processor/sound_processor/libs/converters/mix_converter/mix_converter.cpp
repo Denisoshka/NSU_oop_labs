@@ -16,6 +16,6 @@ size_t conv::MixConverter::getReadStream() {
   return 0;
 }
 
-conv::MixConverter::MixConverter(conv::TaskParams&& params)
+conv::MixConverter::MixConverter(std::vector<size_t>&& params)
     : Converter(std::move(params)) {
 }

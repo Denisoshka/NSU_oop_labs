@@ -25,9 +25,9 @@ endif ()
 message(STATUS "project name: ${PROJECT_NAME}")
 add_executable(${LIBRARY_NAME} ${SOURCE_DIRS})
 target_compile_options(${LIBRARY_NAME} PRIVATE -pedantic -Wall -Werror)
-
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 include_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/libs/converters
         ${CMAKE_CURRENT_SOURCE_DIR}/libs/wav
         ${CMAKE_CURRENT_SOURCE_DIR}/libs/cl_parser)

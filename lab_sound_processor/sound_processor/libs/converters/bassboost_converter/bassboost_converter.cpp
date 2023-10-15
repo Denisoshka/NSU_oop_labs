@@ -1,5 +1,6 @@
 #include <cstdint>
 #include "converters.hpp"
+#include "bassboost_conveter.hpp"
 
 void conv::BassBoostConverter::process(std::vector<int16_t>& mainSample,
                                        std::vector<int16_t>& subSample) {
@@ -23,8 +24,8 @@ size_t conv::BassBoostConverter::getWriteSecond() {
   return taskInf_.curTime;
 }
 
-void conv::BassBoostConverter::setParams(conv::TaskParams&& params) {
-  taskInf_ = params;
+void conv::BassBoostConverter::setParams(std::vector<size_t>&& params) {
+  taskInf_ = conv::convertToCONVParams(std::move(params));
   taskInf_.curTime = taskInf_.startTime;
   if (taskInf_.otherParams.size() == 2){
     bassFactor_ = taskInf_.otherParams[0];
@@ -41,4 +42,8 @@ bool conv::BassBoostConverter::taskFinished() {
 
 size_t conv::BassBoostConverter::getReadStream() {
   return taskInf_.stream;
+}
+
+conv::BassBoostConverter::BassBoostConverter(std::vector<size_t> params) {
+  BassBoostConverter::setParams(std::move(params));
 }

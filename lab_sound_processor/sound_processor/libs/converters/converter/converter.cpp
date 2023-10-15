@@ -1,17 +1,14 @@
 #include "converter.hpp"
 
-conv::TaskParams convertToCONVparams(std::vector<size_t>&& params) {
-  conv::TaskParams task{.curTime = 0};
-  task.stream = params[0];
-  //  params.erase(params.begin());
-  task.startTime = params[1];
-  //  params.erase(params.begin());
-  task.endTime = params[3];
-  //  params.erase(params.begin());
-  task.taskFinished = static_cast<bool>(params[4]),
-  //  params.erase(params.begin());
-//          params.erase(params.begin(), params.begin() + 4);
-  std::move(params.begin() + 5, params.end(), task.otherParams.begin());
+conv::TaskParams conv::convertToCONVParams(std::vector<size_t>&& params) {
+  conv::TaskParams task{.stream = (params[0] == SIZE_MAX) ? 0 : params[0],
+                        .startTime = (params[1] == SIZE_MAX) ? 0 : params[1],
+                        .curTime = 0,
+                        .endTime = (params[2] == SIZE_MAX) ? SIZE_MAX - 1 : params[2],
+                        .taskFinished = false};
+  for( size_t i = 3; i < params.size(); ++i ) {
+    task.otherParams.push_back(params[i]);
+  }
   return task;
 }
 
@@ -31,12 +28,11 @@ size_t conv::Converter::getReadStream() {
   return taskInf_.stream;
 }
 
-void conv::Converter::setParams(conv::TaskParams&& params) {
-  taskInf_ = std::move(params);
+void conv::Converter::setParams(std::vector<size_t>&& params) {
+  taskInf_ = conv::convertToCONVParams(std::move(params));
   taskInf_.curTime = taskInf_.startTime;
 }
 
-conv::Converter::Converter(conv::TaskParams&& params) {
-  taskInf_ = std::move(params);
-  taskInf_.curTime = taskInf_.startTime;
+conv::Converter::Converter(std::vector<size_t>&& params) {
+  Converter::setParams(std::move(params));
 }
