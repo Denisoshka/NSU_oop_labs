@@ -6,7 +6,7 @@ namespace conv {
   class CopyConverter: public Converter {
   public:
     CopyConverter() = default;
-    CopyConverter(const std::vector<size_t>& params);
+    CopyConverter(const std::vector<size_t>& kParams);
     virtual ~CopyConverter() override = default;
     virtual void process(std::vector<int16_t>& mainSample,
                          const std::vector<int16_t>& kSubSample) override;

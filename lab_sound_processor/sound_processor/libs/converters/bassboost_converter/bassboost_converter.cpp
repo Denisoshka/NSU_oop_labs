@@ -2,7 +2,7 @@
 #include "bassboost_conveter.hpp"
 #include "converters.hpp"
 
-void conv::BassBoostConverter::process(std::vector<int16_t>& kMainSample,
+void conv::BassBoostConverter::process(std::vector<int16_t>& mainSample,
                                        const std::vector<int16_t>& kSubSample) {
   if( taskInf_.curTime < taskInf_.endTime ) {
     for( size_t i = 0; i < kSubSample.size(); ++i ) {
@@ -10,7 +10,7 @@ void conv::BassBoostConverter::process(std::vector<int16_t>& kMainSample,
       sample = (llabs(sample) * BassBoostCoeficent_ > INT16_MAX)
                      ? INT16_MAX * (llabs(sample) / bassFactor_)
                      : sample * BassBoostCoeficent_;
-      kMainSample[i] = sample;
+      mainSample[i] = sample;
     }
   }
   taskInf_.curTime++;
@@ -28,6 +28,6 @@ void conv::BassBoostConverter::setParams(const std::vector<size_t>& kParams) {
   }
 }
 
-conv::BassBoostConverter::BassBoostConverter(const std::vector<size_t>& params) {
-  BassBoostConverter::setParams(params);
+conv::BassBoostConverter::BassBoostConverter(const std::vector<size_t>& kParams) {
+  BassBoostConverter::setParams(kParams);
 }

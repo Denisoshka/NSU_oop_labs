@@ -36,11 +36,13 @@ namespace {
 
   struct __attribute__((__packed__)) DataChunk {
     int32_t Id;
-    int32_t Size;
+    uint32_t Size;
   };
 
   const RIFFChunk stdRIFFChunk{kRIFF, 0, kWAVE};
-  const FormatChunk stdFormatChunk{kFMT,        kFormatChunkLen, kAudioFormatPCM, kNumChannels, kDefSampleRate, kByteRate,       kBlockAlign,     kBitsPerSample};
+  const FormatChunk stdFormatChunk{kFMT,         kFormatChunkLen, kAudioFormatPCM,
+                                   kNumChannels, kDefSampleRate,  kByteRate,
+                                   kBlockAlign,  kBitsPerSample};
   const DataChunk stdDataChunk{kDATA, 0};
 }// namespace
 
@@ -165,17 +167,17 @@ void WAV::WAVWriter::writeSample(const std::vector<int16_t>& kSample, const size
 
 void WAV::WAVWriter::writeHeader(const size_t kDuration) {
   DataChunk finalDataChunk{stdDataChunk};
-  finalDataChunk.Size = kDuration * sizeof(uint16_t);
+  finalDataChunk.Size = kDuration * sizeof(int16_t) * kDefSampleRate;
   RIFFChunk finalRiffChunk{stdRIFFChunk};
-  finalRiffChunk.Size = kFinalRIFFChunkSizeWithoutDataSize + sizeof(uint16_t) * kDuration;
+  finalRiffChunk.Size = kFinalRIFFChunkSizeWithoutDataSize + finalDataChunk.Size;
 
   FileOut_.seekp(std::ios::beg);
   FileOut_.write(reinterpret_cast<const char *>(&finalRiffChunk), sizeof(finalRiffChunk));
   FileOut_.write(reinterpret_cast<const char *>(&stdFormatChunk), sizeof(stdFormatChunk));
   FileOut_.write(reinterpret_cast<const char *>(&finalDataChunk), sizeof(finalDataChunk));
   dataStart_ = sizeof(finalRiffChunk) + sizeof(stdFormatChunk) + sizeof(finalDataChunk);
-
   FileOut_.flush();
+
   if( FileOut_.fail() ) {
     throw StreamFailure(FilePath_);
   }

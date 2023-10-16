@@ -29,7 +29,7 @@ namespace conv {
     return ((taskInf_.curTime - taskInf_.startTime) % acceleration_) ? 0 : taskInf_.stream;
   }
 
-  CopyConverter::CopyConverter(const std::vector<size_t>& params) {
-    CopyConverter::setParams(params);
+  CopyConverter::CopyConverter(const std::vector<size_t>& kParams) {
+    CopyConverter::setParams(kParams);
   }
 }// namespace conv

@@ -6,7 +6,7 @@ namespace conv {
   class Converter {
   public:
     Converter() = default;
-    Converter(const std::vector<size_t>& params);
+    Converter(const std::vector<size_t>& kParams);
     virtual ~Converter() = default;
     virtual void process(std::vector<int16_t>& mainSample,
                          const std::vector<int16_t>& kSubSample) = 0;
