@@ -9,7 +9,7 @@ WAV::IncorrectExtension::IncorrectExtension(const std::string& filePath)
 }
 
 WAV::IncorrectRIFFHeader::IncorrectRIFFHeader(const std::string& filePath)
-    : IncorrectFileFormat(filePath, "Incorrect RIFF header") {
+    : IncorrectFileFormat(filePath, "Incorrect kRIFF header") {
 }
 
 WAV::IncorrectFormatType::IncorrectFormatType(const std::string& filePath)

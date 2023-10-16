@@ -6,12 +6,13 @@ namespace conv {
   class CopyConverter: public Converter {
   public:
     CopyConverter() = default;
-    CopyConverter(std::vector<size_t>&& params);
-    ~CopyConverter() override = default;
-    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
-    size_t getWriteSecond() override;
-    void setParams(std::vector<size_t>&& params) override;
-    size_t getReadStream() override;
+    CopyConverter(const std::vector<size_t>& params);
+    virtual ~CopyConverter() override = default;
+    virtual void process(std::vector<int16_t>& mainSample,
+                         const std::vector<int16_t>& kSubSample) override;
+    virtual size_t getWriteSecond() override;
+    virtual void setParams(const std::vector<size_t>& kParams) override;
+    virtual size_t getReadStream() override;
 
   private:
     size_t acceleration_ = 1;

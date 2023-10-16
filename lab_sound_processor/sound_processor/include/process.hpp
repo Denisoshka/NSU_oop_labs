@@ -1,33 +1,39 @@
 #pragma once
 
-#include "cl_parser.hpp"
-#include "converters.hpp"
-
 #include <boost/program_options.hpp>
-#include <string>
-#include <queue>
 #include <fstream>
+#include <queue>
+#include <string>
 
 struct TaskInf {
   std::string converter;
   std::vector<size_t> params;
 };
 
-
-
-class process {
+class Pipeline {
 public:
-  process() = default;
-  process(boost::program_options::variables_map& vm);
-  void setSettings(boost::program_options::variables_map& vm);
-  void fillPipeline();
+  Pipeline(const std::string& kSettingsPath, const size_t kTasksCount);
+  bool empty() const;
+  TaskInf pop();
+  void fill();
+
+private:
+  size_t tasksCount_;
+  std::string settingsPath_;
+  std::ifstream settingsStream_;
+  std::queue<TaskInf> container_{};
+};
+
+class Process {
+public:
+  Process() = default;
+  Process(const boost::program_options::variables_map& kVM);
+  void setSettings(const boost::program_options::variables_map& kVM);
   void executeConversions();
 
 private:
   size_t OutDuration_ = 0;
   int32_t SampleRate_;
-
-  std::queue<TaskInf> Pipeline_;
 
   std::vector<std::string> FileInPath_;
   std::string SettingsPath_;
@@ -35,4 +41,3 @@ private:
 
   std::ifstream SettingsStream_;
 };
-

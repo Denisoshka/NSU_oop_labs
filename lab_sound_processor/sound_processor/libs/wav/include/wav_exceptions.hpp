@@ -1,8 +1,8 @@
-#ifndef WAV_WAV_EXCEPTIONS_H
-#define WAV_WAV_EXCEPTIONS_H
+#pragma once
 
 #include <ios>
 #include <stdexcept>
+
 namespace WAV {
   class IncorrectFileFormat: public std::invalid_argument {
   protected:
@@ -64,4 +64,3 @@ namespace WAV {
     explicit IncorrectEncodingFormat(const std::string& file_path);
   };
 }// namespace WAV
-#endif// WAV_WAV_EXCEPTIONS_H

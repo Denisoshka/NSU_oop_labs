@@ -1,49 +1,33 @@
 #include <cstdint>
-#include "converters.hpp"
 #include "bassboost_conveter.hpp"
+#include "converters.hpp"
 
-void conv::BassBoostConverter::process(std::vector<int16_t>& mainSample,
-                                       std::vector<int16_t>& subSample) {
+void conv::BassBoostConverter::process(std::vector<int16_t>& kMainSample,
+                                       const std::vector<int16_t>& kSubSample) {
   if( taskInf_.curTime < taskInf_.endTime ) {
-    for( size_t i = 0; i < subSample.size(); ++i ) {
-      int16_t sample = (subSample[i] < bassFactor_) ? subSample[i] : bassFactor_;
+    for( size_t i = 0; i < kSubSample.size(); ++i ) {
+      int16_t sample = (kSubSample[i] < bassFactor_) ? kSubSample[i] : bassFactor_;
       sample = (llabs(sample) * BassBoostCoeficent_ > INT16_MAX)
-              ? INT16_MAX * (llabs(sample) / bassFactor_) : sample * BassBoostCoeficent_;
-      mainSample[i] = sample;
+                     ? INT16_MAX * (llabs(sample) / bassFactor_)
+                     : sample * BassBoostCoeficent_;
+      kMainSample[i] = sample;
     }
   }
   taskInf_.curTime++;
   taskInf_.taskFinished = taskInf_.curTime >= taskInf_.endTime;
 }
 
-size_t conv::BassBoostConverter::getReadSecond() {
-  return taskInf_.curTime;
-}
-
-size_t conv::BassBoostConverter::getWriteSecond() {
-  return taskInf_.curTime;
-}
-
-void conv::BassBoostConverter::setParams(std::vector<size_t>&& params) {
-  taskInf_ = conv::convertToCONVParams(std::move(params));
-  taskInf_.curTime = taskInf_.startTime;
-  if (taskInf_.otherParams.size() == 2){
+void conv::BassBoostConverter::setParams(const std::vector<size_t>& kParams) {
+  Converter::setParams(kParams);
+  if( taskInf_.otherParams.size() == 2 ) {
     bassFactor_ = taskInf_.otherParams[0];
     BassBoostCoeficent_ = taskInf_.otherParams[1];
   }
-  else if (taskInf_.otherParams.size() == 1){
+  else if( taskInf_.otherParams.size() == 1 ) {
     bassFactor_ = taskInf_.otherParams[0];
   }
 }
 
-bool conv::BassBoostConverter::taskFinished() {
-  return taskInf_.taskFinished;
-}
-
-size_t conv::BassBoostConverter::getReadStream() {
-  return taskInf_.stream;
-}
-
-conv::BassBoostConverter::BassBoostConverter(std::vector<size_t> params) {
-  BassBoostConverter::setParams(std::move(params));
+conv::BassBoostConverter::BassBoostConverter(const std::vector<size_t>& params) {
+  BassBoostConverter::setParams(params);
 }

@@ -2,17 +2,18 @@
 #include "converters.hpp"
 
 void conv::MuteConverter::process(std::vector<int16_t>& mainSample,
-                                  std::vector<int16_t>& subSample) {
+                                  const std::vector<int16_t>& kSubSample) {
   if( taskInf_.startTime <= taskInf_.curTime && taskInf_.curTime < taskInf_.endTime ) {
     std::fill(mainSample.begin(), mainSample.end(), 0);
   }
   ++taskInf_.curTime;
 }
 
-void conv::MuteConverter::setParams(std::vector<size_t>&& params) {
-  taskInf_ = convertToCONVParams(std::move(params));
+void conv::MuteConverter::setParams(const std::vector<size_t>& kParams) {
+  Converter::setParams(std::move(kParams));
+  taskInf_.startTime = 0;
 }
 
-conv::MuteConverter::MuteConverter(std::vector<size_t>&& params) {
-  MuteConverter::setParams(std::move(params));
+conv::MuteConverter::MuteConverter(const std::vector<size_t>& kParams) {
+  MuteConverter::setParams(std::move(kParams));
 }

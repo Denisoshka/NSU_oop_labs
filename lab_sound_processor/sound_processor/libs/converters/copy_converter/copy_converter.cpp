@@ -2,13 +2,12 @@
 
 namespace conv {
   void conv::CopyConverter::process(std::vector<int16_t>& mainSample,
-                                    std::vector<int16_t>& subSample) {
+                                    const std::vector<int16_t>& kSubSample) {
     if( taskInf_.curTime < (taskInf_.startTime + taskInf_.endTime) ) {
-//      size_t newTime = taskInf_.endTime / acceleration_;
       size_t acceleratedSampleLen = mainSample.size() / acceleration_;
       for( size_t i = 0; i < acceleratedSampleLen; ++i ) {
         mainSample[(taskInf_.curTime - taskInf_.startTime) % acceleration_ * acceleratedSampleLen
-                   + i] = subSample[i * acceleration_];
+                   + i] = kSubSample[i * acceleration_];
       }
     }
     ++taskInf_.curTime;
@@ -19,9 +18,8 @@ namespace conv {
     return taskInf_.startTime + (taskInf_.curTime - taskInf_.startTime) / acceleration_;
   }
 
-  void conv::CopyConverter::setParams(std::vector<size_t>&& params) {
-    taskInf_ = conv::convertToCONVParams(std::move(params));
-    taskInf_.curTime = taskInf_.startTime;
+  void conv::CopyConverter::setParams(const std::vector<size_t>& kParams) {
+    Converter::setParams(std::move(kParams));
     acceleration_ = (taskInf_.otherParams.empty() || taskInf_.otherParams[0] == SIZE_MAX)
                           ? 1
                           : taskInf_.otherParams.front();
@@ -31,7 +29,7 @@ namespace conv {
     return ((taskInf_.curTime - taskInf_.startTime) % acceleration_) ? 0 : taskInf_.stream;
   }
 
-  CopyConverter::CopyConverter(std::vector<size_t>&& params) {
-    CopyConverter::setParams(std::move(params));
+  CopyConverter::CopyConverter(const std::vector<size_t>& params) {
+    CopyConverter::setParams(params);
   }
 }// namespace conv

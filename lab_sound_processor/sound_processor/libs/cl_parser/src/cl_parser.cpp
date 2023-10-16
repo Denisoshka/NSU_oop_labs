@@ -5,7 +5,8 @@
 
 namespace po = boost::program_options;
 
-bool clParser::parseOptions(int argc, char** argv, po::variables_map& vm) {
+bool CLParser::parseOptions(const int kArgc, char **argv,
+                            boost::program_options::variables_map& vm) {
   po::options_description desc("General options");
   std::string task_type;
   desc.add_options()("help,h", "Show options description")(
@@ -15,7 +16,7 @@ bool clParser::parseOptions(int argc, char** argv, po::variables_map& vm) {
           "Input files");
 
   po::parsed_options parsed =
-          po::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
+          po::command_line_parser(kArgc, argv).options(desc).allow_unregistered().run();
   po::store(parsed, vm);
   po::notify(vm);
 
@@ -27,7 +28,7 @@ bool clParser::parseOptions(int argc, char** argv, po::variables_map& vm) {
   }
 }
 
-void clParser::printConverterDesc() {
+void CLParser::printConverterDesc() {
   std::cout << "sound_processor [-h] [-c config.txt output.wav input1.wav [input2.wav …]]"
             << std::endl;
 }

@@ -7,44 +7,46 @@
 #include <fstream>
 #include <map>
 #include <memory>
-#include <queue>
 #include <regex>
 #include <string>
 #include <vector>
 
-const std::regex ConverterName_{std::regex(R"(\w+)")};
-const std::regex StreamName_{std::regex(R"(\$\d+)")};
-const std::regex Time_{std::regex(R"(\d+)")};
-const std::regex Pass_{std::regex(R"(--)")};
-const size_t TasksCount_ = 10;
+namespace {
+  const size_t kDefSampleRate = 44100;
+  const std::regex kDefConverterName_{std::regex(R"(\w+)")};
+  const std::regex kDefStreamName_{std::regex(R"(\$\d+)")};
+  const std::regex kDefTime{std::regex(R"(\d+)")};
+  const std::regex kDefPass{std::regex(R"(--)")};
+  const size_t kDefTasksCount = 10;
+  const boost::char_separator<char> kDefSep(" ");
 
-enum settingsPos {
-  converter,
-  stream,
-  timeStart,
-  timeEnd,
-};
+  enum ekSettingsPos {
+    converter,
+    stream,
+  };
+}// namespace
 
-process::process(boost::program_options::variables_map& vm)
-    : SampleRate_(WAV::SAMPLE_RATE)
-    , FileInPath_(vm["input"].as<std::vector<std::string>>())
-    , SettingsPath_(vm["config"].as<std::string>())
-    , FileOutPath_(vm["output"].as<std::string>())
-    , SettingsStream_(std::ifstream(vm["config"].as<std::string>())) {
+Process::Process(const boost::program_options::variables_map& kVM)
+    : SampleRate_(kDefSampleRate)
+    , FileInPath_(kVM["input"].as<std::vector<std::string>>())
+    , SettingsPath_(kVM["config"].as<std::string>())
+    , FileOutPath_(kVM["output"].as<std::string>())
+    , SettingsStream_(std::ifstream(kVM["config"].as<std::string>())) {
 }
 
-void process::setSettings(boost::program_options::variables_map& vm) {
-  SampleRate_ = WAV::SAMPLE_RATE;
-  SettingsPath_ = vm["config"].as<std::string>();
-  FileOutPath_ = vm["output"].as<std::string>();
-  FileInPath_ = vm["input"].as<std::vector<std::string>>();
-  SettingsStream_ = std::ifstream(vm["config"].as<std::string>());
+void Process::setSettings(const boost::program_options::variables_map& kVM) {
+  SampleRate_ = kDefSampleRate;
+
+  SettingsPath_ = kVM["config"].as<std::string>();
+  FileOutPath_ = kVM["output"].as<std::string>();
+  FileInPath_ = kVM["input"].as<std::vector<std::string>>();
+  SettingsStream_ = std::ifstream(kVM["config"].as<std::string>());
 }
 
-void process::executeConversions() {
+void Process::executeConversions() {
   WAV::makeWAVFile(FileOutPath_);
   WAV::WAVWriter wavWriterOut(FileOutPath_);
-  wavWriterOut.writeHeader(WAV::stdRIFFChunk, WAV::stdFormatChunk, WAV::stdDataChunk);
+  wavWriterOut.writeHeader(OutDuration_);
 
   WAV::WAVReader wavReaderOut{FileOutPath_};
   WAV::WAVReader wavReaderSub;
@@ -54,13 +56,15 @@ void process::executeConversions() {
   std::vector<int16_t> mainSampleOut{};
   mainSampleOut.resize(SampleRate_);
 
-  fillPipeline();
-  while( !Pipeline_.empty() ) {
-    TaskInf task = Pipeline_.front();
-    Pipeline_.pop();
-    std::unique_ptr<conv::Converter> converter =
-            conv::makeConverter(task.converter, std::move(task.params));
+  Pipeline pipeline{SettingsPath_, kDefTasksCount};
+  pipeline.fill();
+  while( !pipeline.empty() ) {
+    TaskInf task = pipeline.pop();
+    if( pipeline.empty() ) {
+      pipeline.fill();
+    }
 
+    std::unique_ptr<conv::Converter> converter = conv::makeConverter(task.converter, task.params);
     if( converter->getReadStream() ) {
       wavReaderSub.open(FileInPath_[converter->getReadStream()]);
     }
@@ -88,48 +92,51 @@ void process::executeConversions() {
       OutDuration_ = (converter->getWriteSecond() > OutDuration_) ? converter->getWriteSecond()
                                                                   : OutDuration_;
     }
-
-    if (Pipeline_.empty()){
-      fillPipeline();
-    }
   }
-
-  WAV::DataChunk finalDataChunk{WAV::stdDataChunk};
-  finalDataChunk.Size = OutDuration_ * sizeof(uint16_t) * SampleRate_;
-  WAV::RIFFChunk finalRiffChunk{WAV::stdRIFFChunk};
-  finalRiffChunk.Size = WAV::FINAL_RIFF_CHUNK_SIZE_WITHOUT_DATA_SIZE
-                      + OutDuration_ * sizeof(uint16_t) * SampleRate_;
-
-  wavWriterOut.writeHeader(finalRiffChunk, WAV::stdFormatChunk, finalDataChunk);
+  wavWriterOut.writeHeader(OutDuration_);
 }
 
-void process::fillPipeline() {
-  boost::char_separator<char> sep(" ");
+Pipeline::Pipeline(const std::string& kSettingsPath, const size_t kTasksCount)
+    : tasksCount_(kTasksCount)
+    , settingsPath_(kSettingsPath)
+    , settingsStream_(std::ifstream(kSettingsPath)) {
+}
 
-  while( Pipeline_.size() != TasksCount_ && !SettingsStream_.eof() ) {
+bool Pipeline::empty() const {
+  return container_.empty();
+}
+
+TaskInf Pipeline::pop() {
+  TaskInf Tmp = container_.front();
+  container_.pop();
+  return Tmp;
+}
+
+void Pipeline::fill() {
+  while( container_.size() != tasksCount_ && !settingsStream_.eof() ) {
     std::string task;
-    std::getline(SettingsStream_, task);
-    if( SettingsStream_.fail() ) {
-      throw StreamFailure(SettingsPath_);// todo
+    std::getline(settingsStream_, task);
+    if( settingsStream_.fail() ) {
+      throw StreamFailure(settingsPath_);// todo
     }
     if( task.empty() || task[0] == '#' ) {
       continue;
     }
     TaskInf taskInf_;
-    boost::tokenizer<boost::char_separator<char>> tokens(task, sep);
+    boost::tokenizer<boost::char_separator<char>> tokens(task, kDefSep);
     size_t tokenPosition = 0;
     // todo переписать на boost po
     for( const std::string& token: tokens ) {
-      if( tokenPosition == settingsPos::converter && regex_match(token, ConverterName_) ) {
+      if( tokenPosition == ekSettingsPos::converter && regex_match(token, kDefConverterName_) ) {
         taskInf_.converter = std::move(token);
       }
-      else if( tokenPosition == settingsPos::stream && (regex_match(token, StreamName_)) ) {
+      else if( tokenPosition == ekSettingsPos::stream && (regex_match(token, kDefStreamName_)) ) {
         taskInf_.params.push_back(std::atoll(token.data() + 1));
       }
-      else if( tokenPosition > settingsPos::stream && regex_match(token, Time_) ) {
+      else if( tokenPosition > ekSettingsPos::stream && regex_match(token, kDefTime) ) {
         taskInf_.params.push_back(std::atoll(token.data()));
       }
-      else if( regex_match(token, Pass_) ) {
+      else if( regex_match(token, kDefPass) ) {
         taskInf_.params.push_back(SIZE_MAX);
       }
       else {
@@ -138,6 +145,6 @@ void process::fillPipeline() {
 
       tokenPosition++;
     }
-    Pipeline_.push(taskInf_);
+    container_.push(taskInf_);
   }
 }

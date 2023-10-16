@@ -5,10 +5,10 @@ namespace conv {
   class MuteConverter: public conv::Converter {
   public:
     MuteConverter() = default;
-    MuteConverter(std::vector<size_t>&& params);
-    ~MuteConverter() override = default;
-    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
-    void setParams(std::vector<size_t>&& params) override;
+    MuteConverter(const std::vector<size_t>& kParams);
+    virtual ~MuteConverter() override = default;
+    virtual void process(std::vector<int16_t>& mainSample, const std::vector<int16_t>& kSubSample) override;
+    virtual void setParams(const std::vector<size_t>& kParams) override;
 
   private:
   };

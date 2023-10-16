@@ -3,12 +3,11 @@
 
 #include <boost/program_options.hpp>
 
-class clParser {
+class CLParser {
 public:
-  clParser() = default;
-  bool parseOptions(int argc, char** argv, boost::program_options::variables_map& vm);
+  CLParser() = default;
+  bool parseOptions(const int kArgc, char **argv, boost::program_options::variables_map& vm);
   void printConverterDesc();
-  boost::program_options::variables_map getVariablesMap();
 
 private:
 };

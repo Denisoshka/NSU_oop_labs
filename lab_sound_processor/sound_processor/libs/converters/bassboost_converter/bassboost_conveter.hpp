@@ -6,14 +6,10 @@ namespace conv {
   class BassBoostConverter: public conv::Converter {
   public:
     BassBoostConverter() = default;
-    BassBoostConverter(std::vector<size_t> params);
-    ~BassBoostConverter() override = default;
-    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
-    size_t getReadSecond() override;
-    size_t getWriteSecond() override;
-    void setParams(std::vector<size_t>&& params) override;
-    bool taskFinished() override;
-    size_t getReadStream() override;
+    BassBoostConverter(const std::vector<size_t>& params);
+    virtual ~BassBoostConverter() override = default;
+    virtual void process(std::vector<int16_t>& kMainSample, const std::vector<int16_t>& kSubSample) override;
+    virtual void setParams(const std::vector<size_t>& kParams) override;
 
   private:
     size_t BassBoostCoeficent_ = 1;

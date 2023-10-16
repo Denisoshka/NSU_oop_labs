@@ -14,17 +14,15 @@ message(STATUS "project name: ${PROJECT_NAME}")
 add_library(${DIR_NAME} SHARED ${SOURCE_DIRS})
 target_compile_features(${DIR_NAME} INTERFACE cxx_std_20)
 
-file(GLOB PRIVATE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/*_*")
+file(GLOB PRIVATE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_include_directories(${DIR_NAME}
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-        PRIVATE
-        ${PRIVATE_INCLUDES}
 )
 
-file(GLOB SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
-set_target_properties(${DIR_NAME} PROPERTIES PUBLIC_HEADER "${public_headers}")
+file(GLOB PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
+set_target_properties(${DIR_NAME} PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADER}")
 target_link_libraries(${DIR_NAME} ${Boost_LIBRARIES})
 
 #tests

@@ -1,17 +1,16 @@
 #include <boost/program_options.hpp>
 
+#include "cl_parser.hpp"
 #include "process.hpp"
 
-namespace po = boost::program_options;
-
 int main(int argc, char** argv) {
-  po::variables_map VM;
-  clParser parser{};
+  boost::program_options::variables_map VM;
+  CLParser parser{};
   if( !parser.parseOptions(argc, argv, VM) ) {
     parser.printConverterDesc();
     return 0;
   }
-  process soundProcessor{VM};
+  Process soundProcessor{VM};
   soundProcessor.executeConversions();
 
   return 0;

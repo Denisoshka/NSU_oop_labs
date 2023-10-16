@@ -5,14 +5,14 @@ namespace conv {
   class LowPassConverter: public Converter {
   public:
     LowPassConverter();
-    LowPassConverter(std::vector<size_t>&& params);
-    ~LowPassConverter() override = default;
-    void process(std::vector<int16_t>& mainSample, std::vector<int16_t>& subSample) override;
-    void setParams(std::vector<size_t>&& params) override;
+    LowPassConverter(const std::vector<size_t>& kParams);
+    virtual ~LowPassConverter() override = default;
+    virtual void process(std::vector<int16_t>& mainSample, const std::vector<int16_t>& kSubSample) override;
+    virtual void setParams(const std::vector<size_t>& kParams) override;
 
   private:
-    void initLowPassFilter(size_t cutoffFrequency, size_t sampleRate = 44100);
-    int16_t applyLowPassFilter(int16_t sample);
+    void initLowPassFilter(const size_t kCutoffFrequency, const size_t kSampleRate = 44100);
+    int16_t applyLowPassFilter(const int16_t kSample);
     std::vector<double> coefficients;
     std::vector<double> buffer;
     size_t frequency_;
