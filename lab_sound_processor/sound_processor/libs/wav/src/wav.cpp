@@ -163,11 +163,11 @@ void WAV::WAVWriter::writeSample(const std::vector<int16_t>& kSample, const size
   }
 }
 
-void WAV::WAVWriter::writeHeader(const size_t kdataSize) {
+void WAV::WAVWriter::writeHeader(const size_t kDuration) {
   DataChunk finalDataChunk{stdDataChunk};
-  finalDataChunk.Size = kdataSize * sizeof(uint16_t);
+  finalDataChunk.Size = kDuration * sizeof(uint16_t);
   RIFFChunk finalRiffChunk{stdRIFFChunk};
-  finalRiffChunk.Size = kFinalRIFFChunkSizeWithoutDataSize + sizeof(uint16_t) * kdataSize;
+  finalRiffChunk.Size = kFinalRIFFChunkSizeWithoutDataSize + sizeof(uint16_t) * kDuration;
 
   FileOut_.seekp(std::ios::beg);
   FileOut_.write(reinterpret_cast<const char *>(&finalRiffChunk), sizeof(finalRiffChunk));

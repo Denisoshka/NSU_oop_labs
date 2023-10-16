@@ -32,7 +32,7 @@ namespace WAV {
     ~WAVWriter() = default;
     void open(const std::string& kFilePath);
     void writeSample(const std::vector<int16_t>& kSample, const size_t kSecond);
-    void writeHeader(const size_t kdataSize);
+    void writeHeader(const size_t kDuration);
 
   private:
     std::string FilePath_;
