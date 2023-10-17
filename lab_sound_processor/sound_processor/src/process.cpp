@@ -99,7 +99,7 @@ void Process::executeConversions() {
 Pipeline::Pipeline(const std::string& kSettingsPath, const size_t kTasksCount)
     : tasksCount_(kTasksCount)
     , settingsPath_(kSettingsPath)
-    , settingsStream_(std::ifstream(kSettingsPath)) {
+    , settingsStream_(std::ifstream(kSettingsPath, std::ios::in)) {
 }
 
 bool Pipeline::empty() const {
