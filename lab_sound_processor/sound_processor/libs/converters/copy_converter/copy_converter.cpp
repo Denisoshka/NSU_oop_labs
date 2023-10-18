@@ -19,7 +19,7 @@ namespace conv {
   }
 
   void conv::CopyConverter::setParams(const std::vector<size_t>& kParams) {
-    Converter::setParams(std::move(kParams));
+    Converter::setParams(kParams);
     acceleration_ = (taskInf_.otherParams.empty() || taskInf_.otherParams[0] == SIZE_MAX)
                           ? 1
                           : taskInf_.otherParams.front();

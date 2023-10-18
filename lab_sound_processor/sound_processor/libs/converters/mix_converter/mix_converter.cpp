@@ -13,5 +13,5 @@ void conv::MixConverter::process(std::vector<int16_t>& mainSample,
 }
 
 conv::MixConverter::MixConverter(const std::vector<size_t>& kParams)
-    : Converter(std::move(kParams)) {
+    : Converter(kParams) {
 }

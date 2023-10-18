@@ -28,5 +28,5 @@ void conv::Converter::setParams(const std::vector<size_t>& kParams) {
 }
 
 conv::Converter::Converter(const std::vector<size_t>& kParams) {
-  Converter::setParams(std::move(kParams));
+  Converter::setParams(kParams);
 }
