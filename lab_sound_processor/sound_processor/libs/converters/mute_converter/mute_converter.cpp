@@ -10,10 +10,10 @@ void conv::MuteConverter::process(std::vector<int16_t>& mainSample,
 }
 
 void conv::MuteConverter::setParams(const std::vector<size_t>& kParams) {
-  Converter::setParams(std::move(kParams));
+  Converter::setParams(kParams);
   taskInf_.startTime = 0;
 }
 
 conv::MuteConverter::MuteConverter(const std::vector<size_t>& kParams) {
-  MuteConverter::setParams(std::move(kParams));
+  MuteConverter::setParams(kParams);
 }
