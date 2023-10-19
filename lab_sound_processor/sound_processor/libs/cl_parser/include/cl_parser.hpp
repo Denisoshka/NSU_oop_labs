@@ -7,7 +7,6 @@ class CLParser {
 public:
   CLParser() = default;
   bool parseOptions(const int kArgc, char **argv, boost::program_options::variables_map& vm);
-  void printConverterDesc();
 
 private:
 };

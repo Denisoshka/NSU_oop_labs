@@ -27,6 +27,6 @@ std::unique_ptr<conv::Converter> conv::makeConverter(const std::string& converte
     return std::make_unique<conv::CopyConverter>(params);
   }
   else {
-    throw conv::UnckonwConverter(converterName);
+    throw conv::UnckownConverter(converterName);
   }
 }

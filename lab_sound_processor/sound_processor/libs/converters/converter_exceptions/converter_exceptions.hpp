@@ -4,8 +4,8 @@
 #include <stdexcept>
 
 namespace conv {
-  class UnckonwConverter: public std::invalid_argument {
+  class UnckownConverter: public std::invalid_argument {
   public:
-    explicit UnckonwConverter(const std::string& converter);
+    explicit UnckownConverter(const std::string& converter);
   };
 }// namespace conv

@@ -1,4 +1,5 @@
 {
   "name": "copy_converter",
-  "description": "copy_converter"
+  "params": "stream(def=output_stream(0)), start(sec=0), end(sec=max_value), acceleration(int value>=1, def=1)",
+  "description" : "copy from stream(i) to out"
 }

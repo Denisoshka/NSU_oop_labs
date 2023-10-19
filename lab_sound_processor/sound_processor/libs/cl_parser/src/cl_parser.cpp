@@ -27,8 +27,3 @@ bool CLParser::parseOptions(const int kArgc, char **argv,
     return true;
   }
 }
-
-void CLParser::printConverterDesc() {
-  std::cout << "sound_processor [-h] [-c config.txt output.wav input1.wav [input2.wav …]]"
-            << std::endl;
-}

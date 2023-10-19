@@ -41,3 +41,6 @@ private:
 
   std::ifstream SettingsStream_;
 };
+
+
+void printConverterDesc(const std::string& kUsage,const std::string & kDescription);

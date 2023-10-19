@@ -3,8 +3,11 @@
 #include "process_exceptions.hpp"
 #include "wav.hpp"
 
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <boost/tokenizer.hpp>
 #include <fstream>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <regex>
@@ -146,5 +149,25 @@ void Pipeline::fill() {
       tokenPosition++;
     }
     container_.push(taskInf_);
+  }
+}
+
+void printConverterDesc(const std::string& kUsage, const std::string& kDescription) {
+  boost::property_tree::ptree jsonConvertersTree;
+  std::stringstream ss{kDescription};
+  boost::property_tree::read_json(ss, jsonConvertersTree);
+  const boost::property_tree::ptree& kConvertersDeskArray =
+          jsonConvertersTree.get_child("converters");
+  const int indent = 30;
+  std::cout << kUsage << std::endl;
+  std::cout << std::left << std::setw(indent) << "Сonverter"
+            << " Description" << std::endl;
+
+  for( const auto& kConverterDesk: kConvertersDeskArray ) {
+    std::cout << std::left << std::setw(indent) << kConverterDesk.second.get<std::string>("name")
+              << std::right << kConverterDesk.second.get<std::string>("params") << "\n"
+              << std::setw(indent) << std::left << " "
+              << kConverterDesk.second.get<std::string>("description") << "\n"
+              << std::endl;
   }
 }

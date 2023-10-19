@@ -1,0 +1,29 @@
+{
+  "converters": [
+    {
+      "name": "bassboost_converter",
+      "params": "Stream(def=output_stream(0)), Start(sec=0), End(sec=max_value), BassFactor(HZ=1000), BassBoostCoeficent(def=1)",
+      "description": "Only hard bass boost from input stream, to output stream, only hardcore"
+    },
+    {
+      "name": "copy_converter",
+      "params": "stream(def=output_stream(0)), start(sec=0), end(sec=max_value), acceleration(int value>=1, def=1)",
+      "description": "copy from stream(i) to out"
+    },
+    {
+      "name": "lowpass_converter",
+      "params": "stream(def=output_stream(0)), start(sec=0), end(sec=max_value), frequency(def=2000)",
+      "description": "in general, it seems to cut off the lower frequencies and with a large 4th parameter makes good sound overload"
+    },
+    {
+      "name": "mix_converter",
+      "params": "stream(def=output_stream(0)), start(def=0), end(def=max_value)",
+      "description": "mix input stream with output stream"
+    },
+    {
+      "name": "mute_converter",
+      "params": "stream(def=output_stream(0)), start(def=0), end(def=max_value)",
+      "description": "mute output stream lol"
+    }
+  ]
+}

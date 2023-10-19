@@ -1,4 +1,5 @@
 {
   "name": "bassboost_converter",
-  "description": "bassboost_converter"
+  "params": "Stream(def=output_stream(0)), Start(sec=0), End(sec=max_value), BassFactor(HZ=1000), BassBoostCoeficent(def=1)",
+  "description" : "Only hard bass boost from input stream, to output stream, only hardcore"
 }

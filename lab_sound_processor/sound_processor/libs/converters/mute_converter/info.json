@@ -1,4 +1,5 @@
 {
   "name": "mute_converter",
-  "description": "mute_converter"
+  "params": "stream(def=output_stream(0)), start(def=0), end(def=max_value)",
+  "description" : "mute output stream lol"
 }

@@ -12,15 +12,15 @@ message(STATUS ${SOURCE_DIRS})
 
 find_package(Boost REQUIRED COMPONENTS regex)
 if (Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
+  include_directories(${Boost_INCLUDE_DIRS})
 else ()
-    include(FetchContent)
-    FetchContent_Declare(
-            Boost
-            GIT_REPOSITORY https://github.com/boostorg/boost.git
-            GIT_TAG boost-1.80.0
-    )
-    FetchContent_MakeAvailable(Boost)
+  include(FetchContent)
+  FetchContent_Declare(
+          Boost
+          GIT_REPOSITORY https://github.com/boostorg/boost.git
+          GIT_TAG boost-1.80.0
+  )
+  FetchContent_MakeAvailable(Boost)
 endif ()
 
 message(STATUS "project name: ${PROJECT_NAME}")
@@ -30,6 +30,7 @@ target_compile_features(${DIR_NAME} INTERFACE cxx_std_20)
 file(GLOB PUBLIC_INCLUDES
         "${CMAKE_CURRENT_SOURCE_DIR}/converter"
         "${CMAKE_CURRENT_SOURCE_DIR}/factory"
+        "${CMAKE_CURRENT_SOURCE_DIR}/other_tools"
 )
 
 file(GLOB PRIVATE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/*_*")
@@ -47,17 +48,22 @@ file(GLOB SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
 #set_target_properties(${DIR_NAME} PROPERTIES ${SOURCE_DIRS} )
 target_link_libraries(${DIR_NAME} Boost::regex)
 
-#tests
-#[[
+set(OUTPUT_JSON "${CMAKE_CURRENT_SOURCE_DIR}/converters_description.json")
+file(GLOB CONVERTER_JSONS "${CMAKE_CURRENT_SOURCE_DIR}/*_*/info.json")
 
-set(TEST_NAME "test_${DIR_NAME}")
-add_executable(${TEST_NAME} test/${TEST_NAME}.cpp)
-target_link_libraries(${TEST_NAME} ${PROJECT_NAME}
-        gtest
-        gtest_main
-        Boost::regex)
+execute_process(
+        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/combine_json.py ${OUTPUT_JSON} ${CONVERTER_JSONS}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        RESULT_VARIABLE SCRIPT_RESULT
+)
 
-add_test(NAME ${TEST_NAME}
-        COMMAND ${TEST_NAME}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
-        ]]
+if (SCRIPT_RESULT EQUAL 0)
+  message(STATUS "converters description generated")
+else ()
+  message(STATUS "converters description not generated")
+endif ()
+
+file(READ ${OUTPUT_JSON} OUTPUT_JSON_INFO)
+string(REPLACE  "\"" "\\\"" OUTPUT_JSON_INFO "${OUTPUT_JSON_INFO}" )
+string(REPLACE  "\n" "" OUTPUT_JSON_INFO "${OUTPUT_JSON_INFO}" )
+target_compile_definitions(${DIR_NAME} PRIVATE CONVERTERS_DESC="${OUTPUT_JSON_INFO}")
