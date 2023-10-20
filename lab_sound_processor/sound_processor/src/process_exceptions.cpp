@@ -1,9 +1,9 @@
 #include "process_exceptions.hpp"
 
-StreamFailure::StreamFailure(const std::string& filePath)
-    : std::ios_base::failure(filePath + " failure ") {
+StreamFailure::StreamFailure(const std::string& kFilePath)
+    : std::ios_base::failure(kFilePath + " failure ") {
 }
 
-IncorrectSettingsFormat::IncorrectSettingsFormat(const std::string& settings)
-    : std::invalid_argument(settings) {
+IncorrectSettingsFormat::IncorrectSettingsFormat(const std::string& kSettings)
+    : std::invalid_argument(kSettings) {
 }

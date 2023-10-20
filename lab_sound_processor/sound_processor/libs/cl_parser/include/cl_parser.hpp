@@ -6,8 +6,8 @@
 class CLParser {
 public:
   CLParser() = default;
-  bool parseOptions(const int kArgc, char **argv, boost::program_options::variables_map& vm);
-
+  bool parseOptions(const int kArgc, char **Argv, boost::program_options::variables_map& VM);
+  std::string getParseDescription();
 private:
 };
 

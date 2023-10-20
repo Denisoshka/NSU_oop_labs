@@ -24,8 +24,8 @@ namespace {
   const boost::char_separator<char> kDefSep(" ");
 
   enum ekSettingsPos {
-    converter,
-    stream,
+    ekConverter,
+    ekStream,
   };
 }// namespace
 
@@ -39,7 +39,6 @@ Process::Process(const boost::program_options::variables_map& kVM)
 
 void Process::setSettings(const boost::program_options::variables_map& kVM) {
   SampleRate_ = kDefSampleRate;
-
   SettingsPath_ = kVM["config"].as<std::string>();
   FileOutPath_ = kVM["output"].as<std::string>();
   FileInPath_ = kVM["input"].as<std::vector<std::string>>();
@@ -67,21 +66,21 @@ void Process::executeConversions() {
       pipeline.fill();
     }
 
-    std::unique_ptr<conv::Converter> converter = conv::makeConverter(task.converter, task.params);
+    std::unique_ptr<conv::Converter> converter = conv::makeConverter(task.Converter, task.Params);
     if( converter->getReadStream() ) {
       wavReaderSub.open(FileInPath_[converter->getReadStream()]);
     }
 
-    size_t CurReadDuration =
+    size_t curReadDuration =
             (converter->getReadStream()) ? wavReaderSub.getDuration() : OutDuration_;
-    while( !converter->taskFinished() && converter->getReadSecond() < CurReadDuration ) {
+    while( !converter->taskFinished() && converter->getReadSecond() < curReadDuration ) {
       size_t readSecond = converter->getReadSecond();
       size_t writeSecond = converter->getWriteSecond();
 
-      if( converter->getReadStream() && readSecond < CurReadDuration ) {
+      if( converter->getReadStream() && readSecond < curReadDuration ) {
         wavReaderSub.readSample(mainSampleOut, readSecond);
       }
-      else if( !converter->getReadStream() && writeSecond < CurReadDuration ) {
+      else if( !converter->getReadStream() && writeSecond < curReadDuration ) {
         wavReaderOut.readSample(mainSampleOut, writeSecond);
       }
       else {
@@ -100,27 +99,27 @@ void Process::executeConversions() {
 }
 
 Pipeline::Pipeline(const std::string& kSettingsPath, const size_t kTasksCount)
-    : tasksCount_(kTasksCount)
-    , settingsPath_(kSettingsPath)
-    , settingsStream_(std::ifstream(kSettingsPath, std::ios::in)) {
+    : TasksCount_(kTasksCount)
+    , SettingsPath_(kSettingsPath)
+    , SettingsStream_(std::ifstream(kSettingsPath, std::ios::in)) {
 }
 
 bool Pipeline::empty() const {
-  return container_.empty();
+  return Container_.empty();
 }
 
 TaskInf Pipeline::pop() {
-  TaskInf Tmp = container_.front();
-  container_.pop();
+  TaskInf Tmp = Container_.front();
+  Container_.pop();
   return Tmp;
 }
 
 void Pipeline::fill() {
-  while( container_.size() != tasksCount_ && !settingsStream_.eof() ) {
+  while( Container_.size() != TasksCount_ && !SettingsStream_.eof() ) {
     std::string task;
-    std::getline(settingsStream_, task);
-    if( settingsStream_.fail() ) {
-      throw StreamFailure(settingsPath_);// todo
+    std::getline(SettingsStream_, task);
+    if( SettingsStream_.fail() ) {
+      throw StreamFailure(SettingsPath_);// todo
     }
     if( task.empty() || task[0] == '#' ) {
       continue;
@@ -130,17 +129,17 @@ void Pipeline::fill() {
     size_t tokenPosition = 0;
     // todo переписать на boost po
     for( const std::string& token: tokens ) {
-      if( tokenPosition == ekSettingsPos::converter && regex_match(token, kDefConverterName_) ) {
-        taskInf_.converter = std::move(token);
+      if( tokenPosition == ekSettingsPos::ekConverter && regex_match(token, kDefConverterName_) ) {
+        taskInf_.Converter = std::move(token);
       }
-      else if( tokenPosition == ekSettingsPos::stream && (regex_match(token, kDefStreamName_)) ) {
-        taskInf_.params.push_back(std::atoll(token.data() + 1));
+      else if( tokenPosition == ekSettingsPos::ekStream && (regex_match(token, kDefStreamName_)) ) {
+        taskInf_.Params.push_back(std::atoll(token.data() + 1));
       }
-      else if( tokenPosition > ekSettingsPos::stream && regex_match(token, kDefTime) ) {
-        taskInf_.params.push_back(std::atoll(token.data()));
+      else if( tokenPosition > ekSettingsPos::ekStream && regex_match(token, kDefTime) ) {
+        taskInf_.Params.push_back(std::atoll(token.data()));
       }
       else if( regex_match(token, kDefPass) ) {
-        taskInf_.params.push_back(SIZE_MAX);
+        taskInf_.Params.push_back(SIZE_MAX);
       }
       else {
         throw IncorrectSettingsFormat(task);
@@ -148,24 +147,25 @@ void Pipeline::fill() {
 
       tokenPosition++;
     }
-    container_.push(taskInf_);
+    Container_.push(taskInf_);
   }
 }
 
-void printConverterDesc(const std::string& kUsage, const std::string& kDescription) {
+void printConverterDesc(const std::string& kProgramName, const std::string& kUsage,
+                        const std::string& kDescription) {
   boost::property_tree::ptree jsonConvertersTree;
   std::stringstream ss{kDescription};
   boost::property_tree::read_json(ss, jsonConvertersTree);
   const boost::property_tree::ptree& kConvertersDeskArray =
           jsonConvertersTree.get_child("converters");
   const int indent = 30;
-  std::cout << kUsage << std::endl;
+  std::cout << kProgramName << " " << kUsage << std::endl;
   std::cout << std::left << std::setw(indent) << "Сonverter"
             << " Description" << std::endl;
 
   for( const auto& kConverterDesk: kConvertersDeskArray ) {
     std::cout << std::left << std::setw(indent) << kConverterDesk.second.get<std::string>("name")
-              << std::right << kConverterDesk.second.get<std::string>("params") << "\n"
+              << std::right << kConverterDesk.second.get<std::string>("Params") << "\n"
               << std::setw(indent) << std::left << " "
               << kConverterDesk.second.get<std::string>("description") << "\n"
               << std::endl;

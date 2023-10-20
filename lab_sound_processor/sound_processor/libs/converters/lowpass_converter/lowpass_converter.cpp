@@ -4,55 +4,55 @@
 #include <cmath>
 
 void conv::LowPassConverter::initLowPassFilter(const size_t kCutoffFrequency, const size_t kSampleRate) {
-  double omega_c =
+  double OmegaC =
           2.0 * M_PI * static_cast<double>(kCutoffFrequency) / static_cast<double>(kSampleRate);
-  double alpha = (num_taps - 1) / 2.0;
+  double Alpha = (NumTaps - 1) / 2.0;
 
-  for( size_t i = 0; i < num_taps; ++i ) {
-    if( i == static_cast<size_t>(alpha) ) {
-      coefficients[i] = omega_c / M_PI;
+  for( size_t i = 0; i < NumTaps; ++i ) {
+    if( i == static_cast<size_t>(Alpha) ) {
+      Coefficients[i] = OmegaC / M_PI;
     }
     else {
-      coefficients[i] = sin(omega_c * (static_cast<double>(i) - alpha))
-                      / (M_PI * (static_cast<double>(i) - alpha));
+      Coefficients[i] = sin(OmegaC * (static_cast<double>(i) - Alpha))
+                      / (M_PI * (static_cast<double>(i) - Alpha));
     }
   }
 }
 
 int16_t conv::LowPassConverter::applyLowPassFilter(const int16_t kSample) {
-  buffer.push_back(kSample);
-  buffer.erase(buffer.begin());
+  Buffer.push_back(kSample);
+  Buffer.erase(Buffer.begin());
   double output = 0.0;
-  for( int j = 0; j < buffer.size(); ++j ) {
-    output += buffer[j] * coefficients[j];
+  for( int j = 0; j < Buffer.size(); ++j ) {
+    output += Buffer[j] * Coefficients[j];
   }
   return static_cast<int16_t>(output);
 }
 
-void conv::LowPassConverter::process(std::vector<int16_t>& mainSample,
+void conv::LowPassConverter::process(std::vector<int16_t>& MainSample,
                                      const std::vector<int16_t>& kSubSample) {
-  if( taskInf_.curTime < taskInf_.endTime ) {
+  if( TaskInf_.CurTime < TaskInf_.EndTime ) {
     for( size_t i = 0; i < kSubSample.size(); ++i ) {
-      mainSample[i] = applyLowPassFilter(mainSample[i]);
+      MainSample[i] = applyLowPassFilter(MainSample[i]);
     }
   }
-  taskInf_.curTime++;
-  taskInf_.taskFinished = taskInf_.curTime >= taskInf_.endTime;
+  TaskInf_.CurTime++;
+  TaskInf_.TaskFinished = TaskInf_.CurTime >= TaskInf_.EndTime;
 }
 
 void conv::LowPassConverter::setParams(const std::vector<size_t>& kParams) {
   Converter::setParams(kParams);
-  frequency_ = (taskInf_.otherParams.empty() || taskInf_.otherParams.front() == SIZE_MAX)
-                     ? frequency_
-                     : taskInf_.otherParams.front();
-  initLowPassFilter(frequency_);
+  Frequency_ = (TaskInf_.OtherParams.empty() || TaskInf_.OtherParams.front() == SIZE_MAX)
+                     ? Frequency_
+                     : TaskInf_.OtherParams.front();
+  initLowPassFilter(Frequency_);
 }
 
 conv::LowPassConverter::LowPassConverter()
-    : num_taps(200)
-    , frequency_(2000) {
-  coefficients.resize(num_taps);
-  buffer.resize(num_taps, 0.0);
+    : NumTaps(200)
+    , Frequency_(2000) {
+  Coefficients.resize(NumTaps);
+  Buffer.resize(NumTaps, 0.0);
 }
 
 conv::LowPassConverter::LowPassConverter(const std::vector<size_t>& kParams)

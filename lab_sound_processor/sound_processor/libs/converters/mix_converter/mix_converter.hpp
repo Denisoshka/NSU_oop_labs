@@ -8,7 +8,7 @@ namespace conv {
     MixConverter() = default;
     MixConverter(const std::vector<size_t>& kParams);
     virtual ~MixConverter() override = default;
-    virtual void process(std::vector<int16_t>& mainSample, const std::vector<int16_t>& kSubSample) override;
+    virtual void process(std::vector<int16_t>& MainSample, const std::vector<int16_t>& kSubSample) override;
 
   private:
   };

@@ -6,8 +6,8 @@
 #include <string>
 
 struct TaskInf {
-  std::string converter;
-  std::vector<size_t> params;
+  std::string Converter;
+  std::vector<size_t> Params;
 };
 
 class Pipeline {
@@ -18,10 +18,10 @@ public:
   void fill();
 
 private:
-  size_t tasksCount_;
-  std::string settingsPath_;
-  std::ifstream settingsStream_;
-  std::queue<TaskInf> container_{};
+  size_t TasksCount_;
+  std::string SettingsPath_;
+  std::ifstream SettingsStream_;
+  std::queue<TaskInf> Container_{};
 };
 
 class Process {
@@ -42,5 +42,5 @@ private:
   std::ifstream SettingsStream_;
 };
 
-
-void printConverterDesc(const std::string& kUsage,const std::string & kDescription);
+void printConverterDesc(const std::string& kProgramName, const std::string& kUsage,
+                        const std::string& kDescription);

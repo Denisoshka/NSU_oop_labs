@@ -1,29 +1,29 @@
 #include "converter.hpp"
 
 size_t conv::Converter::getReadSecond() {
-  return taskInf_.curTime;
+  return TaskInf_.CurTime;
 }
 
 size_t conv::Converter::getWriteSecond() {
-  return taskInf_.curTime;
+  return TaskInf_.CurTime;
 }
 
 bool conv::Converter::taskFinished() {
-  return taskInf_.taskFinished;
+  return TaskInf_.TaskFinished;
 }
 
 size_t conv::Converter::getReadStream() {
-  return taskInf_.stream;
+  return TaskInf_.Stream;
 }
 
 void conv::Converter::setParams(const std::vector<size_t>& kParams) {
-  taskInf_.stream = (kParams[0] == SIZE_MAX) ? 0 : kParams[0];
-  taskInf_.startTime = (kParams[1] == SIZE_MAX) ? 0 : kParams[1];
-  taskInf_.curTime = taskInf_.startTime;
-  taskInf_.endTime = (kParams[2] == SIZE_MAX) ? SIZE_MAX - 1 : kParams[2];
-  taskInf_.taskFinished = false;
+  TaskInf_.Stream = (kParams[0] == SIZE_MAX) ? 0 : kParams[0];
+  TaskInf_.StartTime = (kParams[1] == SIZE_MAX) ? 0 : kParams[1];
+  TaskInf_.CurTime = TaskInf_.StartTime;
+  TaskInf_.EndTime = (kParams[2] == SIZE_MAX) ? SIZE_MAX - 1 : kParams[2];
+  TaskInf_.TaskFinished = false;
   for( size_t i = 3; i < kParams.size(); ++i ) {
-    taskInf_.otherParams.push_back(kParams[i]);
+    TaskInf_.OtherParams.push_back(kParams[i]);
   }
 }
 

@@ -9,24 +9,24 @@
 
 #include <memory>
 
-std::unique_ptr<conv::Converter> conv::makeConverter(const std::string& converterName,
-                                                     const std::vector<size_t>& params) {
-  if( converterName == "mix" ) {
-    return std::make_unique<conv::MixConverter>(params);
+std::unique_ptr<conv::Converter> conv::makeConverter(const std::string& kCconverterName,
+                                                     const std::vector<size_t>& kParams) {
+  if( kCconverterName == "mix" ) {
+    return std::make_unique<conv::MixConverter>(kParams);
   }
-  else if( converterName == "mute" ) {
-    return std::make_unique<conv::MuteConverter>(params);
+  else if( kCconverterName == "mute" ) {
+    return std::make_unique<conv::MuteConverter>(kParams);
   }
-  else if( converterName == "bass" ) {
-    return std::make_unique<conv::BassBoostConverter>(params);
+  else if( kCconverterName == "bass" ) {
+    return std::make_unique<conv::BassBoostConverter>(kParams);
   }
-  else if( converterName == "lowpass" ) {
-    return std::make_unique<conv::LowPassConverter>(params);
+  else if( kCconverterName == "lowpass" ) {
+    return std::make_unique<conv::LowPassConverter>(kParams);
   }
-  else if( converterName == "copy" ) {
-    return std::make_unique<conv::CopyConverter>(params);
+  else if( kCconverterName == "copy" ) {
+    return std::make_unique<conv::CopyConverter>(kParams);
   }
   else {
-    throw conv::UnckownConverter(converterName);
+    throw conv::UnckownConverter(kCconverterName);
   }
 }

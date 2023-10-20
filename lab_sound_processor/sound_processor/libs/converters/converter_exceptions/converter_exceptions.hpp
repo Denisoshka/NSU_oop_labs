@@ -6,6 +6,6 @@
 namespace conv {
   class UnckownConverter: public std::invalid_argument {
   public:
-    explicit UnckownConverter(const std::string& converter);
+    explicit UnckownConverter(const std::string& kConverter);
   };
 }// namespace conv

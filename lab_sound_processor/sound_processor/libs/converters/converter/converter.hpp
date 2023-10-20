@@ -8,7 +8,7 @@ namespace conv {
     Converter() = default;
     Converter(const std::vector<size_t>& kParams);
     virtual ~Converter() = default;
-    virtual void process(std::vector<int16_t>& mainSample,
+    virtual void process(std::vector<int16_t>& MainSample,
                          const std::vector<int16_t>& kSubSample) = 0;
     virtual void setParams(const std::vector<size_t>& kParams);
     virtual size_t getReadSecond();
@@ -18,13 +18,13 @@ namespace conv {
 
   protected:
     struct TaskParams {
-      std::vector<size_t> otherParams{};
-      size_t stream = 0;
-      size_t startTime = 0;
-      size_t curTime = 0;
-      size_t endTime = SIZE_MAX;
-      bool taskFinished = false;
-    } taskInf_;
+      std::vector<size_t> OtherParams{};
+      size_t Stream = 0;
+      size_t StartTime = 0;
+      size_t CurTime = 0;
+      size_t EndTime = SIZE_MAX;
+      bool TaskFinished = false;
+    } TaskInf_;
   };
 
 }// namespace conv
