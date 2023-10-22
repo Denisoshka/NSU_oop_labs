@@ -3,15 +3,40 @@
 #include <ios>
 #include <stdexcept>
 
+namespace {
+
+}// namespace
+
 namespace WAV {
-  class IncorrectFileFormat: public std::invalid_argument {
-  protected:
-    explicit IncorrectFileFormat(const std::string& filePath, const std::string& desc);
+  enum WAVExceptionsCode: size_t {
+    ekBaseWAVExceptionsCode = 45'564'157'0,
+    ekIncorrectRIFFHeader,
+    ekIncorrectFormatType,
+    ekIncorrectFormatData,
+    ekIncorrectAudioFormat,
+    ekIncorrectChannelsNumber,
+    ekIncorrectBitsPerSample,
+    ekIncorrectSampleRate,
+    ekChunkNotFound,
+    ekStreamFailure,
+    ekIncorrectEncodingFormat,
   };
 
-  class IncorrectExtension: public IncorrectFileFormat {
+  class WAVEexception {
   public:
-    explicit IncorrectExtension(const std::string& filePath);
+    WAVEexception(WAVExceptionsCode code);
+    [[nodiscard]] WAVExceptionsCode getErrorCode() const;
+    [[nodiscard]] virtual const char *what() const = 0;
+
+  protected:
+    WAVExceptionsCode ErrorCode_;
+  };
+
+  class IncorrectFileFormat: public std::invalid_argument,
+                             virtual public WAVEexception {
+  public:
+    explicit IncorrectFileFormat(const std::string& filePath, const std::string& desc);
+    [[nodiscard]] const char *what() const noexcept override;
   };
 
   class IncorrectRIFFHeader: public IncorrectFileFormat {
@@ -54,9 +79,11 @@ namespace WAV {
     explicit ChunkNotFound(const std::string& filePath, uint32_t chunk_ID);
   };
 
-  class StreamFailure: public std::ios_base::failure {
+  class StreamFailure: public WAVEexception,
+                       public std::ios_base::failure {
   public:
     explicit StreamFailure(const std::string& filePath);
+    [[nodiscard]] const char *what() const noexcept override;
   };
 
   class IncorrectEncodingFormat: public IncorrectFileFormat {

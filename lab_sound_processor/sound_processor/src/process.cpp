@@ -29,7 +29,7 @@ namespace {
   };
 }// namespace
 
-Process::Process(const boost::program_options::variables_map& kVM)
+process::Process::Process(const boost::program_options::variables_map& kVM)
     : SampleRate_(kDefSampleRate)
     , FileInPath_(kVM["input"].as<std::vector<std::string>>())
     , SettingsPath_(kVM["config"].as<std::string>())
@@ -37,7 +37,7 @@ Process::Process(const boost::program_options::variables_map& kVM)
     , SettingsStream_(std::ifstream(kVM["config"].as<std::string>())) {
 }
 
-void Process::setSettings(const boost::program_options::variables_map& kVM) {
+void process::Process::setSettings(const boost::program_options::variables_map& kVM) {
   SampleRate_ = kDefSampleRate;
   SettingsPath_ = kVM["config"].as<std::string>();
   FileOutPath_ = kVM["output"].as<std::string>();
@@ -45,8 +45,7 @@ void Process::setSettings(const boost::program_options::variables_map& kVM) {
   SettingsStream_ = std::ifstream(kVM["config"].as<std::string>());
 }
 
-void Process::executeConversions() {
-  WAV::makeWAVFile(FileOutPath_);
+void process::Process::executeConversions() {
   WAV::WAVWriter wavWriterOut(FileOutPath_);
   wavWriterOut.writeHeader(OutDuration_);
 
@@ -98,28 +97,28 @@ void Process::executeConversions() {
   wavWriterOut.writeHeader(OutDuration_);
 }
 
-Pipeline::Pipeline(const std::string& kSettingsPath, const size_t kTasksCount)
+process::Pipeline::Pipeline(const std::string& kSettingsPath, const size_t kTasksCount)
     : TasksCount_(kTasksCount)
     , SettingsPath_(kSettingsPath)
     , SettingsStream_(std::ifstream(kSettingsPath, std::ios::in)) {
 }
 
-bool Pipeline::empty() const {
+bool process::Pipeline::empty() const {
   return Container_.empty();
 }
 
-TaskInf Pipeline::pop() {
+process::TaskInf process::Pipeline::pop() {
   TaskInf Tmp = Container_.front();
   Container_.pop();
   return Tmp;
 }
 
-void Pipeline::fill() {
+void process::Pipeline::fill() {
   while( Container_.size() != TasksCount_ && !SettingsStream_.eof() ) {
     std::string task;
     std::getline(SettingsStream_, task);
     if( SettingsStream_.fail() ) {
-      throw StreamFailure(SettingsPath_);// todo
+      throw process::StreamFailure(SettingsPath_);// todo
     }
     if( task.empty() || task[0] == '#' ) {
       continue;
@@ -142,7 +141,7 @@ void Pipeline::fill() {
         taskInf_.Params.push_back(SIZE_MAX);
       }
       else {
-        throw IncorrectSettingsFormat(task);
+        throw process::IncorrectSettingsFormat(task);
       }
 
       tokenPosition++;
@@ -151,7 +150,7 @@ void Pipeline::fill() {
   }
 }
 
-void printConverterDesc(const std::string& kProgramName, const std::string& kUsage,
+void process::printConverterDesc(const std::string& kProgramName, const std::string& kUsage,
                         const std::string& kDescription) {
   boost::property_tree::ptree jsonConvertersTree;
   std::stringstream ss{kDescription};

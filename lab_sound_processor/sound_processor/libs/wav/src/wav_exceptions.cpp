@@ -1,49 +1,74 @@
 #include "wav_exceptions.hpp"
 
-WAV::IncorrectFileFormat::IncorrectFileFormat(const std::string& filePath, const std::string& desc)
-    : std::invalid_argument(filePath + ": Incorrect file format : " + desc) {
-}
+namespace WAV {
+  WAVEexception::WAVEexception(WAVExceptionsCode code)
+      : ErrorCode_(code) {
+  }
 
-WAV::IncorrectExtension::IncorrectExtension(const std::string& filePath)
-    : IncorrectFileFormat(filePath, "Incorrect file extension") {
-}
+  IncorrectFileFormat::IncorrectFileFormat(const std::string& filePath, const std::string& desc)
+      : std::invalid_argument(filePath + ": Incorrect file format : " + desc)
+      , WAVEexception(ekBaseWAVExceptionsCode) {
+  }
 
-WAV::IncorrectRIFFHeader::IncorrectRIFFHeader(const std::string& filePath)
-    : IncorrectFileFormat(filePath, "Incorrect kRIFF header") {
-}
+  const char *IncorrectFileFormat::what() const noexcept {
+    return std::invalid_argument::what();
+  }
 
-WAV::IncorrectFormatType::IncorrectFormatType(const std::string& filePath)
-    : IncorrectFileFormat(filePath, "Incorrect format type") {
-}
+  WAVExceptionsCode WAVEexception::getErrorCode() const {
+    return ErrorCode_;
+  }
 
-WAV::IncorrectFormatData::IncorrectFormatData(const std::string& filePath)
-    : IncorrectFileFormat(filePath, "Reading format data error") {
-}
+  IncorrectRIFFHeader::IncorrectRIFFHeader(const std::string& filePath)
+      : IncorrectFileFormat(filePath, "Incorrect kRIFF header")
+      , WAVEexception(ekIncorrectRIFFHeader) {
+  }
 
-WAV::IncorrectAudioFormat::IncorrectAudioFormat(const std::string& filePath)
-    : IncorrectFileFormat(filePath, "Incorrect audio format") {
-}
+  IncorrectFormatType::IncorrectFormatType(const std::string& filePath)
+      : IncorrectFileFormat(filePath, "Incorrect format type")
+      , WAVEexception(ekIncorrectFormatType) {
+  }
 
-WAV::IncorrectChannelsNumber::IncorrectChannelsNumber(const std::string& filePath)
-    : IncorrectFileFormat(filePath, "Incorrect channels number") {
-}
+  IncorrectFormatData::IncorrectFormatData(const std::string& filePath)
+      : IncorrectFileFormat(filePath, "Reading format data error")
+      , WAVEexception(ekIncorrectFormatData) {
+  }
 
-WAV::IncorrectBitsPerSample::IncorrectBitsPerSample(const std::string& filePath)
-    : IncorrectFileFormat(filePath, "Incorrect bits quantity per sample") {
-}
+  IncorrectAudioFormat::IncorrectAudioFormat(const std::string& filePath)
+      : IncorrectFileFormat(filePath, "Incorrect audio format")
+      , WAVEexception(ekIncorrectAudioFormat) {
+  }
 
-WAV::IncorrectSampleRate::IncorrectSampleRate(const std::string& filePath)
-    : IncorrectFileFormat(filePath, "Incorrect sample rate") {
-}
+  IncorrectChannelsNumber::IncorrectChannelsNumber(const std::string& filePath)
+      : IncorrectFileFormat(filePath, "Incorrect channels number")
+      , WAVEexception(ekIncorrectChannelsNumber) {
+  }
 
-WAV::ChunkNotFound::ChunkNotFound(const std::string& filePath, uint32_t chunk_ID)
-    : IncorrectFileFormat(filePath, "Searching chunk " + std::to_string(chunk_ID) + " error") {
-}
+  IncorrectBitsPerSample::IncorrectBitsPerSample(const std::string& filePath)
+      : IncorrectFileFormat(filePath, "Incorrect bits quantity per sample")
+      , WAVEexception(ekIncorrectBitsPerSample) {
+  }
 
-WAV::StreamFailure::StreamFailure(const std::string& filePath)
-    : std::ios_base::failure(filePath + " failure ") {
-}
+  IncorrectSampleRate::IncorrectSampleRate(const std::string& filePath)
+      : IncorrectFileFormat(filePath, "Incorrect sample rate")
+      , WAVEexception(ekIncorrectSampleRate) {
+  }
 
-WAV::IncorrectEncodingFormat::IncorrectEncodingFormat(const std::string& file_path)
-    : IncorrectFileFormat(file_path, "Incorrect encoding ") {
-}
+  ChunkNotFound::ChunkNotFound(const std::string& filePath, uint32_t chunk_ID)
+      : IncorrectFileFormat(filePath, "Searching chunk " + std::to_string(chunk_ID) + " error")
+      , WAVEexception(ekChunkNotFound) {
+  }
+
+  StreamFailure::StreamFailure(const std::string& filePath)
+      : std::ios_base::failure(filePath + " failure ")
+      , WAVEexception(ekStreamFailure) {
+  }
+
+  const char *StreamFailure::what() const noexcept {
+    return std::ios_base::failure::what();
+  }
+
+  IncorrectEncodingFormat::IncorrectEncodingFormat(const std::string& file_path)
+      : IncorrectFileFormat(file_path, "Incorrect encoding ")
+      , WAVEexception(ekIncorrectEncodingFormat) {
+  }
+}// namespace WAV

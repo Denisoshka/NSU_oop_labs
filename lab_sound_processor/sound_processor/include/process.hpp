@@ -5,42 +5,44 @@
 #include <queue>
 #include <string>
 
-struct TaskInf {
-  std::string Converter;
-  std::vector<size_t> Params;
-};
+namespace process {
+  struct TaskInf {
+    std::string Converter;
+    std::vector<size_t> Params;
+  };
 
-class Pipeline {
-public:
-  Pipeline(const std::string& kSettingsPath, const size_t kTasksCount);
-  bool empty() const;
-  TaskInf pop();
-  void fill();
+  class Pipeline {
+  public:
+    Pipeline(const std::string& kSettingsPath, const size_t kTasksCount);
+    bool empty() const;
+    TaskInf pop();
+    void fill();
 
-private:
-  size_t TasksCount_;
-  std::string SettingsPath_;
-  std::ifstream SettingsStream_;
-  std::queue<TaskInf> Container_{};
-};
+  private:
+    size_t TasksCount_;
+    std::string SettingsPath_;
+    std::ifstream SettingsStream_;
+    std::queue<TaskInf> Container_{};
+  };
 
-class Process {
-public:
-  Process() = default;
-  Process(const boost::program_options::variables_map& kVM);
-  void setSettings(const boost::program_options::variables_map& kVM);
-  void executeConversions();
+  class Process {
+  public:
+    Process() = default;
+    Process(const boost::program_options::variables_map& kVM);
+    void setSettings(const boost::program_options::variables_map& kVM);
+    void executeConversions();
 
-private:
-  size_t OutDuration_ = 0;
-  int32_t SampleRate_;
+  private:
+    size_t OutDuration_ = 0;
+    int32_t SampleRate_;
 
-  std::vector<std::string> FileInPath_;
-  std::string SettingsPath_;
-  std::string FileOutPath_;
+    std::vector<std::string> FileInPath_;
+    std::string SettingsPath_;
+    std::string FileOutPath_;
 
-  std::ifstream SettingsStream_;
-};
+    std::ifstream SettingsStream_;
+  };
 
-void printConverterDesc(const std::string& kProgramName, const std::string& kUsage,
-                        const std::string& kDescription);
+  void printConverterDesc(const std::string& kProgramName, const std::string& kUsage,
+                          const std::string& kDescription);
+}// namespace process

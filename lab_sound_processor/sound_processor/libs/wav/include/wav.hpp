@@ -42,5 +42,4 @@ namespace WAV {
     size_t writedData_ = 0;
   };
 
-  void makeWAVFile(const std::string& kFilePath);
 }// namespace WAV

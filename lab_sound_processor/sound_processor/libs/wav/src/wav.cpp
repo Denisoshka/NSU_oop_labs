@@ -46,10 +46,6 @@ namespace {
   const ChunkHeader stdDataChunk{kDATA, 0};
 }// namespace
 
-void WAV::makeWAVFile(const std::string& kFilePath) {
-  std::ofstream stream{kFilePath};
-}
-
 WAV::WAVReader::WAVReader(const std::string& kFilePath) {
   open(kFilePath);
 }
@@ -62,7 +58,7 @@ void WAV::WAVReader::open(const std::string& kFilePath) {
   }
   FileIn_.open(FilePath_, std::ios::in | std::ios::binary);
   if( FileIn_.fail() ) {
-    throw StreamFailure(FilePath_);
+    throw WAV::StreamFailure(FilePath_);
   }
 
   readHeader();
@@ -75,7 +71,7 @@ void WAV::WAVReader::readHeader() {
   FileIn_.read(reinterpret_cast<char *>(&HeaderRiff), sizeof(HeaderRiff));
   dataStart_ += sizeof(HeaderRiff);
 
-  if( HeaderRiff.Id == kRIFF ) {
+  if( HeaderRiff.Id != kRIFF ) {
     throw IncorrectRIFFHeader(FilePath_);
   }
   if( HeaderRiff.Format != kWAVE ) {
@@ -176,7 +172,7 @@ void WAV::WAVWriter::open(const std::string& kFilePath) {
     FileOut_.close();
   }
   FilePath_ = kFilePath;
-  FileOut_.open(FilePath_, std::ios::in | std::ios::out | std::ios::binary);
+  FileOut_.open(FilePath_, std::ios::out | std::ios::binary);
   if( FileOut_.fail() ) {
     throw StreamFailure(FilePath_);
   }

@@ -23,10 +23,10 @@ std::unique_ptr<conv::Converter> conv::makeConverter(const std::string& kCconver
   else if( kCconverterName == "lowpass" ) {
     return std::make_unique<conv::LowPassConverter>(kParams);
   }
-  else if( kCconverterName == "copy" ) {
+/*  else if( kCconverterName == "copy" ) {
     return std::make_unique<conv::CopyConverter>(kParams);
-  }
+  }*/
   else {
-    throw conv::UncknownConverter(kCconverterName);
+    throw conv::UnknownConverter(kCconverterName);
   }
 }
