@@ -1,5 +1,5 @@
 #pragma once
-#include "converter.hpp"
+#include "converters.hpp"
 
 namespace conv {
   class LowPassConverter: public Converter {

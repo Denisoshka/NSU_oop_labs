@@ -3,7 +3,6 @@
 #include <string>
 
 #include "cl_parser.hpp"
-#include "converter_exceptions.hpp"
 #include "converters.hpp"
 #include "process.hpp"
 #include "process_exceptions.hpp"

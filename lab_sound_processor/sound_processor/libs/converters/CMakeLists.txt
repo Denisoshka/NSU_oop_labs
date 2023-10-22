@@ -27,22 +27,24 @@ message(STATUS "project name: ${PROJECT_NAME}")
 add_library(${DIR_NAME} SHARED ${SOURCE_DIRS})
 target_compile_features(${DIR_NAME} INTERFACE cxx_std_20)
 
+#[[
 file(GLOB PUBLIC_INCLUDES
         "${CMAKE_CURRENT_SOURCE_DIR}/converter"
         "${CMAKE_CURRENT_SOURCE_DIR}/factory"
         "${CMAKE_CURRENT_SOURCE_DIR}/other_tools"
         "${CMAKE_CURRENT_SOURCE_DIR}/converter_exceptions"
 )
+]]
 
 file(GLOB PRIVATE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/*_converter")
 
 target_include_directories(${DIR_NAME}
-        PRIVATE
-        ${PRIVATE_INCLUDES}
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
         ${PUBLIC_INCLUDES}
+        PRIVATE
+        ${PRIVATE_INCLUDES}
 )
 
 file(GLOB SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")

@@ -1,7 +1,5 @@
-#include "factory.hpp"
 #include "bassboost_conveter.hpp"
-#include "converter.hpp"
-#include "converter_exceptions.hpp"
+#include "converters.hpp"
 #include "copy_converter.hpp"
 #include "lowpass_converter.hpp"
 #include "mix_converter.hpp"
@@ -9,24 +7,24 @@
 
 #include <memory>
 
-std::unique_ptr<conv::Converter> conv::makeConverter(const std::string& kCconverterName,
+std::unique_ptr<conv::Converter> conv::makeConverter(const std::string& kConverterName,
                                                      const std::vector<size_t>& kParams) {
-  if( kCconverterName == "mix" ) {
+  if( kConverterName == "mix" ) {
     return std::make_unique<conv::MixConverter>(kParams);
   }
-  else if( kCconverterName == "mute" ) {
+  else if( kConverterName == "mute" ) {
     return std::make_unique<conv::MuteConverter>(kParams);
   }
-  else if( kCconverterName == "bass" ) {
+  else if( kConverterName == "bass" ) {
     return std::make_unique<conv::BassBoostConverter>(kParams);
   }
-  else if( kCconverterName == "lowpass" ) {
+  else if( kConverterName == "lowpass" ) {
     return std::make_unique<conv::LowPassConverter>(kParams);
   }
-/*  else if( kCconverterName == "copy" ) {
+  else if( kConverterName == "copy" ) {
     return std::make_unique<conv::CopyConverter>(kParams);
-  }*/
+  }
   else {
-    throw conv::UnknownConverter(kCconverterName);
+    throw conv::UnknownConverter(kConverterName);
   }
 }
