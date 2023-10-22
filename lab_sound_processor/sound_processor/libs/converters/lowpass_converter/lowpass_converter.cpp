@@ -3,7 +3,11 @@
 
 #include <cmath>
 
-void conv::LowPassConverter::initLowPassFilter(const size_t kCutoffFrequency, const size_t kSampleRate) {
+const size_t kNumTapsQuantity{200};
+const size_t kFrequency{2000};
+
+void conv::LowPassConverter::initLowPassFilter(const size_t kCutoffFrequency,
+                                               const size_t kSampleRate) {
   double OmegaC =
           2.0 * M_PI * static_cast<double>(kCutoffFrequency) / static_cast<double>(kSampleRate);
   double Alpha = (NumTaps - 1) / 2.0;
@@ -49,10 +53,10 @@ void conv::LowPassConverter::setParams(const std::vector<size_t>& kParams) {
 }
 
 conv::LowPassConverter::LowPassConverter()
-    : NumTaps(200)
-    , Frequency_(2000) {
-  Coefficients.resize(NumTaps);
-  Buffer.resize(NumTaps, 0.0);
+    : NumTaps(kNumTapsQuantity)
+    , Frequency_(kFrequency) {
+  Coefficients.resize(kNumTapsQuantity);
+  Buffer.resize(kNumTapsQuantity, 0.0);
 }
 
 conv::LowPassConverter::LowPassConverter(const std::vector<size_t>& kParams)

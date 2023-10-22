@@ -17,9 +17,10 @@ namespace WAV {
 
   private:
     void readHeader();
-    void findData(const uint32_t kChunkId);
+    void findDATA();
+    void readFormat();
     size_t DataSize_ = 0;
-    size_t ByteRate_ = 0;
+    size_t ByteRate_ = 1;
     std::fstream FileIn_;
     std::string FilePath_;
     size_t dataStart_ = 0;

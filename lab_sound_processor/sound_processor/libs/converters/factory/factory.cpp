@@ -27,6 +27,6 @@ std::unique_ptr<conv::Converter> conv::makeConverter(const std::string& kCconver
     return std::make_unique<conv::CopyConverter>(kParams);
   }
   else {
-    throw conv::UnckownConverter(kCconverterName);
+    throw conv::UncknownConverter(kCconverterName);
   }
 }

@@ -7,7 +7,7 @@ namespace {
   const int32_t kFMT = 0x20746d66;
   const int32_t kDATA = 0x61746164;
 
-  const int16_t kAudioFormatPCM = 0x0001;
+  const int16_t kAudioFormatPCM = 1;
   const int16_t kNumChannels = 1;
   const int32_t kDefSampleRate = 44100;
   const int16_t kBitsPerByte = 8;
@@ -34,7 +34,7 @@ namespace {
     int16_t BitsPerSample;
   };
 
-  struct __attribute__((__packed__)) DataChunk {
+  struct __attribute__((__packed__)) ChunkHeader {
     int32_t Id;
     uint32_t Size;
   };
@@ -43,7 +43,7 @@ namespace {
   const FormatChunk stdFormatChunk{kFMT,         kFormatChunkLen, kAudioFormatPCM,
                                    kNumChannels, kDefSampleRate,  kByteRate,
                                    kBlockAlign,  kBitsPerSample};
-  const DataChunk stdDataChunk{kDATA, 0};
+  const ChunkHeader stdDataChunk{kDATA, 0};
 }// namespace
 
 void WAV::makeWAVFile(const std::string& kFilePath) {
@@ -66,8 +66,8 @@ void WAV::WAVReader::open(const std::string& kFilePath) {
   }
 
   readHeader();
-
-  findData(kDATA);
+  readFormat();
+  findDATA();
 }
 
 void WAV::WAVReader::readHeader() {
@@ -75,12 +75,39 @@ void WAV::WAVReader::readHeader() {
   FileIn_.read(reinterpret_cast<char *>(&HeaderRiff), sizeof(HeaderRiff));
   dataStart_ += sizeof(HeaderRiff);
 
-  if( HeaderRiff.Id != kRIFF ) {
+  if( HeaderRiff.Id == kRIFF ) {
     throw IncorrectRIFFHeader(FilePath_);
   }
   if( HeaderRiff.Format != kWAVE ) {
     throw IncorrectFormatType(FilePath_);
   }
+}
+
+void WAV::WAVReader::readFormat() {
+  ChunkHeader Data{};
+  bool FMTChunkFind{false};
+  while( !FileIn_.eof() ) {
+    FileIn_.read(reinterpret_cast<char *>(&Data), sizeof(Data));
+    if( FileIn_.fail() ) {
+      throw StreamFailure(FilePath_);
+    }
+    dataStart_ += sizeof(Data);
+    if( Data.Id == kFMT ) {
+      FileIn_.seekg(-static_cast<int>(sizeof(Data)), std::fstream::cur);
+      FMTChunkFind = true;
+      break;
+    }
+
+    FileIn_.seekg(Data.Size, std::fstream::cur);
+    if( FileIn_.fail() ) {
+      throw StreamFailure(FilePath_);
+    }
+    dataStart_ += Data.Size;
+  }
+  if( !FMTChunkFind ) {
+    throw ChunkNotFound(FilePath_, kDATA);
+  }
+
   FormatChunk HeaderFormat{};
   FileIn_.read(reinterpret_cast<char *>(&HeaderFormat), sizeof(HeaderFormat));
   if( FileIn_.fail() ) {
@@ -104,17 +131,17 @@ void WAV::WAVReader::readHeader() {
     throw IncorrectSampleRate(FilePath_);
   }
   ByteRate_ = HeaderFormat.ByteRate;
-}
+};
 
-void WAV::WAVReader::findData(const uint32_t kChunkId) {
-  DataChunk Data{};
+void WAV::WAVReader::findDATA() {
+  ChunkHeader Data{};
   while( !FileIn_.eof() ) {
     FileIn_.read(reinterpret_cast<char *>(&Data), sizeof(Data));
     if( FileIn_.fail() ) {
       throw StreamFailure(FilePath_);
     }
     dataStart_ += sizeof(Data);
-    if( Data.Id == kChunkId ) {
+    if( Data.Id == kDATA ) {
       DataSize_ = Data.Size;
       return;
     }
@@ -125,7 +152,7 @@ void WAV::WAVReader::findData(const uint32_t kChunkId) {
     }
     dataStart_ += Data.Size;
   }
-  throw ChunkNotFound(FilePath_, kChunkId);
+  throw ChunkNotFound(FilePath_, kDATA);
 }
 
 void WAV::WAVReader::readSample(std::vector<int16_t>& kSample, const size_t kSecond) {
@@ -166,7 +193,7 @@ void WAV::WAVWriter::writeSample(const std::vector<int16_t>& kSample, const size
 }
 
 void WAV::WAVWriter::writeHeader(const size_t kDuration) {
-  DataChunk finalDataChunk{stdDataChunk};
+  ChunkHeader finalDataChunk{stdDataChunk};
   finalDataChunk.Size = kDuration * sizeof(int16_t) * kDefSampleRate;
   RIFFChunk finalRiffChunk{stdRIFFChunk};
   finalRiffChunk.Size = kFinalRIFFChunkSizeWithoutDataSize + finalDataChunk.Size;
