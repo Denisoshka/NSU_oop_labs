@@ -44,6 +44,7 @@ namespace conv {
     virtual size_t getReadStream();
 
   protected:
+    const size_t kOtherParamsStart_ = 2;
     struct TaskParams {
       size_t InDuration = SIZE_MAX;
       size_t StartTime = 0;

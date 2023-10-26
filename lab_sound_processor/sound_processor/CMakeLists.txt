@@ -31,7 +31,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/wav)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/cl_parser)
 
 
-set(LIB_N 1)
+set(LIB_N 0)
 if (${LIB_N} EQUAL 0)
   message(STATUS "use TESTLIB_1 lib")
   add_library(converters SHARED IMPORTED)

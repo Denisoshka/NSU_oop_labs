@@ -1,6 +1,6 @@
 #pragma once
 
-#include "converter_with_additional_params.hpp"
+#include "converters.hpp"
 
 namespace conv {
   class CopyConverter: public Converter {

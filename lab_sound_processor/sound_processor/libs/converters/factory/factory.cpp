@@ -16,7 +16,7 @@ std::unique_ptr<conv::Converter> conv::makeConverter(const std::string& kConvert
   else if( kConverterName == "mute" ) {
     return std::make_unique<conv::MuteConverter>(kInStreams, kParams);
   }
-  else if( kConverterName == "bass" ) {
+  else if( kConverterName == "bassboost" ) {
     return std::make_unique<conv::BassBoostConverter>(kInStreams, kParams);
   }
   else if( kConverterName == "lowpass" ) {

@@ -1,8 +1,8 @@
 #pragma once
-#include "converter_with_additional_params.hpp"
+#include "converters.hpp"
 
 namespace conv {
-  class BassBoostConverter: public conv::ConverterWithAdditionalParams {
+  class BassBoostConverter: public conv::Converter {
   public:
     BassBoostConverter() = default;
     BassBoostConverter(const std::vector<size_t>& kInStreams, const std::vector<size_t>& kParams);

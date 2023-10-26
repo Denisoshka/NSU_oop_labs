@@ -20,13 +20,13 @@ void conv::BassBoostConverter::process(std::vector<int16_t>& mainSample,
 
 void conv::BassBoostConverter::setParams(const std::vector<size_t>& kInStreams,
                                          const std::vector<size_t>& kParams) {
-  ConverterWithAdditionalParams::setParams(kInStreams, kParams);
-  if( OtherParams.size() == 2 ) {
-    bassFactor_ = OtherParams[0];
-    BassBoostCoeficent_ = OtherParams[1];
+  Converter::setParams(kInStreams, kParams);
+  if( kParams.size() - kOtherParamsStart_ == 2 ) {
+    bassFactor_ = kParams[kOtherParamsStart_];
+    BassBoostCoeficent_ = kParams[kOtherParamsStart_ + 1];
   }
-  else if( OtherParams.size() == 1 ) {
-    bassFactor_ = OtherParams[0];
+  else if( kParams.size() - kOtherParamsStart_ == 1 ) {
+    bassFactor_ = kParams[kOtherParamsStart_];
   }
 }
 

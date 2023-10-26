@@ -1,8 +1,8 @@
 #pragma once
-#include "converter_with_additional_params.hpp"
+#include "converters.hpp"
 
 namespace conv {
-  class MuteConverter: public conv::Converter {
+  class MuteConverter: public Converter {
   public:
     MuteConverter() = default;
     MuteConverter(const std::vector<size_t>& kInStreams, const std::vector<size_t>& kParams);
