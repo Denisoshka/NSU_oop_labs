@@ -36,7 +36,7 @@ file(GLOB PUBLIC_INCLUDES
 )
 ]]
 
-file(GLOB PRIVATE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/*_converter")
+file(GLOB PRIVATE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/*_converter" "${CMAKE_CURRENT_SOURCE_DIR}/*_")
 
 target_include_directories(${DIR_NAME}
         PUBLIC

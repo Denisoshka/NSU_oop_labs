@@ -7,13 +7,16 @@ void conv::MuteConverter::process(std::vector<int16_t>& MainSample,
     std::fill(MainSample.begin(), MainSample.end(), 0);
   }
   ++TaskInf_.CurTime;
+  TaskInf_.TaskFinished = TaskInf_.CurTime >= TaskInf_.InDuration;
 }
 
-void conv::MuteConverter::setParams(const std::vector<size_t>& kParams) {
-  Converter::setParams(kParams);
+void conv::MuteConverter::setParams(const std::vector<size_t>& kInStreams,
+                                    const std::vector<size_t>& kParams) {
+  Converter::setParams(kInStreams, kParams);
   TaskInf_.StartTime = 0;
 }
 
-conv::MuteConverter::MuteConverter(const std::vector<size_t>& kParams) {
-  MuteConverter::setParams(kParams);
+conv::MuteConverter::MuteConverter(const std::vector<size_t>& kInStreams,
+                                   const std::vector<size_t>& kParams) {
+  MuteConverter::setParams(kInStreams, kParams);
 }

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
-get_filename_component(LIBRARY_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-message(STATUS "LIBRARY_NAME: ${LIBRARY_NAME}")
+get_filename_component(PROGRAM_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+message(STATUS "PROGRAM_NAME: ${PROGRAM_NAME}")
 
-project(${LIBRARY_NAME} CXX)
+project(${PROGRAM_NAME} CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -23,42 +23,23 @@ else ()
 endif ()
 
 message(STATUS "project name: ${PROJECT_NAME}")
-add_executable(${LIBRARY_NAME} ${SOURCE_DIRS})
-target_compile_options(${LIBRARY_NAME} PRIVATE -pedantic -Wall -Werror)
-target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_executable(${PROGRAM_NAME} ${SOURCE_DIRS})
+target_compile_options(${PROGRAM_NAME} PRIVATE -pedantic -Wall -Werror)
+target_include_directories(${PROGRAM_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/wav)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/cl_parser)
 
-set(CONVERTERS_LIBRARY "TESTLIB_1")
-#set(CONVERTERS_LIBRARY "TESTLIB_2")
-#set(CONVERTERS_LIBRARY "def")
 
-if (${CONVERTERS_LIBRARY} STREQUAL "TESTLIB_1")
+set(LIB_N 1)
+if (${LIB_N} EQUAL 0)
   message(STATUS "use TESTLIB_1 lib")
   add_library(converters SHARED IMPORTED)
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/include)
-  #[[
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/converter)
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/converter_exceptions)
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/factory)
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/other_tools)
-  ]]
-  set_target_properties(converters PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/test_lib_1/libconverters.so)
-elseif (${CONVERTERS_LIBRARY} STREQUAL "TESTLIB_2")
-  message(STATUS "use TESTLIB_2 lib")
-  add_library(converters SHARED IMPORTED)
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/include)
-  #[[
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/converter)
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/converter_exceptions)
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/other_tools)
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/factory)
-  ]]
-  set_target_properties(converters PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/test_lib_2/libconverters.so)
+  target_include_directories(${PROGRAM_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/converters/include)
+  set_target_properties(converters PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/din_test/libconverters.so)
 else ()
   message(STATUS "use CONVERTERS lib")
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/converters)
 endif ()
 
-target_link_libraries(${LIBRARY_NAME} PUBLIC ${Boost_LIBRARIES} converters wav cl_parser Boost::program_options)
+target_link_libraries(${PROGRAM_NAME} PUBLIC ${Boost_LIBRARIES} converters wav cl_parser Boost::program_options)

@@ -14,20 +14,23 @@ void conv::BassBoostConverter::process(std::vector<int16_t>& mainSample,
     }
   }
   TaskInf_.CurTime++;
-  TaskInf_.TaskFinished = TaskInf_.CurTime >= TaskInf_.EndTime;
+  TaskInf_.TaskFinished =
+          TaskInf_.CurTime >= TaskInf_.EndTime || TaskInf_.CurTime >= TaskInf_.InDuration;
 }
 
-void conv::BassBoostConverter::setParams(const std::vector<size_t>& kParams) {
-  Converter::setParams(kParams);
-  if( TaskInf_.OtherParams.size() == 2 ) {
-    bassFactor_ = TaskInf_.OtherParams[0];
-    BassBoostCoeficent_ = TaskInf_.OtherParams[1];
+void conv::BassBoostConverter::setParams(const std::vector<size_t>& kInStreams,
+                                         const std::vector<size_t>& kParams) {
+  ConverterWithAdditionalParams::setParams(kInStreams, kParams);
+  if( OtherParams.size() == 2 ) {
+    bassFactor_ = OtherParams[0];
+    BassBoostCoeficent_ = OtherParams[1];
   }
-  else if( TaskInf_.OtherParams.size() == 1 ) {
-    bassFactor_ = TaskInf_.OtherParams[0];
+  else if( OtherParams.size() == 1 ) {
+    bassFactor_ = OtherParams[0];
   }
 }
 
-conv::BassBoostConverter::BassBoostConverter(const std::vector<size_t>& kParams) {
-  BassBoostConverter::setParams(kParams);
+conv::BassBoostConverter::BassBoostConverter(const std::vector<size_t>& kInStreams,
+                                             const std::vector<size_t>& kParams) {
+  BassBoostConverter::setParams(kInStreams, kParams);
 }

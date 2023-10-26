@@ -1,17 +1,18 @@
 #pragma once
 
-#include "converters.hpp"
+#include "converter_with_additional_params.hpp"
 
 namespace conv {
   class CopyConverter: public Converter {
   public:
     CopyConverter() = default;
-    CopyConverter(const std::vector<size_t>& kParams);
+    CopyConverter(const std::vector<size_t>& kInStreams, const std::vector<size_t>& kParams);
     virtual ~CopyConverter() override = default;
     virtual void process(std::vector<int16_t>& MainSample,
                          const std::vector<int16_t>& kSubSample) override;
     virtual size_t getWriteSecond() override;
-    virtual void setParams(const std::vector<size_t>& kParams) override;
+    virtual void setParams(const std::vector<size_t>& kInStreams,
+                           const std::vector<size_t>& kParams) override;
     virtual size_t getReadStream() override;
 
   private:

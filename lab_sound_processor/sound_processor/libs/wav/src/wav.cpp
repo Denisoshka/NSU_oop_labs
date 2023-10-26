@@ -90,6 +90,7 @@ void WAV::WAVReader::readFormat() {
     dataStart_ += sizeof(Data);
     if( Data.Id == kFMT ) {
       FileIn_.seekg(-static_cast<int>(sizeof(Data)), std::fstream::cur);
+      dataStart_ -= sizeof(Data);
       FMTChunkFind = true;
       break;
     }

@@ -25,7 +25,6 @@ namespace {
 
   enum ekSettingsPos {
     ekConverter,
-    ekStream,
   };
 }// namespace
 
@@ -64,34 +63,38 @@ void process::Process::executeConversions() {
     if( pipeline.empty() ) {
       pipeline.fill();
     }
+    std::unique_ptr<conv::Converter> converter =
+            conv::makeConverter(task.Converter, task.InStreams, task.Params);
 
-    std::unique_ptr<conv::Converter> converter = conv::makeConverter(task.Converter, task.Params);
-    if( converter->getReadStream() ) {
-      wavReaderSub.open(FileInPath_[converter->getReadStream()]);
-    }
-
-    size_t curReadDuration =
-            (converter->getReadStream()) ? wavReaderSub.getDuration() : OutDuration_;
-    while( !converter->taskFinished() && converter->getReadSecond() < curReadDuration ) {
-      size_t readSecond = converter->getReadSecond();
-      size_t writeSecond = converter->getWriteSecond();
-
-      if( converter->getReadStream() && readSecond < curReadDuration ) {
-        wavReaderSub.readSample(mainSampleOut, readSecond);
+    const size_t streamQuantity = converter->inStreamQuantity();
+    for( size_t streamNum = 0; streamNum < streamQuantity; ++streamNum ) {
+      if( converter->getReadStream() ) {
+        wavReaderSub.open(FileInPath_[converter->getReadStream()]);
       }
-      else if( !converter->getReadStream() && writeSecond < curReadDuration ) {
-        wavReaderOut.readSample(mainSampleOut, writeSecond);
-      }
-      else {
-        std::fill(mainSampleOut.begin(), mainSampleOut.end(), 0);
-      }
+      size_t curReadDuration =
+              (converter->getReadStream()) ? wavReaderSub.getDuration() : OutDuration_;
+      converter->setInDuration(curReadDuration);
 
-      wavReaderSub.readSample(subSampleIn, readSecond);
-      converter->process(mainSampleOut, subSampleIn);
-      wavWriterOut.writeSample(mainSampleOut, writeSecond);
+      while( !converter->taskFinished() ) {
+        size_t readSecond = converter->getReadSecond();
+        size_t writeSecond = converter->getWriteSecond();
 
-      OutDuration_ = (converter->getWriteSecond() > OutDuration_) ? converter->getWriteSecond()
-                                                                  : OutDuration_;
+        if( converter->getReadStream() && readSecond < curReadDuration ) {
+          wavReaderSub.readSample(mainSampleOut, readSecond);
+        }
+        else if( !converter->getReadStream() && writeSecond < curReadDuration ) {
+          wavReaderOut.readSample(mainSampleOut, writeSecond);
+        }
+        else {
+          std::fill(mainSampleOut.begin(), mainSampleOut.end(), 0);
+        }
+
+        wavReaderSub.readSample(subSampleIn, readSecond);
+        converter->process(mainSampleOut, subSampleIn);
+        wavWriterOut.writeSample(mainSampleOut, writeSecond);
+
+        OutDuration_ = std::max(converter->getWriteSecond(), OutDuration_);
+      }
     }
   }
   wavWriterOut.writeHeader(OutDuration_);
@@ -131,10 +134,11 @@ void process::Pipeline::fill() {
       if( tokenPosition == ekSettingsPos::ekConverter && regex_match(token, kDefConverterName_) ) {
         taskInf_.Converter = std::move(token);
       }
-      else if( tokenPosition == ekSettingsPos::ekStream && (regex_match(token, kDefStreamName_)) ) {
-        taskInf_.Params.push_back(std::atoll(token.data() + 1));
+      else if( tokenPosition > ekSettingsPos::ekConverter
+               && (regex_match(token, kDefStreamName_)) ) {
+        taskInf_.InStreams.push_back(std::atoll(token.data() + 1));
       }
-      else if( tokenPosition > ekSettingsPos::ekStream && regex_match(token, kDefTime) ) {
+      else if( tokenPosition > ekSettingsPos::ekConverter && regex_match(token, kDefTime) ) {
         taskInf_.Params.push_back(std::atoll(token.data()));
       }
       else if( regex_match(token, kDefPass) ) {
@@ -151,7 +155,7 @@ void process::Pipeline::fill() {
 }
 
 void process::printConverterDesc(const std::string& kProgramName, const std::string& kUsage,
-                        const std::string& kDescription) {
+                                 const std::string& kDescription) {
   boost::property_tree::ptree jsonConvertersTree;
   std::stringstream ss{kDescription};
   boost::property_tree::read_json(ss, jsonConvertersTree);
@@ -164,7 +168,7 @@ void process::printConverterDesc(const std::string& kProgramName, const std::str
 
   for( const auto& kConverterDesk: kConvertersDeskArray ) {
     std::cout << std::left << std::setw(indent) << kConverterDesk.second.get<std::string>("name")
-              << std::right << kConverterDesk.second.get<std::string>("Params") << "\n"
+              << std::right << kConverterDesk.second.get<std::string>("params") << "\n"
               << std::setw(indent) << std::left << " "
               << kConverterDesk.second.get<std::string>("description") << "\n"
               << std::endl;

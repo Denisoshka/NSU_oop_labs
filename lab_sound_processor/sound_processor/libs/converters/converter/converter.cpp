@@ -13,20 +13,27 @@ bool conv::Converter::taskFinished() {
 }
 
 size_t conv::Converter::getReadStream() {
-  return TaskInf_.Stream;
+  return InStream_;
 }
 
-void conv::Converter::setParams(const std::vector<size_t>& kParams) {
-  TaskInf_.Stream = (kParams[0] == SIZE_MAX) ? 0 : kParams[0];
-  TaskInf_.StartTime = (kParams[1] == SIZE_MAX) ? 0 : kParams[1];
+void conv::Converter::setParams(const std::vector<size_t>& kInStreams,
+                                const std::vector<size_t>& kParams) {
+  InStream_ = (kInStreams[0] == SIZE_MAX) ? 0 : kInStreams[0];
+  TaskInf_.StartTime = (kParams[0] == SIZE_MAX) ? 0 : kParams[0];
   TaskInf_.CurTime = TaskInf_.StartTime;
-  TaskInf_.EndTime = (kParams[2] == SIZE_MAX) ? SIZE_MAX - 1 : kParams[2];
+  TaskInf_.EndTime = (kParams[1] == SIZE_MAX) ? SIZE_MAX - 1 : kParams[1];
   TaskInf_.TaskFinished = false;
-  for( size_t i = 3; i < kParams.size(); ++i ) {
-    TaskInf_.OtherParams.push_back(kParams[i]);
-  }
 }
 
-conv::Converter::Converter(const std::vector<size_t>& kParams) {
-  Converter::setParams(kParams);
+conv::Converter::Converter(const std::vector<size_t>& kInStreams,
+                           const std::vector<size_t>& kParams) {
+  Converter::setParams(kInStreams, kParams);
+}
+
+size_t conv::Converter::inStreamQuantity() const {
+  return 1;
+}
+
+void conv::Converter::setInDuration(const size_t InDuration) {
+  TaskInf_.InDuration = InDuration;
 }

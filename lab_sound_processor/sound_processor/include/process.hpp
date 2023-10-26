@@ -8,6 +8,7 @@
 namespace process {
   struct TaskInf {
     std::string Converter;
+    std::vector<size_t > InStreams;
     std::vector<size_t> Params;
   };
 

@@ -8,21 +8,22 @@
 #include <memory>
 
 std::unique_ptr<conv::Converter> conv::makeConverter(const std::string& kConverterName,
+                                                     const std::vector<size_t>& kInStreams,
                                                      const std::vector<size_t>& kParams) {
   if( kConverterName == "mix" ) {
-    return std::make_unique<conv::MixConverter>(kParams);
+    return std::make_unique<conv::MixConverter>(kInStreams, kParams);
   }
   else if( kConverterName == "mute" ) {
-    return std::make_unique<conv::MuteConverter>(kParams);
+    return std::make_unique<conv::MuteConverter>(kInStreams, kParams);
   }
   else if( kConverterName == "bass" ) {
-    return std::make_unique<conv::BassBoostConverter>(kParams);
+    return std::make_unique<conv::BassBoostConverter>(kInStreams, kParams);
   }
   else if( kConverterName == "lowpass" ) {
-    return std::make_unique<conv::LowPassConverter>(kParams);
+    return std::make_unique<conv::LowPassConverter>(kInStreams, kParams);
   }
   else if( kConverterName == "copy" ) {
-    return std::make_unique<conv::CopyConverter>(kParams);
+    return std::make_unique<conv::CopyConverter>(kInStreams, kParams);
   }
   else {
     throw conv::UnknownConverter(kConverterName);
