@@ -1,19 +1,19 @@
 #pragma once
-#include "basic_obj.hpp"
-
 #include <chrono>
 #include <memory>
+#include "shifting_object.hpp"
 
-class Player : public basicObj{
-public:
-  Player() = default;
-  virtual void action(const wchar_t action) override;
-  std::unique_ptr<basicObj> communication(wchar_t action);
-  virtual std::pair<size_t, size_t> getCoords() override;
-private:
-//  std::pair<size_t,size_t > Coords_;
-  size_t ammoQuantity_ = 0;
-  std::chrono::seconds reloadStart_;
+namespace gameObj {
+  class Player: public ShiftingObject {
+  public:
+    Player() = default;
+    Player(unsigned int DirectionDegrees, std::pair<unsigned int, unsigned int>&& startCoords);
 
+    virtual std::shared_ptr<basicObj> action(const char action) override;
 
-};
+  private:
+    //  std::pair<size_t,size_t > Coords_;
+    size_t ammoQuantity_ = 0;
+    std::chrono::seconds reloadStart_;
+  };
+}// namespace game_obj

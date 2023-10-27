@@ -17,6 +17,7 @@ target_compile_features(${DIR_NAME} INTERFACE cxx_std_20)
 file(GLOB PUBLIC_INCLUDES
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
         "${CMAKE_CURRENT_SOURCE_DIR}/basic_obj"
+        "${CMAKE_CURRENT_SOURCE_DIR}/shifting_object"
 )
 
 file(GLOB PRIVATE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/*_")

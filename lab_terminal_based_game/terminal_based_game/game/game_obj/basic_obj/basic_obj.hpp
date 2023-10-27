@@ -1,15 +1,17 @@
 #pragma once
 
+#include <memory>
 #include "vector"
 
-class basicObj {
-public:
-  basicObj() = default;
-  basicObj(std::pair<size_t, size_t>);
-  virtual void action(const wchar_t action) = 0;
-  virtual std::pair<size_t, size_t> getCoords() = 0;
+namespace gameObj {
+  class basicObj {
+  public:
+    basicObj() = default;
+    basicObj(std::pair<unsigned int, unsigned int>&& startCoords);
+    virtual std::shared_ptr<basicObj> action(const char action) = 0;
+    virtual std::pair<unsigned int, unsigned int> getCoords();
 
-protected:
-  std::pair<size_t, size_t> objCords_{};
-  std::vector<std::pair<size_t, size_t> > coords_{};
-};
+  protected:
+    std::pair<unsigned int, unsigned int> Coords_{};
+  };
+}// namespace gameObj

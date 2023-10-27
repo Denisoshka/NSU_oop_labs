@@ -1,31 +1,37 @@
 #include "player.hpp"
+#include "bullet.hpp"
 
 #include <cstdint>
 #include <memory>
 
+namespace {
+  const char kMoveLeft{'a'};
+  const char kMoveRight{'d'};
+  const char kReload{'s'};
+  const char kShoot{'s'};
+  //  std::pair<unsigned, unsigned>
+}// namespace
 
-const wchar_t kMoveLeft{L'a'};
-const wchar_t kMoveRight{L'd'};
-const wchar_t kReload{L's'};
-const wchar_t kShoot{L's'};
+namespace gameObj {
+  Player::Player(unsigned int DirectionDegrees, std::pair<unsigned int, unsigned int>&& startCoords)
+      : ShiftingObject(0, std::move(startCoords)) {
+  }
 
-std::unique_ptr<basicObj> Player::communication(const wchar_t action) {
-  if( action == kMoveLeft && objCords_.second > 0UL && objCords_.second < SIZE_MAX ) {
-    objCords_.second--;
-  }
-  else if( action == kMoveRight && objCords_.second > 0UL && objCords_.second < SIZE_MAX ) {
-    objCords_.second++;
-  }
-  else if( action == kReload ) {
-    if( reloadStart_ != 0 ) {
-      // reloadStart_ = std::chrono::time;
+  std::shared_ptr<basicObj> Player::action(const char action) {
+    if( action == kMoveLeft ) {
+      DirectionShift_ = std::pair{-1, 0};
     }
-    else {
-      reloadStart_ = ;
+    else if( action == kMoveRight ) {
+      DirectionShift_ = std::pair{1, 0};
     }
+    else if( action == kReload ) {
+      //      todo make reload;
+    }
+    else if( action == kShoot ) {
+
+      std::pair<unsigned, unsigned> bulletCoords{Coords_.first, Coords_.second + Direction_};
+      return std::make_unique<Bullet>(Direction_, );
+    }
+    return nullptr;
   }
-  else if (action == kShoot){
-    return std::make_unique<>()
-  }
-  return nullptr;
-}
+}// namespace game_obj

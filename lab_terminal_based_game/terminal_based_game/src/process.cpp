@@ -1,20 +1,27 @@
-#include <iostream>
-
-#include <curses.h>
-#include <stdio.h>
-#include <future>
-#include <chrono>
-#include <thread>
-
+#include "shifting_object.hpp"
 #include "game_obj.hpp"
 
-const wchar_t kEnd{L'q'};
-
+#include <curses.h>
+#include <chrono>
+#include <cstdio>
+#include <future>
+#include <iostream>
+#include <map>
+#include <set>
+#include <thread>
+#include <unordered_map>
+const char kEnd{'q'};
 
 wchar_t GetAction(WINDOW *mWIn) {
   wchar_t input = wgetch(mWIn);
   return input;
 }
+
+/*
+int foo(std::unique_ptr<std::set<int>>& array){
+  array->size();
+}
+*/
 
 int process() {
   initscr();
@@ -36,20 +43,29 @@ int process() {
   int c;
   bool cont = false;
 
+  std::unordered_map<unsigned, std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
+  std::set<std::shared_ptr<gameObj::ShiftingObject>> wearpons{};
   while( true ) {
     std::future<wchar_t> futureInput = std::async(std::launch::async, GetAction(gWin), gWin);
 
     while( futureInput.wait_for(std::chrono::nanoseconds(1)) != std::future_status::ready ) {
-      // здесь будет жить весь игровой мир
-    }
-    if (futureInput.valid()){
-      wchar_t action = futureInput.get();
-      if (action == kEnd ){
-        break;
+      for(const auto& a: gameObjects ) {
+        std::pair desiredShift = a.second->desiredShift();
+//        взаимодействие с окном
+
+      }
+      for( auto& a: wearpons ){
+
       }
 
     }
-
+    if( futureInput.valid() ) {
+      // здесь будем играть персонажем
+      wchar_t action = futureInput.get();
+      if( action == kEnd ) {
+        break;
+      }
+    }
   }
 
 
