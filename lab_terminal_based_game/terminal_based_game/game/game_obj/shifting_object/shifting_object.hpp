@@ -9,12 +9,12 @@ namespace gameObj {
 
   class ShiftingObject: public basicObj {
   public:
-    ShiftingObject(int Direction, std::pair<unsigned, unsigned>&& startCoords);
-    virtual std::pair<unsigned, unsigned> desiredShift() const = 0;
-    virtual void makeShift(std::pair<unsigned, unsigned>& allowedShift) = 0;
+    ShiftingObject(int Direction, std::pair<int, int>&& startCoords, char avatar);
+    virtual std::pair<int, int> desiredShift() const = 0;
+    virtual void makeShift(std::pair<int, int>& allowedShift);
+    virtual std::shared_ptr<ShiftingObject> action(const int action);
 
   protected:
-    //  todo
     int Direction_;
     std::pair<unsigned, unsigned> DirectionShift_;
   };

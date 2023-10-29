@@ -1,117 +1,122 @@
-#include "shifting_object.hpp"
+#include "process.hpp"
 #include "game_obj.hpp"
+#include "game_screen.hpp"
+#include "shifting_object.hpp"
+
 
 #include <curses.h>
 #include <chrono>
 #include <cstdio>
+#include <fstream>
 #include <future>
 #include <iostream>
 #include <map>
 #include <set>
 #include <thread>
 #include <unordered_map>
-const char kEnd{'q'};
 
-wchar_t GetAction(WINDOW *mWIn) {
-  wchar_t input = wgetch(mWIn);
-  return input;
+namespace {
+  const int minimalAmmoQuantity{10};
 }
 
-/*
-int foo(std::unique_ptr<std::set<int>>& array){
-  array->size();
-}
-*/
+namespace gameProcess {
+  int screenInput(WINDOW *window) {
+    int input = wgetch(window);
+    return input;
+  }
 
-int process() {
-  initscr();
-  raw();
-  noecho();
-  curs_set(FALSE);
-  keypad(stdscr, TRUE);
-  nodelay(stdscr, TRUE);
+  const char kEnd{'q'};
 
-  // set_escdelay(0);
+  int gameProcess::process() {
+    std::vector<int> mapSize{mapSize_.width, mapSize_.height, 0, 0};
+    std::vector<int> statsSize{mapSize_.width, 6, 0, mapSize_.height};
 
-  int h1, w1;
-  getmaxyx(stdscr, h1, w1);
-  int h = h1, w = w1;
+    gameScreen::gameScreen screen{mapSize, statsSize};
+    screen.loadGameMap(std::move(gameMap_), ' ');
+    screen.drawGameMap();
 
-  wmove(stdscr, h / 2, w / 2);
-  wprintw(stdscr, "hello from %s, rows %d, cols %d", "curses", h1, w1);
+    std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
+    std::vector<std::shared_ptr<gameObj::ShiftingObject>> wearpons{};
+    wearpons.reserve(minimalAmmoQuantity);
 
-  int c;
-  bool cont = false;
+    gameObj::Player player{
+            gameObj::ekObjUp, std::pair{mapSize_.width / 2, mapSize_.height - 2}
+    };
 
-  std::unordered_map<unsigned, std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
-  std::set<std::shared_ptr<gameObj::ShiftingObject>> wearpons{};
-  while( true ) {
-    std::future<wchar_t> futureInput = std::async(std::launch::async, GetAction(gWin), gWin);
+    while( true ) {
+      std::future<int> futureInput =
+              std::async(std::launch::async, screenInput, screen.getWindow());
 
-    while( futureInput.wait_for(std::chrono::nanoseconds(1)) != std::future_status::ready ) {
-      for(const auto& a: gameObjects ) {
-        std::pair desiredShift = a.second->desiredShift();
-//        взаимодействие с окном
+      while( futureInput.wait_for(std::chrono::nanoseconds(10000)) != std::future_status::ready ) {
+        /// здесь вдигаются все живие объекты;
+        /*for( const auto& a: gameObjects ) {
+          std::pair desiredShift = a->desiredShift();
+          std::pair objectCoords = a->getCoords();
 
+          screen.fixCoordsToMove(objectCoords, desiredShift);
+          a->makeShift(desiredShift);
+          screen.drawGameObj(objectCoords, desiredShift, a->avatar());
+        }*/
+        for( int i = 0; i < wearpons.size(); i++ ) {
+          std::pair desiredShift{wearpons[i]->desiredShift()};
+          std::pair objectCoords{wearpons[i]->getCoords()};
+          bool flag = screen.fixCoordsToMove(objectCoords, desiredShift);
+          screen.drawGameObj(objectCoords, desiredShift, wearpons[i]->avatar());
+          for (const auto & obejct: gameObjects){
+            if (obejct->getCoords() == wearpons[i]->getCoords()){
+
+            }
+          }
+          if (flag){
+            wearpons.erase(i);
+          }
+        }
+        /// здесь будем вроверять попали ли пули;
       }
-      for( auto& a: wearpons ){
 
+      if( futureInput.valid() ) {
+        /// здесь будем играть персонажем
+        int action = futureInput.get();
+        if( action == kEnd ) {
+          break;
+        }
+
+        std::shared_ptr<gameObj::ShiftingObject> playerAction = player.action(action);
+        if( playerAction != nullptr ) {
+          wearpons.push_back(playerAction);
+        }
+        std::pair desiredShift = player.desiredShift();
+        std::pair objectCoords = player.getCoords();
+
+        screen.fixCoordsToMove(objectCoords, desiredShift);
+        player.makeShift(desiredShift);
+        screen.drawGameObj(objectCoords, desiredShift, player.avatar());
       }
-
     }
-    if( futureInput.valid() ) {
-      // здесь будем играть персонажем
-      wchar_t action = futureInput.get();
-      if( action == kEnd ) {
-        break;
+
+    return 0;
+  }
+
+  gameProcess::gameProcess::gameProcess(std::string&& gameSettings) {
+    std::ifstream mapInput{gameSettings};
+    if( !mapInput.is_open() ) {
+      // todo
+    }
+    mapInput >> mapSize_.width >> mapSize_.height;
+    gameMap_.resize(mapSize_.width * mapSize_.height);
+    char skipNextLineSymbol;
+    mapInput.read(&skipNextLineSymbol, sizeof(skipNextLineSymbol));
+    if( skipNextLineSymbol != '\n' ) {
+      throw std::exception();//        todo
+    }
+    for( int row = 0; row < mapSize_.height; ++row ) {
+      mapInput.read(reinterpret_cast<char *>(gameMap_.data() + row * mapSize_.width),
+                    mapSize_.width * sizeof(*gameMap_.data()));
+      mapInput.read(&skipNextLineSymbol, sizeof(skipNextLineSymbol));
+      if( skipNextLineSymbol != '\n' ) {
+        throw std::exception();//        todo
       }
     }
   }
 
-
-  while( 'q' != (c = getch()) ) {
-    cont = false;
-    switch( c ) {
-      case KEY_LEFT:
-        --w;
-        break;
-      case KEY_RIGHT:
-        ++w;
-        break;
-      case KEY_UP:
-        --h;
-        break;
-      case KEY_DOWN:
-        ++h;
-        break;
-      default:
-        cont = true;
-        break;
-    }
-    flushinp();
-    if( cont ) {
-      std::this_thread::sleep_for(std::chrono::nanoseconds(10000));
-      continue;
-    }
-    if( 0 >= h ) {
-      h = 1;
-    }
-    if( 0 >= w ) {
-      w = 1;
-    }
-    if( w >= w1 ) {
-      w = w1 - 1;
-    }
-    if( h >= h1 ) {
-      h = h1 - 1;
-    }
-    clear();
-    wmove(stdscr, h / 2, w / 2);
-    wprintw(stdscr, "hello from %s, rows %d/%d, cols %d/%d", "curses", h, h1, w, w1);
-    refresh();
-  }
-
-  endwin();
-
-  return 0;
-}
+}// namespace gameProcess

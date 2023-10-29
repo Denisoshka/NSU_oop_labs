@@ -5,10 +5,10 @@
 namespace gameObj {
   class Bullet: public ShiftingObject {
   public:
-    Bullet(int DirectionDegrees, std::pair<unsigned, unsigned>&& startCoords);
-    virtual std::shared_ptr<basicObj> action(const char action) override;
-    virtual std::pair<unsigned, unsigned> desiredShift() const override;
-    virtual void makeShift(std::pair<unsigned, unsigned>& allowedShift);
+    Bullet(int DirectionDegrees, std::pair<int, int>&& startCoords);
+//    virtual std::shared_ptr<ShiftingObject> action(const int action) override;
+    virtual std::pair<int, int> desiredShift() const override;
+//    virtual void makeShift(std::pair<unsigned, unsigned>& allowedShift) override;
 
   private:
   };

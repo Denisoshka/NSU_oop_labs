@@ -15,5 +15,6 @@ target_compile_options(${LIBRARY_NAME} PRIVATE -pedantic -Wall -Werror)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/game/game_obj)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/screen)
 
-target_link_libraries(${LIBRARY_NAME} PUBLIC ${Boost_LIBRARIES} game_obj)
+target_link_libraries(${LIBRARY_NAME} PUBLIC game_obj screen)

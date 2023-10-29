@@ -17,6 +17,7 @@ target_compile_features(${DIR_NAME} INTERFACE cxx_std_20)
 file(GLOB PUBLIC_INCLUDES
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
         "${CMAKE_CURRENT_SOURCE_DIR}/basic_obj"
+        "${CMAKE_CURRENT_SOURCE_DIR}/player"
         "${CMAKE_CURRENT_SOURCE_DIR}/shifting_object"
 )
 
@@ -27,8 +28,8 @@ target_include_directories(${DIR_NAME}
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
         ${PUBLIC_INCLUDES}
-        PRIVATE
         ${PRIVATE_INCLUDES}
+        PRIVATE
 )
 
 #file(GLOB SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")

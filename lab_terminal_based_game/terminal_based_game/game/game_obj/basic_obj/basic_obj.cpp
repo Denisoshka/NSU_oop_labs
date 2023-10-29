@@ -3,11 +3,16 @@
 #include <utility>
 
 namespace gameObj {
-  basicObj::basicObj(std::pair<unsigned int, unsigned int>&& startCoords)
-      : Coords_(std::move(startCoords)) {
+  basicObj::basicObj(std::pair<int, int>&& startCoords, char avatar)
+      : Coords_(std::move(startCoords))
+      , Avatar_(avatar) {
   }
 
-  std::pair<unsigned int, unsigned int> basicObj::getCoords() {
+  std::pair<int, int> basicObj::getCoords() {
     return Coords_;
+  }
+
+  char basicObj::avatar() const {
+    return Avatar_;
   }
 }// namespace gameObj
