@@ -21,7 +21,7 @@ namespace {
 
 namespace gameProcess {
   int screenInput(WINDOW *window) {
-    int input = wgetch(window);
+    int input{wgetch(window)};
     return input;
   }
 
@@ -36,13 +36,14 @@ namespace gameProcess {
     screen.drawGameMap();
 
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
-    std::vector<std::shared_ptr<gameObj::ShiftingObject>> wearpons{};
-    wearpons.reserve(minimalAmmoQuantity);
+    std::vector<std::shared_ptr<gameObj::ShiftingObject>> myWeapons{};
+    std::vector<std::shared_ptr<gameObj::ShiftingObject>> enemyWeapons{};
+    myWeapons.reserve(minimalAmmoQuantity);
 
     gameObj::Player player{
             gameObj::ekObjUp, std::pair{mapSize_.width / 2, mapSize_.height - 2}
     };
-
+//    bool playerIsDead{false};
     while( true ) {
       std::future<int> futureInput =
               std::async(std::launch::async, screenInput, screen.getWindow());
@@ -57,18 +58,22 @@ namespace gameProcess {
           a->makeShift(desiredShift);
           screen.drawGameObj(objectCoords, desiredShift, a->avatar());
         }*/
-        for( int i = 0; i < wearpons.size(); i++ ) {
-          std::pair desiredShift{wearpons[i]->desiredShift()};
-          std::pair objectCoords{wearpons[i]->getCoords()};
-          bool flag = screen.fixCoordsToMove(objectCoords, desiredShift);
-          screen.drawGameObj(objectCoords, desiredShift, wearpons[i]->avatar());
-          for (const auto & obejct: gameObjects){
-            if (obejct->getCoords() == wearpons[i]->getCoords()){
+        for( auto weapon = myWeapons.begin(); weapon != myWeapons.end(); ++weapon ) {
+          std::pair desiredShift{(*weapon)->desiredShift()};
+          std::pair objectCoords{(*weapon)->getCoords()};
 
+          bool flag = screen.fixCoordsToMove(objectCoords, desiredShift);
+          (*weapon)->makeShift(desiredShift);
+          screen.drawGameObj(objectCoords, desiredShift, (*weapon)->avatar());
+
+          for( auto object = gameObjects.begin(); object!=gameObjects.end(); ++object ) {
+            if( (*object)->getCoords() == (*weapon)->getCoords() ) {
+              gameObjects.erase(object);
+              flag = true;
             }
           }
-          if (flag){
-            wearpons.erase(i);
+          if( flag ) {
+            myWeapons.erase(weapon);
           }
         }
         /// здесь будем вроверять попали ли пули;
@@ -83,7 +88,7 @@ namespace gameProcess {
 
         std::shared_ptr<gameObj::ShiftingObject> playerAction = player.action(action);
         if( playerAction != nullptr ) {
-          wearpons.push_back(playerAction);
+          myWeapons.push_back(playerAction);
         }
         std::pair desiredShift = player.desiredShift();
         std::pair objectCoords = player.getCoords();

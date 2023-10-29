@@ -60,9 +60,6 @@ namespace gameScreen {
     mvwaddch(window_, gameMapSize_.startY + objectCoords.second + objectShift.second,
              gameMapSize_.startX + objectCoords.first + objectShift.first, avatar);
 
-    mvwaddch(window_, objectCoords.second + objectShift.second,
-             objectCoords.first + objectShift.first, avatar);
-
     wrefresh(window_);
   }
 

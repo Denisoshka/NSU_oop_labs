@@ -9,7 +9,7 @@ namespace {
 
 namespace gameObj {
   Bullet::Bullet(int DirectionDegrees, std::pair<int, int>&& startCoords)
-      : ShiftingObject(0, std::move(startCoords), 0) {
+      : ShiftingObject(0, std::move(startCoords), '*') {
     if( DirectionDegrees % kDegreesPerHalf_ / kDegreesPerHalf_ ) {
       Direction_ = ekObjUp;
       DirectionShift_ = std::move(std::pair{0, BulletDirectionShift.second});
