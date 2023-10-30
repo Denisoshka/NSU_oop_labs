@@ -14,8 +14,8 @@ namespace {
 }// namespace
 
 namespace gameObj {
-  Player::Player( int DirectionDegrees, std::pair< int,  int>&& startCoords)
-      : ShiftingObject(DirectionDegrees, std::move(startCoords), '@') {
+  Player::Player( int viewDirection, std::pair< int,  int>&& startCoords)
+      : ShiftingObject(viewDirection, std::move(startCoords), '@') {
   }
 
   std::shared_ptr<ShiftingObject> Player::action(const int action) {
@@ -32,9 +32,9 @@ namespace gameObj {
     }
     else if( action == kShoot ) {
       if (ammoQuantity_){
-        std::pair bulletCoords{Coords_.first, Coords_.second + Direction_};
+        std::pair bulletCoords{Coords_.first, Coords_.second + viewDirection_};
         ammoQuantity_--;
-        return std::make_unique<Bullet>(Direction_, std::move(bulletCoords));
+        return std::make_unique<Bullet>(viewDirection_, std::move(bulletCoords));
       }
       return nullptr;
     }
@@ -43,5 +43,9 @@ namespace gameObj {
 
   std::pair<int, int> Player::desiredShift() const {
     return DirectionShift_;
+  }
+
+  int Player::getAmmoQuantity() const {
+    return ammoQuantity_;
   }
 }// namespace gameObj

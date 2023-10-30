@@ -1,6 +1,5 @@
 #include "game_screen.hpp"
 
-#include <fstream>
 #include <iostream>
 
 namespace gameScreen {
@@ -37,14 +36,28 @@ namespace gameScreen {
     nodelay(stdscr, TRUE);
   }
 
-  void gameScreen::loadGameStats(
-          std::vector<std::pair<std::pair<int, int>, std::string>>&& kStats) {
+  void gameScreen::loadGameStats(std::vector<std::pair<std::pair<int, int>, std::string>>&& stats) {
+    for( auto& statsField: stats ) {
+      statsField.first.first += statsField.second.size();
+      gameStats_[statsField.second] = statsField.first;
+    }
   }
 
   void gameScreen::drawGameStats() {
+    for( const auto& statsField: gameStats_ ) {
+      const char *key = statsField.first.data();
+      const int x = statsField.second.first - statsField.first.size();
+      const int y = statsField.second.second;
+      mvwaddstr(window_, y, x, key);
+      wrefresh(window_);
+    }
   }
 
-  void gameScreen::fixGameStats(std::vector<std::pair<std::pair<int, int>, int>>& kStats) {
+  void gameScreen::updateGameStat(const std::string& key, std::string&& value) {
+    const int x = gameStats_[key].first;
+    const int y = gameStats_[key].second;
+    mvwaddstr(window_, y, x, value.data());
+    wrefresh(window_);
   }
 
   void gameScreen::loadGameMap(std::vector<char>&& map, char wall) {
@@ -52,8 +65,8 @@ namespace gameScreen {
     emptySpace_ = wall;
   }
 
-  void gameScreen::drawGameObj(const std::pair<int, int>& objectCoords,
-                               const std::pair<int, int>& objectShift, const char avatar) {
+  void gameScreen::drawMoveGameObj(const std::pair<int, int>& objectCoords,
+                                   const std::pair<int, int>& objectShift, const char avatar) {
     mvwaddch(window_, gameMapSize_.startY + objectCoords.second,
              gameMapSize_.startX + objectCoords.first,
              map_[objectCoords.first + objectCoords.second * gameMapSize_.width]);
@@ -120,6 +133,14 @@ namespace gameScreen {
 
   WINDOW *gameScreen::getWindow() {
     return window_;
+  }
+
+  void gameScreen::deleteGameObj(const std::pair<int, int>& objectCoords) {
+    mvwaddch(window_, gameMapSize_.startY + objectCoords.second,
+             gameMapSize_.startX + objectCoords.first,
+             map_[objectCoords.first + objectCoords.second * gameMapSize_.width]);
+
+    wrefresh(window_);
   }
 
 

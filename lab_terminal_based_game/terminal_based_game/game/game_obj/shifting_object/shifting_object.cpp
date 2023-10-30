@@ -1,12 +1,12 @@
 #include "shifting_object.hpp"
 
 namespace gameObj {
-  ShiftingObject::ShiftingObject(int Direction, std::pair<int, int>&& startCoords,
-                                 char avatar)
-      : basicObj(std::move(startCoords), avatar) {
+  ShiftingObject::ShiftingObject(int viewDirection, std::pair<int, int>&& startCoords, char avatar)
+      : basicObj(std::move(startCoords), avatar)
+      , viewDirection_(viewDirection) {
   }
 
-  void ShiftingObject::makeShift(std::pair< int,  int>& allowedShift) {
+  void ShiftingObject::makeShift(std::pair<int, int>& allowedShift) {
     Coords_.first += allowedShift.first;
     Coords_.second += allowedShift.second;
   }
@@ -14,4 +14,4 @@ namespace gameObj {
   std::shared_ptr<ShiftingObject> ShiftingObject::action(const int action) {
     return nullptr;
   }
-}// namespace game_obj
+}// namespace gameObj

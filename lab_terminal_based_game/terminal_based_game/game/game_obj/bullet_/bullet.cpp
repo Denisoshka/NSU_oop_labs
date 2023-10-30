@@ -8,15 +8,14 @@ namespace {
 }// namespace
 
 namespace gameObj {
-  Bullet::Bullet(int DirectionDegrees, std::pair<int, int>&& startCoords)
+  Bullet::Bullet(int viewDirection, std::pair<int, int>&& startCoords)
       : ShiftingObject(0, std::move(startCoords), '*') {
-    if( DirectionDegrees % kDegreesPerHalf_ / kDegreesPerHalf_ ) {
-      Direction_ = ekObjUp;
-      DirectionShift_ = std::move(std::pair{0, BulletDirectionShift.second});
-    }
-    else {
-      Direction_ = ekOBJDown;
+    viewDirection_ = viewDirection;
+    if( viewDirection == ekObjUp) {
       DirectionShift_ = std::move(std::pair{0, -BulletDirectionShift.second});
+    }
+    else if (viewDirection == ekOBJDown){
+      DirectionShift_ = std::move(std::pair{0, BulletDirectionShift.second});
     }
   }
 

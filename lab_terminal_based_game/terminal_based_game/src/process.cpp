@@ -17,7 +17,11 @@
 
 namespace {
   const int minimalAmmoQuantity{10};
-}
+  const char freeSpace{' '};
+  const char kEnd{'q'};
+  const std::string bulletsField{"bullets quantity: "};
+  const std::string elapsedTimeField{"elapsed time: "};
+}// namespace
 
 namespace gameProcess {
   int screenInput(WINDOW *window) {
@@ -25,58 +29,80 @@ namespace gameProcess {
     return input;
   }
 
-  const char kEnd{'q'};
-
-  int gameProcess::process() {
+  void gameProcess::initGameScreen(
+          std::vector<std::pair<std::pair<int, int>, std::string>>&& stats) {
     std::vector<int> mapSize{mapSize_.width, mapSize_.height, 0, 0};
     std::vector<int> statsSize{mapSize_.width, 6, 0, mapSize_.height};
 
-    gameScreen::gameScreen screen{mapSize, statsSize};
-    screen.loadGameMap(std::move(gameMap_), ' ');
-    screen.drawGameMap();
+    screen_ = gameScreen::gameScreen{mapSize, statsSize};
+    screen_.loadGameMap(std::move(gameMap_), freeSpace);
+    screen_.drawGameMap();
+    screen_.loadGameStats(std::move(stats));
+    screen_.drawGameStats();
+  }
 
-    std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
-    std::vector<std::shared_ptr<gameObj::ShiftingObject>> myWeapons{};
-    std::vector<std::shared_ptr<gameObj::ShiftingObject>> enemyWeapons{};
+  void gameProcess::initGameProcessEnvironment() {
     myWeapons.reserve(minimalAmmoQuantity);
+    enemyWeapons.reserve(minimalAmmoQuantity);
 
-    gameObj::Player player{
-            gameObj::ekObjUp, std::pair{mapSize_.width / 2, mapSize_.height - 2}
+    std::pair playerCords1 = std::pair{mapSize_.width / 2, mapSize_.height - 2};
+    std::pair playerCords2 = playerCords1;
+    player = gameObj::Player{gameObj::ekObjUp, std::move(playerCords1)};
+
+    screen_.drawMoveGameObj(playerCords2, std::pair{0, 0}, player.avatar());
+  }
+
+  void gameProcess::updateGameEnvironment() {
+    for( auto weapon = myWeapons.begin(); weapon != myWeapons.end(); ) {
+      std::pair desiredShift{(*weapon)->desiredShift()};
+      std::pair objectCoords{(*weapon)->getCoords()};
+
+      bool flag = screen_.fixCoordsToMove(objectCoords, desiredShift);
+      (*weapon)->makeShift(desiredShift);
+      screen_.drawMoveGameObj(objectCoords, desiredShift, (*weapon)->avatar());
+
+      for( const auto& object: gameObjects ) {
+        if( object->getCoords() == (*weapon)->getCoords() ) {
+          flag = true;
+        }
+      }
+      if( flag ) {
+        screen_.deleteGameObj((*weapon)->getCoords());
+        myWeapons.erase(weapon);
+      }
+      else {
+        ++weapon;
+      }
+    }
+  }
+
+  int gameProcess::process() {
+    std::vector<std::pair<std::pair<int, int>, std::string>> stats = {
+            {{0, mapSize_.height + 1}, bulletsField    },
+            {{0, mapSize_.height + 3}, elapsedTimeField}
     };
-//    bool playerIsDead{false};
+    initGameScreen(std::move(stats));
+    initGameProcessEnvironment();
+
     while( true ) {
       std::future<int> futureInput =
-              std::async(std::launch::async, screenInput, screen.getWindow());
+              std::async(std::launch::async, screenInput, screen_.getWindow());
 
-      while( futureInput.wait_for(std::chrono::nanoseconds(10000)) != std::future_status::ready ) {
+      while( futureInput.wait_for(std::chrono::nanoseconds(100000)) != std::future_status::ready ) {
         /// здесь вдигаются все живие объекты;
         /*for( const auto& a: gameObjects ) {
           std::pair desiredShift = a->desiredShift();
           std::pair objectCoords = a->getCoords();
 
-          screen.fixCoordsToMove(objectCoords, desiredShift);
+          screen_.fixCoordsToMove(objectCoords, desiredShift);
           a->makeShift(desiredShift);
-          screen.drawGameObj(objectCoords, desiredShift, a->avatar());
+          screen_.drawGameObj(objectCoords, desiredShift, a->avatar());
         }*/
-        for( auto weapon = myWeapons.begin(); weapon != myWeapons.end(); ++weapon ) {
-          std::pair desiredShift{(*weapon)->desiredShift()};
-          std::pair objectCoords{(*weapon)->getCoords()};
-
-          bool flag = screen.fixCoordsToMove(objectCoords, desiredShift);
-          (*weapon)->makeShift(desiredShift);
-          screen.drawGameObj(objectCoords, desiredShift, (*weapon)->avatar());
-
-          for( auto object = gameObjects.begin(); object!=gameObjects.end(); ++object ) {
-            if( (*object)->getCoords() == (*weapon)->getCoords() ) {
-              gameObjects.erase(object);
-              flag = true;
-            }
-          }
-          if( flag ) {
-            myWeapons.erase(weapon);
-          }
-        }
+        ///
+        updateGameEnvironment();
         /// здесь будем вроверять попали ли пули;
+        screen_.updateGameStat(bulletsField, std::to_string())
+        /// рисуем статы
       }
 
       if( futureInput.valid() ) {
@@ -93,9 +119,11 @@ namespace gameProcess {
         std::pair desiredShift = player.desiredShift();
         std::pair objectCoords = player.getCoords();
 
-        screen.fixCoordsToMove(objectCoords, desiredShift);
+        screen_.fixCoordsToMove(objectCoords, desiredShift);
         player.makeShift(desiredShift);
-        screen.drawGameObj(objectCoords, desiredShift, player.avatar());
+        screen_.drawMoveGameObj(objectCoords, desiredShift, player.avatar());
+
+        screen_.updateGameStat(bulletsField, std::to_string(player.getAmmoQuantity()));
       }
     }
 
@@ -123,5 +151,8 @@ namespace gameProcess {
       }
     }
   }
+
+
+
 
 }// namespace gameProcess
