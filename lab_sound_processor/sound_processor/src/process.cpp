@@ -22,6 +22,7 @@ namespace {
   const std::regex kDefPass{std::regex(R"(--)")};
   const size_t kDefTasksCount = 10;
   const boost::char_separator<char> kDefSep(" ");
+  const std::string missingField{"missing field"};
 
   enum ekSettingsPos {
     ekConverter,
@@ -32,8 +33,7 @@ process::Process::Process(const boost::program_options::variables_map& kVM)
     : SampleRate_(kDefSampleRate)
     , FileInPath_(kVM["input"].as<std::vector<std::string>>())
     , SettingsPath_(kVM["config"].as<std::string>())
-    , FileOutPath_(kVM["output"].as<std::string>())
-    , SettingsStream_(std::ifstream(kVM["config"].as<std::string>())) {
+    , FileOutPath_(kVM["output"].as<std::string>()) {
 }
 
 void process::Process::setSettings(const boost::program_options::variables_map& kVM) {
@@ -41,7 +41,6 @@ void process::Process::setSettings(const boost::program_options::variables_map& 
   SettingsPath_ = kVM["config"].as<std::string>();
   FileOutPath_ = kVM["output"].as<std::string>();
   FileInPath_ = kVM["input"].as<std::vector<std::string>>();
-  SettingsStream_ = std::ifstream(kVM["config"].as<std::string>());
 }
 
 void process::Process::executeConversions() {
@@ -69,7 +68,10 @@ void process::Process::executeConversions() {
     const size_t streamQuantity = converter->inStreamQuantity();
     for( size_t streamNum = 0; streamNum < streamQuantity; ++streamNum ) {
       if( converter->getReadStream() ) {
-        wavReaderSub.open(FileInPath_[converter->getReadStream()]);
+        if (converter->getReadStream() > FileInPath_.size()){
+          throw IncorrectStreamNumber(converter->getReadStream());
+        }
+        wavReaderSub.open(FileInPath_[converter->getReadStream()-1]);
       }
       size_t curReadDuration =
               (converter->getReadStream()) ? wavReaderSub.getDuration() : OutDuration_;
@@ -79,17 +81,17 @@ void process::Process::executeConversions() {
         size_t readSecond = converter->getReadSecond();
         size_t writeSecond = converter->getWriteSecond();
 
-        if( converter->getReadStream() && readSecond < curReadDuration ) {
-          wavReaderSub.readSample(mainSampleOut, readSecond);
-        }
-        else if( !converter->getReadStream() && writeSecond < curReadDuration ) {
+        if( writeSecond < OutDuration_ ) {
           wavReaderOut.readSample(mainSampleOut, writeSecond);
         }
         else {
           std::fill(mainSampleOut.begin(), mainSampleOut.end(), 0);
         }
 
-        wavReaderSub.readSample(subSampleIn, readSecond);
+        if( converter->getReadStream()) {
+          wavReaderSub.readSample(subSampleIn, readSecond);
+        }
+
         converter->process(mainSampleOut, subSampleIn);
         wavWriterOut.writeSample(mainSampleOut, writeSecond);
 
@@ -129,7 +131,6 @@ void process::Pipeline::fill() {
     TaskInf taskInf_;
     boost::tokenizer<boost::char_separator<char>> tokens(task, kDefSep);
     size_t tokenPosition = 0;
-    // todo переписать на boost po
     for( const std::string& token: tokens ) {
       if( tokenPosition == ekSettingsPos::ekConverter && regex_match(token, kDefConverterName_) ) {
         taskInf_.Converter = std::move(token);
@@ -142,7 +143,8 @@ void process::Pipeline::fill() {
         taskInf_.Params.push_back(std::atoll(token.data()));
       }
       else if( regex_match(token, kDefPass) ) {
-        taskInf_.Params.push_back(SIZE_MAX);
+        (taskInf_.InStreams.empty()) ? taskInf_.InStreams.push_back(SIZE_MAX)
+                                     : taskInf_.Params.push_back(SIZE_MAX);
       }
       else {
         throw process::IncorrectSettingsFormat(task);
@@ -167,10 +169,12 @@ void process::printConverterDesc(const std::string& kProgramName, const std::str
             << " Description" << std::endl;
 
   for( const auto& kConverterDesk: kConvertersDeskArray ) {
-    std::cout << std::left << std::setw(indent) << kConverterDesk.second.get<std::string>("name")
-              << std::right << kConverterDesk.second.get<std::string>("params") << "\n"
+
+    std::cout << std::left << std::setw(indent)
+              << kConverterDesk.second.get<std::string>("name", missingField) << std::right
+              << kConverterDesk.second.get<std::string>("params", missingField) << "\n"
               << std::setw(indent) << std::left << " "
-              << kConverterDesk.second.get<std::string>("description") << "\n"
+              << kConverterDesk.second.get<std::string>("description", missingField) << "\n"
               << std::endl;
   }
 }

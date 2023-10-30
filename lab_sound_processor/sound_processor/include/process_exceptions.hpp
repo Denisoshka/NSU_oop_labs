@@ -4,10 +4,11 @@
 #include <stdexcept>
 
 namespace process {
-  enum ProcessExceptions : size_t{
+  enum ProcessExceptions : size_t {
     ekProcessExceptionStd = 999'0,
     ekStreamFailure,
     ekIncorrectSettingsFormat,
+    ekIncorrectStreamNumber,
   };
 
   class ProcessException {
@@ -32,5 +33,12 @@ namespace process {
   public:
     explicit IncorrectSettingsFormat(const std::string& kSettings);
     [[nodiscard]] virtual const char *what() const noexcept override;
+  };
+
+  class IncorrectStreamNumber: public IncorrectSettingsFormat {
+  public:
+    IncorrectStreamNumber(const int streamNumber);
+    [[nodiscard]] virtual const char *what() const noexcept override;
+
   };
 }// namespace process

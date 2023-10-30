@@ -23,7 +23,17 @@ namespace process {
       , std::invalid_argument(kSettings) {
   }
 
-  const char * IncorrectSettingsFormat::what() const noexcept {
+  const char *IncorrectSettingsFormat::what() const noexcept {
     return std::invalid_argument::what();
+  }
+
+  IncorrectStreamNumber::IncorrectStreamNumber(const int streamNumber)
+      : ProcessException(ekIncorrectStreamNumber)
+      , IncorrectSettingsFormat("Incorrect stream number " + std::to_string(streamNumber)) {
+    ErrorCode_ = ekIncorrectStreamNumber;
+  }
+
+  const char *IncorrectStreamNumber::what() const noexcept {
+    return IncorrectSettingsFormat::what();
   }
 }// namespace process

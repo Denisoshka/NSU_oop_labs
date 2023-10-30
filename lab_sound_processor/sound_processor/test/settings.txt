@@ -1,1 +1,1 @@
-bassboost $5 -- -- 100
+bassboost $3 -- -- 1000 2

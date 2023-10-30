@@ -4,8 +4,9 @@
 void conv::MixConverter::process(std::vector<int16_t>& MainSample,
                                  const std::vector<int16_t>& kSubSample) {
   if( TaskInf_.CurTime < TaskInf_.EndTime ) {
+    uint16_t x = (StreamsQuantity == InStreams_.size() + 1) ? StreamsQuantity : 1;
     for( size_t i = 0; i < MainSample.size(); ++i ) {
-      MainSample[i] = MainSample[i]/ InStreams_.size() + kSubSample[i] ;
+      MainSample[i] = MainSample[i] / x + kSubSample[i] / StreamsQuantity;
     }
   }
   ++TaskInf_.CurTime;
@@ -24,6 +25,7 @@ void conv::MixConverter::setParams(const std::vector<size_t>& kInStreams,
   for( const auto stream: kInStreams ) {
     InStreams_.push_back((stream == SIZE_MAX) ? 0 : stream);
   }
+  StreamsQuantity = InStreams_.size() + 1;
 }
 
 size_t conv::MixConverter::getReadStream() {

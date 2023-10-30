@@ -5,8 +5,9 @@
 void conv::BassBoostConverter::process(std::vector<int16_t>& mainSample,
                                        const std::vector<int16_t>& kSubSample) {
   if( TaskInf_.CurTime < TaskInf_.EndTime ) {
+    auto& curSample = (InStream_) ? kSubSample: mainSample;
     for( size_t i = 0; i < kSubSample.size(); ++i ) {
-      int16_t sample = (kSubSample[i] < bassFactor_) ? kSubSample[i] : bassFactor_;
+      int16_t sample = (curSample[i] < bassFactor_) ? curSample[i] : bassFactor_;
       sample = (llabs(sample) * BassBoostCoeficent_ > INT16_MAX)
                      ? INT16_MAX * (llabs(sample) / bassFactor_)
                      : sample * BassBoostCoeficent_;

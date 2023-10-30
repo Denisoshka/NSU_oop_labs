@@ -36,8 +36,9 @@ int16_t conv::LowPassConverter::applyLowPassFilter(const int16_t kSample) {
 void conv::LowPassConverter::process(std::vector<int16_t>& MainSample,
                                      const std::vector<int16_t>& kSubSample) {
   if( TaskInf_.CurTime < TaskInf_.EndTime ) {
-    for( size_t i = 0; i < kSubSample.size(); ++i ) {
-      MainSample[i] = applyLowPassFilter(MainSample[i]);
+    auto & curSample = (InStream_) ? kSubSample :MainSample ;
+    for( size_t i = 0; i < curSample.size(); ++i ) {
+      MainSample[i] = applyLowPassFilter(curSample[i]);
     }
   }
   TaskInf_.CurTime++;

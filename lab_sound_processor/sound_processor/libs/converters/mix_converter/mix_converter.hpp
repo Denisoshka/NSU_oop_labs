@@ -17,5 +17,6 @@ namespace conv {
     virtual size_t getReadStream() override;
   protected:
     std::vector<size_t> InStreams_{};
+    int StreamsQuantity;
   };
 }// namespace conv

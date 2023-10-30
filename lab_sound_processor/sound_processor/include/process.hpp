@@ -40,8 +40,6 @@ namespace process {
     std::vector<std::string> FileInPath_;
     std::string SettingsPath_;
     std::string FileOutPath_;
-
-    std::ifstream SettingsStream_;
   };
 
   void printConverterDesc(const std::string& kProgramName, const std::string& kUsage,
