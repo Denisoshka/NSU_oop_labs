@@ -101,36 +101,37 @@ namespace gameProcess {
 
     initGameScreen(std::move(stats));
     initGameProcessEnvironment();
-//    auto start = std::chrono::steady_clock::now();
-   /* gameObjects.push_back(
-            std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown, std::pair{1, 10}));
+    auto start = std::chrono::steady_clock::now();
+    gameObjects.push_back(
+            std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown, std::pair{20, 2}));
     auto& enemy = gameObjects.front();
-    screen_.drawMoveGameObj(enemy->getCoords(), enemy->desiredShift(), enemy->avatar());*/
+    screen_.drawMoveGameObj(enemy->getCoords(), enemy->desiredShift(), enemy->avatar());
     while( true ) {
-      std::future<int> futureInput = std::async(std::launch::async, screenInput, screen_.getWindow());
+      std::future<int> futureInput =
+              std::async(std::launch::async, screenInput, screen_.getWindow());
 
-      while( futureInput.wait_for(std::chrono::nanoseconds(1000)) != std::future_status::ready ) {
+      while( futureInput.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready ) {
         /// здесь вдигаются все живие объекты;
-       /* for( const auto& a: gameObjects ) {
-          std::pair desiredShift = a->desiredShift();
-          std::pair objectCoords = a->getCoords();
+         for( const auto& a: gameObjects ) {
+           std::pair desiredShift = a->desiredShift();
+           std::pair objectCoords = a->getCoords();
 
-          auto action = a->action('0');
-          if( action ) {
-            enemyWeapons.push_back(std::move(action));
-          }
-          screen_.fixCoordsToMove(objectCoords, desiredShift);
-          a->makeShift(desiredShift);
-          screen_.drawMoveGameObj(objectCoords, desiredShift, a->avatar());
-          }*/
+           auto action = a->action('0');
+           if( action ) {
+             enemyWeapons.push_back(std::move(action));
+           }
+           screen_.fixCoordsToMove(objectCoords, desiredShift);
+           a->makeShift(desiredShift);
+           screen_.drawMoveGameObj(objectCoords, desiredShift, a->avatar());
+           }
 
         ///
 
         updateGameEnvironment();
 
-//        auto end = std::chrono::steady_clock::now();
-//        auto seconds = std::to_string(std::chrono::duration_cast<std::chrono::seconds>(end - start).count());
-//        screen_.updateGameStat(elapsedTimeField, std::move(seconds));
+                auto end = std::chrono::steady_clock::now();
+                auto seconds = std::to_string(std::chrono::duration_cast<std::chrono::seconds>(end
+                - start).count()); screen_.updateGameStat(elapsedTimeField, std::move(seconds));
       }
 
       if( futureInput.valid() ) {

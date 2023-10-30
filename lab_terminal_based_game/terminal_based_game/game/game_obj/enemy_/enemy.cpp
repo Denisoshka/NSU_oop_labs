@@ -4,9 +4,10 @@
 
 namespace {
   int elapsedTimeToShoot = 5000;
-  int elapsedTimeToMove = 1000;
+  int elapsedTimeToMove = 2000;
   float shootProbability = 0.5;
   float stayHereProbability = 0.2;
+//  float changeDirProbability = 0.7;
 }// namespace
 
 static bool getRandomBoolean(double probability) {
@@ -22,8 +23,8 @@ static bool getRandomBoolean(double probability) {
 namespace gameObj {
   Enemy::Enemy(int viewDirection, std::pair<int, int>&& startCoords)
       : ShiftingObject(viewDirection, std::move(startCoords), '$')
-//      , lastShoot_(std::chrono::steady_clock::now())
-//      , lastMove_(std::chrono::steady_clock::now())
+      , lastShoot_(std::chrono::steady_clock::now())
+      , lastMove_(std::chrono::steady_clock::now())
   {
   }
 
@@ -32,9 +33,9 @@ namespace gameObj {
   }
 
   std::shared_ptr<ShiftingObject> Enemy::action(const int action) {
-//    auto curTime = std::chrono::steady_clock::now();
+    auto curTime = std::chrono::steady_clock::now();
     DirectionShift_.first = 0;
-   /* if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - lastShoot_).count()
+    if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - lastShoot_).count()
         >= elapsedTimeToMove && !getRandomBoolean(stayHereProbability)) {
       if (getRandomBoolean(0.5)){
         DirectionShift_.first = 1;
@@ -51,7 +52,7 @@ namespace gameObj {
       lastShoot_ += (curTime - lastShoot_);
       std::pair bulletCoords{Coords_.first, Coords_.second + viewDirection_};
       return std::make_unique<Bullet>(viewDirection_, std::move(bulletCoords));
-    }*/
+    }
     return nullptr;
   }
 }// namespace gameObj

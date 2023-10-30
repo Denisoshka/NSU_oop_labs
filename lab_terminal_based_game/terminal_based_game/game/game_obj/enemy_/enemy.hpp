@@ -1,7 +1,7 @@
 #pragma once
 #include "shifting_object.hpp"
 
-//#include <chrono>
+#include <chrono>
 
 namespace gameObj {
   class Enemy: public ShiftingObject {
@@ -12,7 +12,7 @@ namespace gameObj {
     virtual std::shared_ptr<ShiftingObject> action(const int action) override;
 
   private:
-//    std::chrono::time_point<std::chrono::steady_clock> lastShoot_;
-//    std::chrono::time_point<std::chrono::steady_clock> lastMove_;
+    std::chrono::time_point<std::chrono::steady_clock> lastShoot_;
+    std::chrono::time_point<std::chrono::steady_clock> lastMove_;
   };
 }// namespace gameObj
