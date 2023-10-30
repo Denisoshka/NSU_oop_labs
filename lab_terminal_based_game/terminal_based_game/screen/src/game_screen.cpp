@@ -78,8 +78,7 @@ namespace gameScreen {
 
   void gameScreen::drawGameMap() {
     for( int i = 0; i < map_.size(); ++i ) {
-      mvwaddch(window_, (i / gameMapSize_.width) + gameMapSize_.startY,
-               (i % gameMapSize_.width) + gameMapSize_.startX, map_[i]);
+      mvwaddch(window_, (i / gameMapSize_.width) + gameMapSize_.startY, (i % gameMapSize_.width) + gameMapSize_.startX, map_[i]);
       wrefresh(window_);
     }
   }
@@ -143,5 +142,23 @@ namespace gameScreen {
     wrefresh(window_);
   }
 
+  gameScreen& gameScreen::operator=(gameScreen&& otherScreen) {
+    if (this == &otherScreen){
+      return *this;
+    }
+    gameMapSize_ = otherScreen.gameMapSize_ ;
+    gameStatsSize_ = otherScreen.gameStatsSize_;
+    gameStats_ = std::move(otherScreen.gameStats_);
+    map_= std::move(otherScreen.map_);
+    emptySpace_ = otherScreen.emptySpace_;
+    if (window_){
+      delwin(window_);
+    }
+    window_ = otherScreen.window_;
+    otherScreen.window_ = nullptr;
+
+    terminalSize_ = std::move(otherScreen.terminalSize_);
+    return *this;
+  }
 
 }// namespace gameScreen

@@ -3,7 +3,8 @@
 namespace gameObj {
   ShiftingObject::ShiftingObject(int viewDirection, std::pair<int, int>&& startCoords, char avatar)
       : basicObj(std::move(startCoords), avatar)
-      , viewDirection_(viewDirection) {
+      , viewDirection_(viewDirection)
+      , DirectionShift_({0, 0}) {
   }
 
   void ShiftingObject::makeShift(std::pair<int, int>& allowedShift) {
@@ -14,4 +15,5 @@ namespace gameObj {
   std::shared_ptr<ShiftingObject> ShiftingObject::action(const int action) {
     return nullptr;
   }
+
 }// namespace gameObj

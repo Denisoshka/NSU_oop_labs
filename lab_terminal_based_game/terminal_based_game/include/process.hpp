@@ -21,15 +21,16 @@ namespace gameProcess {
     void initGameScreen(std::vector<std::pair<std::pair<int, int>, std::string>>&& stats);
 
     void updateGameEnvironment();
+    void updatePlayer(const int action);
 
   protected:
     struct screenSize {
       int height, width, startX0, startY0;
-    }mapSize_, statsSize_;
+    }mapSize_{}, statsSize_{};
     std::vector<char> gameMap_;
-    gameScreen::gameScreen screen_;
+    gameScreen::gameScreen screen_{};
 
-    gameObj::Player player;
+    gameObj::Player player{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> myWeapons{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> enemyWeapons{};

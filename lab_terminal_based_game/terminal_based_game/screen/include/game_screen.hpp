@@ -10,6 +10,7 @@ namespace gameScreen {
     //    explicit gameScreen(WINDOW *window, unsigned terminalHeight, unsigned terminalWidth);
     gameScreen() = default;
     gameScreen(const std::vector<int>& gameMapSize, const std::vector<int>& gameStatsSize);
+    gameScreen& operator=(gameScreen&& otherScreen);
     virtual ~gameScreen();
 
     void initScreen();

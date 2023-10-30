@@ -76,33 +76,61 @@ namespace gameProcess {
     }
   }
 
+  void gameProcess::updatePlayer(const int action) {
+    std::shared_ptr<gameObj::ShiftingObject> playerAction = player.action(action);
+    if( playerAction != nullptr ) {
+      myWeapons.push_back(playerAction);
+    }
+    std::pair desiredShift = player.desiredShift();
+    std::pair objectCoords = player.getCoords();
+
+    screen_.fixCoordsToMove(objectCoords, desiredShift);
+    player.makeShift(desiredShift);
+    screen_.drawMoveGameObj(objectCoords, desiredShift, player.avatar());
+
+    std::string ammoQuantity = std::to_string(player.getAmmoQuantity());
+    ammoQuantity.insert(0, 3 - ammoQuantity.length(), '0');
+    screen_.updateGameStat(bulletsField, std::move(ammoQuantity));
+  }
+
   int gameProcess::process() {
     std::vector<std::pair<std::pair<int, int>, std::string>> stats = {
             {{0, mapSize_.height + 1}, bulletsField    },
             {{0, mapSize_.height + 3}, elapsedTimeField}
     };
+
     initGameScreen(std::move(stats));
     initGameProcessEnvironment();
-
+//    auto start = std::chrono::steady_clock::now();
+   /* gameObjects.push_back(
+            std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown, std::pair{1, 10}));
+    auto& enemy = gameObjects.front();
+    screen_.drawMoveGameObj(enemy->getCoords(), enemy->desiredShift(), enemy->avatar());*/
     while( true ) {
-      std::future<int> futureInput =
-              std::async(std::launch::async, screenInput, screen_.getWindow());
+      std::future<int> futureInput = std::async(std::launch::async, screenInput, screen_.getWindow());
 
-      while( futureInput.wait_for(std::chrono::nanoseconds(100000)) != std::future_status::ready ) {
+      while( futureInput.wait_for(std::chrono::nanoseconds(1000)) != std::future_status::ready ) {
         /// здесь вдигаются все живие объекты;
-        /*for( const auto& a: gameObjects ) {
+       /* for( const auto& a: gameObjects ) {
           std::pair desiredShift = a->desiredShift();
           std::pair objectCoords = a->getCoords();
 
+          auto action = a->action('0');
+          if( action ) {
+            enemyWeapons.push_back(std::move(action));
+          }
           screen_.fixCoordsToMove(objectCoords, desiredShift);
           a->makeShift(desiredShift);
-          screen_.drawGameObj(objectCoords, desiredShift, a->avatar());
-        }*/
+          screen_.drawMoveGameObj(objectCoords, desiredShift, a->avatar());
+          }*/
+
         ///
+
         updateGameEnvironment();
-        /// здесь будем вроверять попали ли пули;
-        screen_.updateGameStat(bulletsField, std::to_string())
-        /// рисуем статы
+
+//        auto end = std::chrono::steady_clock::now();
+//        auto seconds = std::to_string(std::chrono::duration_cast<std::chrono::seconds>(end - start).count());
+//        screen_.updateGameStat(elapsedTimeField, std::move(seconds));
       }
 
       if( futureInput.valid() ) {
@@ -111,19 +139,7 @@ namespace gameProcess {
         if( action == kEnd ) {
           break;
         }
-
-        std::shared_ptr<gameObj::ShiftingObject> playerAction = player.action(action);
-        if( playerAction != nullptr ) {
-          myWeapons.push_back(playerAction);
-        }
-        std::pair desiredShift = player.desiredShift();
-        std::pair objectCoords = player.getCoords();
-
-        screen_.fixCoordsToMove(objectCoords, desiredShift);
-        player.makeShift(desiredShift);
-        screen_.drawMoveGameObj(objectCoords, desiredShift, player.avatar());
-
-        screen_.updateGameStat(bulletsField, std::to_string(player.getAmmoQuantity()));
+        updatePlayer(action);
       }
     }
 
@@ -151,8 +167,6 @@ namespace gameProcess {
       }
     }
   }
-
-
 
 
 }// namespace gameProcess
