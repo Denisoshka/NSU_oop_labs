@@ -26,10 +26,13 @@ namespace gameProcess {
     std::vector<std::pair<std::string, int>> readGameStats();
     void showMenu();
     void saveGameStats();
-    void loadGameMap();
+    void loadGameMap(std::vector<char>& map);
 
     void initGameProcessEnvironment();
     void initGameScreen(std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats);
+    std::vector<std::pair<std::pair<int, int>, std::string>> fillGameMenu(
+            std::vector<std::pair<std::pair<int, int>, std::string>>& score,
+            const std::string& kScorePath);
 
     void updateGameEnvironment();
     void updateGameProcess();
@@ -39,16 +42,17 @@ namespace gameProcess {
 
     struct screenSize {
       int height, width, startX0, startY0;
-    } screenSize_{}, mapSize_{}, statsSize_{};
+    } screenSize_{}, mapSize_{}, terminalSize_{};
 
     int playerLives = 5;
-    std::vector<char> gameMap_;
-    gameScreen::gameScreen screen_{};
+    gameScreen::defaultScreen mainScreen_{};
+//    gameScreen::gameScreen screen_{};
     std::string gameSettings_;
     gameObj::Player player{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> myWeapons{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> enemyWeapons{};
+    int startGame();
   };
 
   class worldProcess: public gameProcess {

@@ -1,9 +1,11 @@
 #include "game_screen.hpp"
 
+#include <fstream>
 #include <iostream>
 
 namespace gameScreen {
-  gameScreen::gameScreen(const std::vector<int>& gameMapSize, const std::vector<int>& gameStatsSize)
+  defaultScreen::defaultScreen(const std::vector<int>& gameMapSize,
+                               const std::vector<int>& gameStatsSize)
       : gameMapSize_(subWindowSize{
               .width = gameMapSize[0],
               .height = gameMapSize[1],
@@ -20,10 +22,30 @@ namespace gameScreen {
     initScreen();
   }
 
-  void gameScreen::initScreen() {
+  void defaultScreen::loadGameScreenInf(
+          const std::vector<int>& gameMapSize, const std::vector<int>& gameStatsSize,
+          std::vector<char>&& map,
+          std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats, char emptySpace) {
+    gameMapSize_ = subWindowSize{
+            .width = gameMapSize[0],
+            .height = gameMapSize[1],
+            .startX = (gameMapSize.size() >= 3) ? gameMapSize[2] : 0,
+            .startY = (gameMapSize.size() >= 4) ? gameMapSize[3] : 0,
+    };
+    gameStatsSize_ = subWindowSize{
+            .width = gameStatsSize[0],
+            .height = gameStatsSize[1],
+            .startX = (gameStatsSize.size() >= 3) ? gameStatsSize[2] : 0,
+            .startY = (gameStatsSize.size() >= 4) ? gameStatsSize[3] : 0,
+    };
+    loadGameMap(std::move(map), emptySpace);
+    loadGameStats(std::move(stats));
+  }
+
+  void defaultScreen::initScreen() {
     initscr();
-    getmaxyx(stdscr, terminalSize_.second, terminalSize_.first);
-    window_ = newwin(terminalSize_.second, terminalSize_.first, 0, 0);
+    getmaxyx(stdscr, terminalSize_.height, terminalSize_.width);
+    window_ = newwin(terminalSize_.height, terminalSize_.width, 0, 0);
     if( !window_ ) {
       endwin();
       throw std::runtime_error("!sWin");
@@ -36,7 +58,7 @@ namespace gameScreen {
     nodelay(stdscr, TRUE);
   }
 
-  void gameScreen::loadGameStats(
+  void defaultScreen::loadGameStats(
           std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats) {
     for( auto& statsField: stats ) {
       statsField.first.first += statsField.second.size();
@@ -44,7 +66,7 @@ namespace gameScreen {
     }
   }
 
-  void gameScreen::drawGameStats() {
+  void defaultScreen::drawGameStats() {
     for( const auto& statsField: gameStats_ ) {
       const char *key = statsField.first.data();
       const int x = statsField.second.first - statsField.first.size();
@@ -54,43 +76,43 @@ namespace gameScreen {
     }
   }
 
-  void gameScreen::updateGameStat(const std::string_view& key, std::string_view&& value) {
+  void defaultScreen::updateGameStat(const std::string_view& key, std::string_view&& value) {
     const int x = gameStats_[key].first;
     const int y = gameStats_[key].second;
     mvwaddstr(window_, y, x, value.data());
     wrefresh(window_);
   }
 
-  void gameScreen::loadGameMap(std::vector<char>&& map, char wall) {
-    map_ = std::move(map);
-    emptySpace_ = wall;
+  void defaultScreen::loadGameMap(std::vector<char>&& map, char wall) {
+
   }
 
-  void gameScreen::drawMoveGameObj(const std::pair<int, int>& objectCoords,
-                                   const std::pair<int, int>& objectShift, const char avatar) {
+  void defaultScreen::drawMoveGameObj(const std::pair<int, int>& objectCoords,
+                                      const std::pair<int, int>& objectShift, const char avatar) {
     mvwaddch(window_, gameMapSize_.startY + objectCoords.second,
              gameMapSize_.startX + objectCoords.first,
-             map_[objectCoords.first + objectCoords.second * gameMapSize_.width]);
+             gameMap_[objectCoords.first + objectCoords.second * gameMapSize_.width]);
     mvwaddch(window_, gameMapSize_.startY + objectCoords.second + objectShift.second,
              gameMapSize_.startX + objectCoords.first + objectShift.first, avatar);
 
     wrefresh(window_);
   }
 
-  void gameScreen::drawGameMap() {
-    for( int i = 0; i < map_.size(); ++i ) {
-      mvwaddch(window_, (i / gameMapSize_.width) + gameMapSize_.startY, (i % gameMapSize_.width) + gameMapSize_.startX, map_[i]);
+  void defaultScreen::drawGameMap() {
+    for( int i = 0; i < gameMap_.size(); ++i ) {
+      mvwaddch(window_, (i / gameMapSize_.width) + gameMapSize_.startY,
+               (i % gameMapSize_.width) + gameMapSize_.startX, gameMap_[i]);
       wrefresh(window_);
     }
   }
 
-  bool gameScreen::fixCoordsToMove(const std::pair<int, int>& objectCoords,
-                                   std::pair<int, int>& objectShift) {
+  bool defaultScreen::fixCoordsToMove(const std::pair<int, int>& objectCoords,
+                                      std::pair<int, int>& objectShift) {
     if( 0 <= (objectCoords.first + objectShift.first)
         && (objectCoords.first + objectShift.first) < gameMapSize_.width
         && 0 <= (objectCoords.second + objectShift.second)
         && (objectCoords.second + objectShift.second) < gameMapSize_.height
-        && map_[(objectCoords.first + objectShift.first)
+        && gameMap_[(objectCoords.first + objectShift.first)
                 + (objectCoords.second + objectShift.second) * gameMapSize_.width]
                    == emptySpace_ ) {
       return false;
@@ -111,12 +133,12 @@ namespace gameScreen {
         objectShift.second = gameMapSize_.height - 1 - objectCoords.second;
       }
 
-      if( map_[(objectCoords.first + objectShift.first)
+      if( gameMap_[(objectCoords.first + objectShift.first)
                + (objectCoords.second + objectShift.second) * gameMapSize_.width]
           != emptySpace_ ) {
         objectShift.first = 0;
       }
-      if( map_[(objectCoords.first + objectShift.first)
+      if( gameMap_[(objectCoords.first + objectShift.first)
                + (objectCoords.second + objectShift.second) * gameMapSize_.width]
           == emptySpace_ ) {
         objectShift.second = 0;
@@ -126,33 +148,33 @@ namespace gameScreen {
     }
   }
 
-  gameScreen::~gameScreen() {
+  defaultScreen::~defaultScreen() {
     delwin(window_);
     endwin();
   }
 
-  WINDOW *gameScreen::getWindow() {
+  WINDOW *defaultScreen::getWindow() {
     return window_;
   }
 
-  void gameScreen::deleteGameObj(const std::pair<int, int>& objectCoords) {
+  void defaultScreen::deleteGameObj(const std::pair<int, int>& objectCoords) {
     mvwaddch(window_, gameMapSize_.startY + objectCoords.second,
              gameMapSize_.startX + objectCoords.first,
-             map_[objectCoords.first + objectCoords.second * gameMapSize_.width]);
+             gameMap_[objectCoords.first + objectCoords.second * gameMapSize_.width]);
 
     wrefresh(window_);
   }
 
-  gameScreen& gameScreen::operator=(gameScreen&& otherScreen) {
-    if (this == &otherScreen){
+  defaultScreen& defaultScreen::operator=(defaultScreen&& otherScreen) {
+    if( this == &otherScreen ) {
       return *this;
     }
-    gameMapSize_ = otherScreen.gameMapSize_ ;
+    gameMapSize_ = otherScreen.gameMapSize_;
     gameStatsSize_ = otherScreen.gameStatsSize_;
     gameStats_ = std::move(otherScreen.gameStats_);
-    map_= std::move(otherScreen.map_);
+    gameMap_ = std::move(otherScreen.gameMap_);
     emptySpace_ = otherScreen.emptySpace_;
-    if (window_){
+    if( window_ ) {
       delwin(window_);
     }
     window_ = otherScreen.window_;
@@ -162,4 +184,60 @@ namespace gameScreen {
     return *this;
   }
 
+  defaultScreen::defaultScreen() {
+    initscr();
+    getmaxyx(stdscr, terminalSize_.height, terminalSize_.width);
+    window_ = newwin(terminalSize_.height, terminalSize_.width, terminalSize_.startY,
+                     terminalSize_.startX);
+    menuSize_ = terminalSize_;
+    ++menuSize_.startX;
+    ++menuSize_.startY;
+    if( !window_ ) {
+      throw;// todo
+    }
+    box(window_, 0, 0);
+    curs_set(FALSE);
+    keypad(window_, TRUE);
+    nodelay(window_, TRUE);
+  }
+
+  void defaultScreen::drawGameMenu(
+          const std::vector<std::pair<std::pair<int, int>, std::string>>& stats) {
+    void initGameMenu();
+    for( auto& statField: stats ) {
+      const char *key = statField.second.data();
+      const int x = statField.first.first;
+      const int y = statField.first.second;
+      mvwaddstr(window_, y, x, key);
+      wrefresh(window_);
+    }
+  }
+
+  void defaultScreen::initGameMenu() {
+    curs_set(FALSE);
+    keypad(window_, TRUE);
+    noecho();
+    noraw();
+    werase(window_);
+    box(window_, 0, 0);
+    wrefresh(window_);
+  }
+
+  int defaultScreen::screenInput() {
+    return wgetch(window_);
+  }
+
+  /*  void defaultScreen::drawGameMenu(const std::string& kStatsPath) {
+    std::ifstream playersStats {kStatsPath};
+  }
+  void defaultScreen::drawGameMenu(const std::vector<std::pair<std::pair<int, int>,
+  std::string_view>>& stats){ for(auto& statField : stats){ const char *key =
+  statsField.first.data();
+
+    }
+  }
+
+  menuScreen::menuScreen(const defaultScreen& screen) {
+    window_ = screen.window_;
+  }*/
 }// namespace gameScreen

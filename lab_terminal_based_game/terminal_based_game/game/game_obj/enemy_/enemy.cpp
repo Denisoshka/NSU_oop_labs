@@ -4,7 +4,7 @@
 
 namespace {
   int elapsedTimeToShoot = 5000;
-  int elapsedTimeToMove = 2000;
+  int elapsedTimeToMove = 3000;
   float shootProbability = 0.5;
   float stayHereProbability = 0.2;
 //  float changeDirProbability = 0.7;
