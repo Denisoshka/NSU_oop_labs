@@ -19,9 +19,13 @@ namespace gameScreen {
     void loadGameMap(std::vector<char>&& map, char wall);
     void drawGameMap();
 
-    void loadGameStats(std::vector<std::pair<std::pair<int, int>, std::string>>&& stats);
+    void loadGameStats(std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats);
     void drawGameStats();
-    void updateGameStat(const std::string& key, std::string&& value);
+    void updateGameStat(const std::string_view& key, std::string_view&& value);
+
+    void loadGameMenu(std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats);
+    void drawGameMenu();
+    void updateGameMenu(const std::string_view& key, std::string_view&& value);
 
     void drawMoveGameObj(const std::pair<int, int>& objectCoords,
                      const std::pair<int, int>& objectShift, const char avatar);
@@ -33,7 +37,7 @@ namespace gameScreen {
       int width, height, startX = 0, startY = 0;
     } gameMapSize_, gameStatsSize_;
 //    std::vector<std::pair<std::pair<int, int>, std::string>>&& gameStats_;
-    std::map<std::string, std::pair<int, int>> gameStats_;
+    std::map<std::string_view, std::pair<int, int>> gameStats_;
     std::vector<char> map_;
     char emptySpace_;
     WINDOW *window_;

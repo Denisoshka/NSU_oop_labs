@@ -36,7 +36,8 @@ namespace gameScreen {
     nodelay(stdscr, TRUE);
   }
 
-  void gameScreen::loadGameStats(std::vector<std::pair<std::pair<int, int>, std::string>>&& stats) {
+  void gameScreen::loadGameStats(
+          std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats) {
     for( auto& statsField: stats ) {
       statsField.first.first += statsField.second.size();
       gameStats_[statsField.second] = statsField.first;
@@ -53,7 +54,7 @@ namespace gameScreen {
     }
   }
 
-  void gameScreen::updateGameStat(const std::string& key, std::string&& value) {
+  void gameScreen::updateGameStat(const std::string_view& key, std::string_view&& value) {
     const int x = gameStats_[key].first;
     const int y = gameStats_[key].second;
     mvwaddstr(window_, y, x, value.data());

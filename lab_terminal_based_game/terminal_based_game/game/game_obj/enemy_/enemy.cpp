@@ -11,6 +11,7 @@ namespace {
 }// namespace
 
 static bool getRandomBoolean(double probability) {
+  srandom(time(nullptr));
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<double> dis(0.0, 1.0);
