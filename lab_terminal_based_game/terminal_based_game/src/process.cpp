@@ -3,7 +3,7 @@
 #include "game_screen.hpp"
 #include "shifting_object.hpp"
 
-#include <curses.h>
+#include <curses.h>// todo убрать нахуй
 #include <chrono>
 #include <fstream>
 #include <future>
@@ -46,10 +46,10 @@ namespace gameProcess {
 
      return (randomValue < probability);
    }
- */
+  */
 
 
-  void gameProcess::initGameProcessEnvironment() {
+  void gameProcess::initGameEnvironment() {
     myWeapons.reserve(minimalAmmoQuantity);
     enemyWeapons.reserve(minimalAmmoQuantity);
 
@@ -60,7 +60,7 @@ namespace gameProcess {
       gameObjects.push_back(std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
                                                              std::pair{mapSize_.width / 2, 2}));
     }
-    screen_.drawMoveGameObj(playerCords2, std::pair{0, 0}, player.avatar());
+    mainScreen_.drawMoveGameObj(playerCords2, std::pair{0, 0}, player.avatar());
   }
 
   void gameProcess::updateGameProcess() {
@@ -72,9 +72,9 @@ namespace gameProcess {
       if( action ) {
         enemyWeapons.push_back(std::move(action));
       }
-      screen_.fixCoordsToMove(objectCoords, desiredShift);
+      mainScreen_.fixCoordsToMove(objectCoords, desiredShift);
       a->makeShift(desiredShift);
-      screen_.drawMoveGameObj(objectCoords, desiredShift, a->avatar());
+      mainScreen_.drawMoveGameObj(objectCoords, desiredShift, a->avatar());
     }
   }
 
@@ -82,12 +82,12 @@ namespace gameProcess {
     for( auto weapon = enemyWeapons.begin(); weapon != enemyWeapons.end(); ) {
       std::pair desiredShift{(*weapon)->desiredShift()};
 
-      bool flag = screen_.fixCoordsToMove((*weapon)->getCoords(), desiredShift);
+      bool flag = mainScreen_.fixCoordsToMove((*weapon)->getCoords(), desiredShift);
       (*weapon)->makeShift(desiredShift);
-      screen_.drawMoveGameObj((*weapon)->getCoords(), desiredShift, (*weapon)->avatar());
+      mainScreen_.drawMoveGameObj((*weapon)->getCoords(), desiredShift, (*weapon)->avatar());
 
       if( flag || (*weapon)->getCoords() == player.getCoords() ) {
-        screen_.deleteGameObj((*weapon)->getCoords());
+        mainScreen_.deleteGameObj((*weapon)->getCoords());
         if( (*weapon)->getCoords() == player.getCoords() ) {
           --playerLives;
           if( !playerLives ) {
@@ -108,14 +108,14 @@ namespace gameProcess {
       std::pair desiredShift{(*weapon)->desiredShift()};
       std::pair objectCoords{(*weapon)->getCoords()};
 
-      bool flag = screen_.fixCoordsToMove(objectCoords, desiredShift);
+      bool flag = mainScreen_.fixCoordsToMove(objectCoords, desiredShift);
       (*weapon)->makeShift(desiredShift);
-      screen_.drawMoveGameObj(objectCoords, desiredShift, (*weapon)->avatar());
+      mainScreen_.drawMoveGameObj(objectCoords, desiredShift, (*weapon)->avatar());
 
       for( auto object = gameObjects.begin(); object != gameObjects.end(); ) {
         if( (*object)->getCoords() == (*weapon)->getCoords() ) {
           flag = true;
-          screen_.deleteGameObj((*object)->getCoords());
+          mainScreen_.deleteGameObj((*object)->getCoords());
           gameObjects.erase(object);
         }
         else {
@@ -124,17 +124,13 @@ namespace gameProcess {
       }
 
       if( flag ) {
-        screen_.deleteGameObj((*weapon)->getCoords());
+        mainScreen_.deleteGameObj((*weapon)->getCoords());
         myWeapons.erase(weapon);
       }
       else {
         ++weapon;
       }
     }
-  }
-
-  void gameProcess::updateGameEnvironment() {
-    // todo
   }
 
   void gameProcess::updatePlayer(const int action) {
@@ -145,24 +141,24 @@ namespace gameProcess {
     std::pair desiredShift = player.desiredShift();
     std::pair objectCoords = player.getCoords();
 
-    screen_.fixCoordsToMove(objectCoords, desiredShift);
+    mainScreen_.fixCoordsToMove(objectCoords, desiredShift);
     player.makeShift(desiredShift);
-    screen_.drawMoveGameObj(objectCoords, desiredShift, player.avatar());
+    mainScreen_.drawMoveGameObj(objectCoords, desiredShift, player.avatar());
 
     std::string ammoQuantity = std::to_string(player.getAmmoQuantity());
     ammoQuantity.insert(0, 3 - ammoQuantity.length(), '0');
-    screen_.updateGameStat(bulletsField, std::move(ammoQuantity));
+    mainScreen_.updateGameStat(bulletsField, std::move(ammoQuantity));
   }
 
-  std::vector<std::pair<std::pair<int, int>, std::string>> gameProcess::fillGameMenu(
-          std::vector<std::pair<std::pair<int, int>, std::string>>& score,
+  void gameProcess::fillGameMenu(
+          std::vector<std::pair<std::pair<int, int>, std::string>>& gameMenu,
           const std::string& kScorePath) {
     std::ifstream ScoreStream{kBasicScorePath};
     if( !ScoreStream ) {
       throw;// todo
     }
 
-    score.emplace_back(std::pair{
+    gameMenu.emplace_back(std::pair{
             std::pair{terminalSize_.width / 2 + terminalSize_.startX0 - kDefPlayerNameField.size(),
                       terminalSize_.startY0 + 2},
             kDefPlayerNameField + kDefPlayerName
@@ -172,7 +168,7 @@ namespace gameProcess {
       if( getline(ScoreStream, scoreField).fail() ) {
         throw;
       }
-      score.emplace_back(std::pair{terminalSize_.startX0 + 2, terminalSize_.startY0 + i},
+      gameMenu.emplace_back(std::pair{terminalSize_.startX0 + 2, terminalSize_.startY0 + i},
                          std::move(scoreField));
     }
   }
@@ -180,88 +176,66 @@ namespace gameProcess {
   int gameProcess::process() {
     while( mainScreen_.screenInput() != kFinishGame ) {
       int input;
-      bool exitFlag{false};
+//      bool exitFlag{false};
       std::vector<std::pair<std::pair<int, int>, std::string>> menu;
       fillGameMenu(menu, kBasicScorePath);
       mainScreen_.drawGameMenu(menu);
 
       while( (input = mainScreen_.screenInput()) == ERR ) {
       }
+
       if( input == 'q' ) {
-        //        exitFlag = true;
         break;
       }
 
       startGame();
     }
 
-
     return 0;
   }
 
   void gameProcess::initGameScreen(
           std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats) {
-    std::vector<int> mapSize{mapSize_.width, mapSize_.height, kBasicXIndent, kBasicYIndent};
-    std::vector<int> statsSize{mapSize_.width, 6, 0, mapSize_.height};
     std::vector<char> gameMap;
     this->loadGameMap(gameMap);
-
-    mainScreen_.loadGameMap(std::move(gameMap), kFreeSpace);
-    mainScreen_.drawGameMap();
-    mainScreen_.loadGameStats(std::move(stats));
-    mainScreen_.drawGameStats();
+    // todo здесь ли грузить карту?
+    std::vector<int> mapSize{mapSize_.width, mapSize_.height, kBasicXIndent, kBasicYIndent};
+    std::vector<int> statsSize{mapSize_.width, 6, 0, mapSize_.height};
+    mainScreen_.loadGameScreenInf(mapSize, statsSize, std::move(gameMap), std::move(stats),
+                                  kFreeSpace);
+    mainScreen_.drawGameScreen();
   }
 
   int gameProcess::startGame() {
-
-    mainScreen_.loadGameMap(std::move(gameMap_), kFreeSpace);
-  }
-
-  int gameProcess::startGame() {
-
-    srandom(time(nullptr));
     std::vector<std::pair<std::pair<int, int>, std::string_view>> stats = {
             {{0, mapSize_.height + 1}, bulletsField     },
             {{0, mapSize_.height + 3}, kElapsedTimeField}
     };
-
-
-    bool exitFlag{false};
-    while( true ) {
-      initGameScreen(std::move(stats));
-      initGameProcessEnvironment();
-      auto startGameTime = std::chrono::steady_clock::now();
-      while( true ) {
-        if( gameObjects.empty() ) {
-          auto gameEndTime = std::chrono::steady_clock::now();
-          startGameTime += gameEndTime - startGameTime;
-          break;
-        }
-
-        while( futureInput.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready ) {
-          /// здесь вдигаются все живие объекты;
-          updateGameProcess();
-          updateMyWeapons();
-          updateEnemyWeapons();
-          ///
-
-          auto end = std::chrono::steady_clock::now();
-          auto seconds = std::to_string(
-                  std::chrono::duration_cast<std::chrono::seconds>(end - startGameTime).count());
-          screen_.updateGameStat(kElapsedTimeField, std::move(seconds));
-        }
-
-        if( futureInput.valid() ) {
-          /// здесь будем играть персонажем
-          int action = futureInput.get();
-          if( action == kFinishGame ) {
-            exitFlag = true;
-            break;
-          }
-          updatePlayer(action);
-        }
+    initGameScreen(std::move(stats));
+    srandom(time(nullptr));
+    initGameEnvironment();
+    auto startGameTime = std::chrono::steady_clock::now();
+    int input;
+    while( (input = mainScreen_.screenInput()) != kFinishGame ) {
+      if( input != ERR ) {
+        updatePlayer(input);
       }
+
+      if( gameObjects.empty() ) {
+        auto gameEndTime = std::chrono::steady_clock::now();
+        startGameTime += gameEndTime - startGameTime;
+        break;
+      }
+
+      updateGameProcess();
+      updateMyWeapons();
+      updateEnemyWeapons();
+      auto end = std::chrono::steady_clock::now();
+      auto seconds = std::to_string(std::chrono::duration_cast<std::chrono::seconds>(end - startGameTime).count());
+      mainScreen_.updateGameStat(kElapsedTimeField, std::move(seconds));
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+    return 0;
   }
 
   gameProcess::gameProcess::gameProcess(std::string&& gameSettings)
@@ -289,39 +263,5 @@ namespace gameProcess {
       }
     }
   }
-
-  std::vector<std::pair<std::string, int>> gameProcess::readGameStats() {
-    std::ifstream statsStream{kGameStats};
-    std::vector<std::pair<std::string, int>> stats;
-    stats.reserve(kStatsQuantity);
-    if( !statsStream ) {
-      throw;// todo
-    }
-
-    std::string statsLineKey;
-    int statsLineValue;
-    for( int i = 0; i < kStatsQuantity || statsStream.eof(); ++i ) {
-      statsStream >> statsLineKey >> statsLineValue;
-      stats.emplace_back(statsLineKey, statsLineValue);
-      if( !statsStream ) {
-        throw;// todo
-      }
-    }
-
-    return stats;
-  }
-
-  void gameProcess::showMenu() {
-    std::vector<std::pair<std::string, int>> stats{readGameStats()};
-    /*std::pair<int, int> nameCoords{screenSize_.startX0 + screenSize_.width / 2,
-                                   screenSize_.startY0};*/
-    std::pair<std::string, std::pair<int, int>> gameNameField{
-            kGameName, std::pair{screenSize_.startX0 + screenSize_.width / 2, screenSize_.startY0}
-    };
-
-    for( ;; ) {
-    }
-  }
-
 
 }// namespace gameProcess

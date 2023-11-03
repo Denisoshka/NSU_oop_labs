@@ -28,10 +28,10 @@ namespace gameProcess {
     void saveGameStats();
     void loadGameMap(std::vector<char>& map);
 
-    void initGameProcessEnvironment();
+    void initGameEnvironment();
     void initGameScreen(std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats);
-    std::vector<std::pair<std::pair<int, int>, std::string>> fillGameMenu(
-            std::vector<std::pair<std::pair<int, int>, std::string>>& score,
+    void fillGameMenu(
+            std::vector<std::pair<std::pair<int, int>, std::string>>& gameMenu,
             const std::string& kScorePath);
 
     void updateGameEnvironment();

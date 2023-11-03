@@ -10,20 +10,20 @@ namespace gameScreen {
   public:
     //    explicit defaultScreen(WINDOW *window, unsigned terminalHeight, unsigned terminalWidth);
     defaultScreen();
-    defaultScreen(const std::vector<int>& gameMapSize, const std::vector<int>& gameStatsSize);
-    defaultScreen& operator=(defaultScreen&& otherScreen);
+//    defaultScreen(const std::vector<int>& gameMapSize, const std::vector<int>& gameStatsSize);
+//    defaultScreen& operator=(defaultScreen&& otherScreen);
     virtual ~defaultScreen();
 
     void loadGameScreenInf(
             const std::vector<int>& gameMapSize, const std::vector<int>& gameStatsSize,
             std::vector<char>&& map,
             std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats, char emptySpace);
-
+    void drawGameScreen();
 
     void initScreen();
     int screenInput();
     WINDOW *getWindow();
-    void loadGameMap(std::vector<char>&& map, char wall);
+    void loadGameMap(std::vector<char>&& map, char emptySpace);
     void drawGameMap();
 
     void loadGameStats(std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats);
