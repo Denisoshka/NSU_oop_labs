@@ -15,8 +15,8 @@ add_library(${DIR_NAME} SHARED ${SOURCE_DIRS})
 target_compile_features(${DIR_NAME} INTERFACE cxx_std_20)
 
 file(GLOB PUBLIC_INCLUDES
-        "${CMAKE_CURRENT_SOURCE_DIR}/include"
-       )
+        "${CMAKE_CURRENT_SOURCE_DIR}/*screen"
+)
 
 target_include_directories(${DIR_NAME}
         PUBLIC

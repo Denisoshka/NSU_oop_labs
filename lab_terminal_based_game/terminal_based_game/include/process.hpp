@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../screen/screen/screen.hpp"
 #include "game_obj.hpp"
-#include "game_screen.hpp"
 #include "string"
 
 #include <vector>

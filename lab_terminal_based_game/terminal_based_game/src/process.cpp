@@ -1,6 +1,6 @@
 #include "process.hpp"
+#include "../screen/screen/screen.hpp"
 #include "game_obj.hpp"
-#include "game_screen.hpp"
 #include "shifting_object.hpp"
 
 #include <curses.h>// todo убрать нахуй
