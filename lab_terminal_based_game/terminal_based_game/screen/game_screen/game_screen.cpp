@@ -1,25 +1,33 @@
 #include "game_screen.hpp"
 
-namespace screeen {
-  gameScreen::gameScreen(const basicScreen& screen, const std::vector<int>& gameMapSize,
-                         const std::vector<int>& gameStatsSize, std::vector<char>&& map,
-                         char emptySpace,
-                         std::vector<std::pair<std::pair<int, int>, std::string>>&& stats)
-      : basicScreen(screen) {
-    gameMapSize_ = subWindowSize{
-            .width = gameMapSize[0],
-            .height = gameMapSize[1],
-            .startX = (gameMapSize.size() >= 3) ? gameMapSize[2] : 0,
-            .startY = (gameMapSize.size() >= 4) ? gameMapSize[3] : 0,
-    };
-    gameStatsSize_ = subWindowSize{
-            .width = gameStatsSize[0],
-            .height = gameStatsSize[1],
-            .startX = (gameStatsSize.size() >= 3) ? gameStatsSize[2] : 0,
-            .startY = (gameStatsSize.size() >= 4) ? gameStatsSize[3] : 0,
-    };
-    loadGameMap(std::move(map), emptySpace);
-    loadGameStats(std::move(stats));
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/tokenizer.hpp>
+
+namespace {
+  std::string gkWidthName = "width";
+  std::string gkHeightName = "height";
+  std::string gkX0 = "x";
+  std::string gkY0 = "y";
+  std::string gkMap = "map";
+  std::string kEmptySpace = "empty_space";
+  std::string kWall = "wall";
+
+  std::string kGameMap = "game_map";
+
+  std::string kGameStats = "game_stats";
+  std::string kStatsFieldName = "field_name";
+  std::string kStatsFieldWidth = "field_width";
+}// namespace
+
+namespace gScreen {
+  gameScreen::gameScreen(const basicScreen& kScreen, const std::string& kSettingsPath)
+      : basicScreen(kScreen) {
+    boost::property_tree::ptree gameScreenConfig;
+    boost::property_tree::read_json(kSettingsPath, gameScreenConfig);
+
+    loadGameMap(std::move(gameScreenConfig.get_child(kGameMap)));
+    loadGameStats(std::move(gameScreenConfig.get_child(kGameStats)));
     drawGameMap();
     drawGameStats();
   }
@@ -28,17 +36,28 @@ namespace screeen {
     initBaseScreen();
   }
 
-  void gameScreen::loadGameStats(std::vector<std::pair<std::pair<int, int>, std::string>>&& stats) {
-    for( auto& statsField: stats ) {
-      statsField.first.first += statsField.second.size();
-      gameStats_[statsField.second] = statsField.first;
+  void gameScreen::loadGameStats(boost::property_tree::ptree&& kStats) {
+    gameStatsSize_ = subWindowSize{
+            .width = kStats.get<int>(gkWidthName),
+            .height = kStats.get<int>(gkHeightName),
+            .startX = kStats.get<int>(gkX0, 0) + screenSize_.startX,
+            .startY = kStats.get<int>(gkY0, 0) + screenSize_.startX,
+    };
+    const boost::property_tree::ptree& kStatsFields = kStats.get_child(kGameStats);
+
+    for( const auto& statsField: kStatsFields ) {
+      const auto kFieldName = statsField.second.get<std::string>(kStatsFieldName);
+      std::pair<int, int> coords = {
+              gameStatsSize_.startX + statsField.second.get<int>(gkX0),
+              gameStatsSize_.startY + statsField.second.get<int>(gkY0)};
+      gameStats_[kFieldName] = std::move(coords);
     }
   }
 
   void gameScreen::drawGameStats() {
     for( const auto& statsField: gameStats_ ) {
       const char *key = statsField.first.data();
-      const int x = statsField.second.first - statsField.first.size();
+      const int x = statsField.second.first;
       const int y = statsField.second.second;
       mvwaddstr(window_, y, x, key);
       wrefresh(window_);
@@ -46,15 +65,21 @@ namespace screeen {
   }
 
   void gameScreen::updateGameStat(const std::string& key, std::string&& value) {
-    const int x = gameStats_[key].first;
+    const int x = gameStats_[key].first + key.size();
     const int y = gameStats_[key].second;
     mvwaddstr(window_, y, x, value.data());
     wrefresh(window_);
   }
 
-  void gameScreen::loadGameMap(std::vector<char>&& map, char emptySpace) {
-    gameMap_ = std::move(map);
-    emptySpace_ = emptySpace;
+  void gameScreen::loadGameMap( boost::property_tree::ptree&& kMapSettings) {
+    gameMapSize_ = subWindowSize{
+            .width = kMapSettings.get<int>(gkWidthName),
+            .height = kMapSettings.get<int>(gkHeightName),
+            .startX = kMapSettings.get<int>(gkX0, 0) + screenSize_.startX,
+            .startY = kMapSettings.get<int>(gkY0, 0) + screenSize_.startX,
+    };
+    gameMap_ = kMapSettings.get<std::string>(gkMap);
+    emptySpace_ = kMapSettings.get<char>(kEmptySpace);
   }
 
   void gameScreen::drawMoveGameObj(const std::pair<int, int>& objectCoords,
@@ -125,4 +150,4 @@ namespace screeen {
       return true;
     }
   }
-}// namespace screeen
+}// namespace gScreen

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../screen/screen/screen.hpp"
+#include "screen.hpp"
 #include "game_obj.hpp"
 #include "string"
 
@@ -17,8 +17,6 @@ namespace gameProcess {
   public:
     gameProcess(std::string&& gameSettings);
     //    void loadGameSettings();
-
-    static int AsyncWGETCH(WINDOW *win);
     int process();
 
 
@@ -45,7 +43,7 @@ namespace gameProcess {
     } screenSize_{}, mapSize_{}, terminalSize_{};
 
     int playerLives = 5;
-    gameScreen::defaultScreen mainScreen_{};
+    gScreen::basicScreen mainScreen_{};
 //    gameScreen::gameScreen screen_{};
     std::string gameSettings_;
     gameObj::Player player{};

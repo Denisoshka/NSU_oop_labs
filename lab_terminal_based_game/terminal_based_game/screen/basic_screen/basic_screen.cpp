@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace screeen {
+namespace gScreen {
   /*basic_screen::basic_screen(const std::vector<int>& gameMapSize,
                                const std::vector<int>& gameStatsSize)
       : gameMapSize_(subWindowSize{
@@ -136,4 +136,4 @@ namespace screeen {
   menuScreen::menuScreen(const basic_screen& basic_screen) {
     window_ = basic_screen.window_;
   }*/
-}// namespace screeen
+}// namespace gScreen

@@ -1,0 +1,31 @@
+{
+  "width": 70,
+  "height": 30,
+  "score_table": {
+    "width": 23,
+    "height": 12,
+    "x": 1,
+    "y": 2,
+    "score_table": "*-----Score table-----*|                     ||                     ||                     ||                     ||                     ||                     ||                     ||                     ||                     ||                     |*---------------------*"
+  },
+  "game_name": {
+    "name": "NSUSoftware present: CrashDollar * * *"
+  },
+  
+  "insert_name_field": {
+    "description": {
+      "field": "Insert you name ^_^",
+      "width": 19,
+      "height": 1,
+      "x": 42,
+      "y": 2
+    },
+    "insertField": {
+      "field": "->",
+      "width": 2,
+      "height": 3,
+      "x": 42,
+      "y": 2
+    }
+  }
+}

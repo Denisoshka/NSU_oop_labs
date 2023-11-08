@@ -1,6 +1,6 @@
 #include "process.hpp"
-#include "../screen/screen/screen.hpp"
 #include "game_obj.hpp"
+#include "screen.hpp"
 #include "shifting_object.hpp"
 
 #include <curses.h>// todo убрать нахуй
@@ -33,8 +33,8 @@ namespace {
 
 namespace gameProcess {
   int screenInput(WINDOW *window) {
-    int input{wgetch(window)};
-    return input;
+    return wgetch(window);
+    ;
   }
 
   /* static bool getRandomBoolean(double probability) {
@@ -52,7 +52,7 @@ namespace gameProcess {
   void gameProcess::initGameEnvironment() {
     myWeapons.reserve(minimalAmmoQuantity);
     enemyWeapons.reserve(minimalAmmoQuantity);
-
+    //    todo refactor on json
     std::pair playerCords1 = std::pair{mapSize_.width / 2, mapSize_.height - 2};
     std::pair playerCords2 = playerCords1;
     player = gameObj::Player{gameObj::ekObjUp, std::move(playerCords1)};
@@ -112,6 +112,20 @@ namespace gameProcess {
       (*weapon)->makeShift(desiredShift);
       mainScreen_.drawMoveGameObj(objectCoords, desiredShift, (*weapon)->avatar());
 
+      /*
+      gameObjects.erase(
+              std::remove_if(gameObjects.begin(), gameObjects.end(),
+                             [](const auto& object, const auto& weapon, const auto& mainScreen_,
+                                const auto& gameObjects, const auto & flag) -> bool {
+                               if( (*object)->getCoords() == (*weapon)->getCoords() ) {
+                                 mainScreen_.deleteGameObj((*object)->getCoords());
+                                 gameObjects.erase(object);
+                                 return flag = true;
+                               }
+                               return false;
+                             }),
+              gameObjects.end());*/
+
       for( auto object = gameObjects.begin(); object != gameObjects.end(); ) {
         if( (*object)->getCoords() == (*weapon)->getCoords() ) {
           flag = true;
@@ -150,9 +164,8 @@ namespace gameProcess {
     mainScreen_.updateGameStat(bulletsField, std::move(ammoQuantity));
   }
 
-  void gameProcess::fillGameMenu(
-          std::vector<std::pair<std::pair<int, int>, std::string>>& gameMenu,
-          const std::string& kScorePath) {
+  void gameProcess::fillGameMenu(std::vector<std::pair<std::pair<int, int>, std::string>>& gameMenu,
+                                 const std::string& kScorePath) {
     std::ifstream ScoreStream{kBasicScorePath};
     if( !ScoreStream ) {
       throw;// todo
@@ -169,14 +182,14 @@ namespace gameProcess {
         throw;
       }
       gameMenu.emplace_back(std::pair{terminalSize_.startX0 + 2, terminalSize_.startY0 + i},
-                         std::move(scoreField));
+                            std::move(scoreField));
     }
   }
 
   int gameProcess::process() {
     while( mainScreen_.screenInput() != kFinishGame ) {
       int input;
-//      bool exitFlag{false};
+      //      bool exitFlag{false};
       std::vector<std::pair<std::pair<int, int>, std::string>> menu;
       fillGameMenu(menu, kBasicScorePath);
       mainScreen_.drawGameMenu(menu);
@@ -231,7 +244,8 @@ namespace gameProcess {
       updateMyWeapons();
       updateEnemyWeapons();
       auto end = std::chrono::steady_clock::now();
-      auto seconds = std::to_string(std::chrono::duration_cast<std::chrono::seconds>(end - startGameTime).count());
+      auto seconds = std::to_string(
+              std::chrono::duration_cast<std::chrono::seconds>(end - startGameTime).count());
       mainScreen_.updateGameStat(kElapsedTimeField, std::move(seconds));
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -242,7 +256,10 @@ namespace gameProcess {
       : gameSettings_(std::move(gameSettings)) {
   }
 
+/*
   void gameProcess::gameProcess::loadGameMap(std::vector<char>& map) {
+    boost::property_tree::ptree map;
+    //    todo переписать на json
     std::ifstream mapInput{gameSettings_};
     if( !mapInput.is_open() ) {
       // todo
@@ -263,5 +280,6 @@ namespace gameProcess {
       }
     }
   }
+*/
 
 }// namespace gameProcess

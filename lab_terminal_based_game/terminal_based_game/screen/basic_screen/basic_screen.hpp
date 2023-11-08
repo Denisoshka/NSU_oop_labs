@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-namespace screeen {
+namespace gScreen {
   class basicScreen {
   public:
     basicScreen();
@@ -28,4 +28,4 @@ namespace screeen {
 
 
 
-}// namespace screeen
+}// namespace gScreen

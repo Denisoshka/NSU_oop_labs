@@ -1,14 +1,13 @@
 #pragma once
 
 #include "basic_screen.hpp"
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
-namespace screeen {
+namespace gScreen {
   class gameScreen: basicScreen {
   public:
-    gameScreen(const basicScreen& screen, const std::vector<int>& gameMapSize,
-               const std::vector<int>& gameStatsSize, std::vector<char>&& map,
-               char emptySpace,
-               std::vector<std::pair<std::pair<int, int>, std::string>>&& stats);
+    gameScreen(const basicScreen& kScreen, const std::string & kSettingsPath);
     virtual ~gameScreen();
     void updateGameStat(const std::string& key, std::string&& value);
     void drawMoveGameObj(const std::pair<int, int>& objectCoords,
@@ -17,15 +16,15 @@ namespace screeen {
     bool fixCoordsToMove(const std::pair<int, int>& objectCoords, std::pair<int, int>& objectShift);
 
   protected:
-    void loadGameMap(std::vector<char>&& map, char emptySpace);
+    void loadGameMap(boost::property_tree::ptree&& kMapSettings);
     void drawGameMap();
 
-    void loadGameStats(std::vector<std::pair<std::pair<int, int>, std::string>>&& stats);
+    void loadGameStats( boost::property_tree::ptree&& kStats);
     void drawGameStats();
 
-    std::vector<char> gameMap_;
+    std::string gameMap_;
     char emptySpace_;
     subWindowSize gameMapSize_{}, gameStatsSize_{};
     std::map<std::string, std::pair<int, int>> gameStats_;
   };
-}// namespace screeen
+}// namespace gScreen

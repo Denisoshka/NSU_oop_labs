@@ -2,7 +2,7 @@
 
 #include "basic_screen.hpp"
 
-namespace screeen {
+namespace gScreen {
   class gameMenu: basicScreen {
   public:
     gameMenu(const basicScreen& screen, const std::vector<int>& gameMenuSize);
@@ -22,4 +22,4 @@ namespace screeen {
     void drawGameMenu(const std::vector<int>& score);
     void drawGameMenu(const std::vector<std::string, int>& score);
   };
-}// namespace screeen
+}// namespace gScreen

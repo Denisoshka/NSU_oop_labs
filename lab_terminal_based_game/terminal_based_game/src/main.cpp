@@ -1,7 +1,7 @@
 #include "process.hpp"
 
 int main(int argc, char **argv) {
-  std::string settingsPath = "basicmap.txt";
+  std::string settingsPath = "game_screen.txt";
   if( argc > 1 ) {
     settingsPath = argv[1];
   }

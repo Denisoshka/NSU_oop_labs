@@ -1,5 +1,7 @@
 #include "game_menu.hpp"
+
 #include <fstream>
+
 
 namespace {
   const int kScoreBorderSize = 17;
@@ -26,7 +28,7 @@ namespace {
 
 }// namespace
 
-namespace screeen {
+namespace gScreen {
   gameMenu::gameMenu(const basicScreen& screen, const std::vector<int>& gameMenuSize)
       : basicScreen(screen)
       , gameScoreSize_(screenSize_) {
@@ -78,4 +80,4 @@ namespace screeen {
     }
   }
 
-}// namespace screeen
+}// namespace gScreen
