@@ -1,13 +1,13 @@
 #pragma once
 
-#include "basic_screen.hpp"
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include "basic_screen.hpp"
 
 namespace gScreen {
   class gameScreen: basicScreen {
   public:
-    gameScreen(const basicScreen& kScreen, const std::string & kSettingsPath);
+    gameScreen(const basicScreen& kScreen, const std::string& kSettingsPath);
     virtual ~gameScreen();
     void updateGameStat(const std::string& key, std::string&& value);
     void drawMoveGameObj(const std::pair<int, int>& objectCoords,
@@ -17,10 +17,10 @@ namespace gScreen {
 
   protected:
     void loadGameMap(boost::property_tree::ptree&& kMapSettings);
-    void drawGameMap();
+    void drawGameMap(boost::property_tree::ptree&& kMapSettings);
 
-    void loadGameStats( boost::property_tree::ptree&& kStats);
-    void drawGameStats();
+    void loadGameStats(boost::property_tree::ptree&& kStats);
+    void drawGameStats(boost::property_tree::ptree&& kStats);
 
     std::string gameMap_;
     char emptySpace_;

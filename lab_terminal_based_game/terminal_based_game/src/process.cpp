@@ -220,10 +220,6 @@ namespace gameProcess {
   }
 
   int gameProcess::startGame() {
-    std::vector<std::pair<std::pair<int, int>, std::string_view>> stats = {
-            {{0, mapSize_.height + 1}, bulletsField     },
-            {{0, mapSize_.height + 3}, kElapsedTimeField}
-    };
     initGameScreen(std::move(stats));
     srandom(time(nullptr));
     initGameEnvironment();
