@@ -1,7 +1,7 @@
 #pragma once
 
-#include "screen.hpp"
 #include "game_obj.hpp"
+#include "screen.hpp"
 #include "string"
 
 #include <vector>
@@ -15,47 +15,34 @@ namespace gameProcess {
 
   class gameProcess {
   public:
-    gameProcess(std::string&& gameSettings);
-    //    void loadGameSettings();
+    gameProcess() = default;
     int process();
 
-
   protected:
-    std::vector<std::pair<std::string, int>> readGameStats();
-    void showMenu();
-    void saveGameStats();
-    void loadGameMap(std::vector<char>& map);
-
-    void initGameEnvironment();
-    void initGameScreen(std::vector<std::pair<std::pair<int, int>, std::string_view>>&& stats);
-    void fillGameMenu(
-            std::vector<std::pair<std::pair<int, int>, std::string>>& gameMenu,
-            const std::string& kScorePath);
-
-    void updateGameEnvironment();
-    void updateGameProcess();
-    void updatePlayer(const int action);
-    void updateMyWeapons();
-    gameProcessConstants updateEnemyWeapons();
-
     struct screenSize {
       int height, width, startX0, startY0;
     } screenSize_{}, mapSize_{}, terminalSize_{};
 
-    int playerLives = 5;
-    gScreen::basicScreen mainScreen_{};
-//    gameScreen::gameScreen screen_{};
-    std::string gameSettings_;
-    gameObj::Player player{};
-    std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
-    std::vector<std::shared_ptr<gameObj::ShiftingObject>> myWeapons{};
-    std::vector<std::shared_ptr<gameObj::ShiftingObject>> enemyWeapons{};
-    int startGame();
-  };
+    struct shootMode {
+      int playerLives;
+      gameObj::Player player{};
+      std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
+      std::vector<std::shared_ptr<gameObj::ShiftingObject>> myWeapons{};
+      std::vector<std::shared_ptr<gameObj::ShiftingObject>> enemyWeapons{};
+    };
 
-  class worldProcess: public gameProcess {
-  public:
-  private:
+    gScreen::coreScreen coreScreen;
+    gScreen::basicScreen mainScreen_{coreScreen};
+
+
+    int showMenu(std::string& playerName);
+    void initShootModeEnvironment(gScreen::gameScreen& gscreen, shootMode& environmentInf);
+
+    void updateGameProcess(gScreen::gameScreen& gscreen, shootMode& environmentInf);
+    void updatePlayer(gScreen::gameScreen& gscreen, shootMode& environmentInf, const int action);
+    void updateMyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf);
+    gameProcessConstants updateEnemyWeapons(gScreen::gameScreen& gscreen,shootMode& environmentInf);
+    int startGame();
   };
 
 }// namespace gameProcess

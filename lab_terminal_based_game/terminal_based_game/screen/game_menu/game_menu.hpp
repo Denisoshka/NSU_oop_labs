@@ -8,7 +8,8 @@
 namespace gScreen {
   class gameMenu: public basicScreen {
   public:
-    gameMenu(const basicScreen& screen, const std::string& kGameMenuPath);
+    gameMenu(const basicScreen& screen, const std::string& kGameMenuPath,
+             const std::string& scorePath);
     virtual ~gameMenu() = default;
 
    /* void drawGameMenu(const std::string& kScorePath);
@@ -18,9 +19,13 @@ namespace gScreen {
     void drawScoreTable(boost::property_tree::ptree&& scoreTable, const std::string& scorePath);
     void drawGameName(boost::property_tree::ptree&& gameName);
     void drawNameInsertField(boost::property_tree::ptree&& nameInsertField);
+    bool introducePlayerName(const int input);
+    std::string getPlayerName();
 
   protected:
-    std::pair<int, int> playerNameInsertPos;
-    std::string playerName;
+    std::pair<int, int> playerNameInsertPos{};
+    std::string playerName_{};
+    int curNameLen_ = 0;
+    bool nameIntroduced_ = false;
   };
 }// namespace gScreen

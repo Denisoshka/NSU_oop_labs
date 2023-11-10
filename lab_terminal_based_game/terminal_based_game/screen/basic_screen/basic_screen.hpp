@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core_screen.hpp"
+
 #include <curses.h>
 #include <map>
 #include <memory>
@@ -8,24 +10,16 @@
 namespace gScreen {
   class basicScreen {
   public:
-    basicScreen();
+    basicScreen(const coreScreen& otherScreen);
     basicScreen(const basicScreen& otherScreen);
-    virtual ~basicScreen();
+    virtual ~basicScreen() = default;
     void initBaseScreen();
-
-//    WINDOW *getWindow();
 
     int screenInput();
 
   protected:
-    struct subWindowSize {
-      int width, height, startX = 0, startY = 0;
-    } terminalSize_{}, screenSize_{};
+    windowSettings terminalSize_{}, screenSize_{};
 
     WINDOW *window_;
   };
-
-
-
-
 }// namespace gScreen

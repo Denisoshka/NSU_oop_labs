@@ -5,7 +5,7 @@
 #include "basic_screen.hpp"
 
 namespace gScreen {
-  class gameScreen: basicScreen {
+  class gameScreen: public basicScreen {
   public:
     gameScreen(const basicScreen& kScreen, const std::string& kSettingsPath);
     virtual ~gameScreen();
@@ -14,17 +14,25 @@ namespace gScreen {
                          const std::pair<int, int>& objectShift, const char avatar);
     void deleteGameObj(const std::pair<int, int>& objectCoords);
     bool fixCoordsToMove(const std::pair<int, int>& objectCoords, std::pair<int, int>& objectShift);
+    windowSettings GetMapSize()const noexcept;
 
   protected:
+    std::string gameMap_;
+    char emptySpace_;
+    windowSettings gameMapSize_{}, gameStatsSize_{};
+    std::map<std::string, std::pair<int, int>> gameStats_;
+    enum gameMode{
+      ekRateMode,
+      ekTraining,
+    };
+
+
     void loadGameMap(boost::property_tree::ptree&& kMapSettings);
     void drawGameMap(boost::property_tree::ptree&& kMapSettings);
 
     void loadGameStats(boost::property_tree::ptree&& kStats);
     void drawGameStats(boost::property_tree::ptree&& kStats);
 
-    std::string gameMap_;
-    char emptySpace_;
-    subWindowSize gameMapSize_{}, gameStatsSize_{};
-    std::map<std::string, std::pair<int, int>> gameStats_;
+
   };
 }// namespace gScreen

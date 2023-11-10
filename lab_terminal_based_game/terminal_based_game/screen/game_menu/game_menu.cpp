@@ -7,11 +7,13 @@
 namespace {
   const std::string gkInsertNameField = "insert_name_field";
   const std::string gkInsertNameFieldFields = "fields";
+  const std::string gkField = "field";
+  const std::string gkFieldWidth = "field_width";
   const std::string gkCursorPos = "cursor_pos";
   const std::string gkCursorPosName = "cursor_pos_name";
   const std::string gkCursorPosScore = "cursor_pos_score";
-  const std::string gkWidthName = "width";
-  const std::string gkHeightName = "height";
+  const std::string gkWidth = "width";
+  const std::string gkHeight = "height";
   const std::string gkGameName = "game_name";
   const std::string gkX0 = "x";
   const std::string gkY0 = "y";
@@ -19,15 +21,21 @@ namespace {
   const std::string gkScorePath = "score.json";
   const std::string gkPlayerName = "player";
   const std::string gkPlayerScore = "score";
+  const std::string gkCcoreTitle = "score";
+
+  const int gkExit = ']';
+  const int gkMaxNameLen = 15;// todo hide this inf in json
+  const int gkEmptyNameFiller = '_';
 }// namespace
 
 namespace gScreen {
-  gameMenu::gameMenu(const basicScreen& screen, const std::string& kGameMenuPath)
+  gameMenu::gameMenu(const basicScreen& screen, const std::string& kGameMenuPath,
+                     const std::string& scorePath)
       : basicScreen(screen) {
     boost::property_tree::ptree gameMenuConfig;
     boost::property_tree::read_json(kGameMenuPath, gameMenuConfig);
 
-    drawScoreTable(std::move(gameMenuConfig.get_child(gkScoreTable)), gkScorePath);
+    drawScoreTable(std::move(gameMenuConfig.get_child(gkScoreTable)), scorePath);
     drawGameName(std::move(gameMenuConfig.get_child(gkGameName)));
     drawNameInsertField(std::move(gameMenuConfig.get_child(gkInsertNameField)));
   }
@@ -37,64 +45,96 @@ namespace gScreen {
     const int kY0 = gameName.get<int>(gkY0, 0);
     const auto name = gameName.get<std::string>(gkGameName);
     mvwaddstr(window_, screenSize_.startY + kY0, screenSize_.startX + kX0, name.data());
+    wrefresh(window_);
   }
 
   void gameMenu::drawNameInsertField(boost::property_tree::ptree&& nameInsertField) {
-    playerNameInsertPos = {nameInsertField.get_child(gkCursorPos).get<int>(gkX0),
-                           nameInsertField.get_child(gkCursorPos).get<int>(gkY0)};
+    playerName_.insert(0, gkMaxNameLen, gkEmptyNameFiller);
 
     const int kX0 = nameInsertField.get<int>(gkX0, 0);
     const int kY0 = nameInsertField.get<int>(gkY0, 0);
-
+    playerNameInsertPos = {nameInsertField.get_child(gkCursorPos).get<int>(gkX0),
+                           nameInsertField.get_child(gkCursorPos).get<int>(gkY0)};
     const boost::property_tree::ptree kFields = nameInsertField.get_child(gkInsertNameFieldFields);
     for( const auto& kField: kFields ) {
       const int kX = kField.second.get<int>(gkX0, 0);
       const int kY = kField.second.get<int>(gkY0, 0);
-      const auto name = kField.second.get<std::string>(gkGameName);
+      const auto name = kField.second.get<std::string>(gkField);
       mvwaddstr(window_, screenSize_.startY + kY0 + kY, screenSize_.startX + kX0 + kX, name.data());
+      wrefresh(window_);
     }
+    mvwaddstr(window_, screenSize_.startY + playerNameInsertPos.second,
+              screenSize_.startX + playerNameInsertPos.first, playerName_.data());
+    wrefresh(window_);
   }
-
-  /*void gameMenu::drawScoreBorder(const boost::property_tree::ptree& scoreTable){
-  }*/
 
   void gameMenu::drawScoreTable(boost::property_tree::ptree&& scoreTable,
                                 const std::string& scorePath) {
-    const int kScoreX0 = screenSize_.startY + scoreTable.get<int>(gkX0);
-    const int kScoreY0 = screenSize_.startX + scoreTable.get<int>(gkX0);
-    const int kScoreBorderWidth = scoreTable.get<int>(gkWidthName);
-    const int kScoreBorderHeight = scoreTable.get<int>(gkHeightName);
-    const int kCursorPosX0Name =
-            scoreTable.get_child(gkCursorPos).get_child(gkCursorPosName).get<int>(gkX0);
-    const int kCursorPosX0Score =
-            scoreTable.get_child(gkCursorPos).get_child(gkCursorPosScore).get<int>(gkX0);
-    const int kCursorPosNameMaxLen =
-            scoreTable.get_child(gkCursorPos).get_child(gkCursorPosName).get<int>(gkWidthName);
-    const int kCursorPosScoreMaxLen =
-            scoreTable.get_child(gkCursorPos).get_child(gkCursorPosScore).get<int>(gkWidthName);
+    const std::pair<int, int> kScoreTableCoords = {screenSize_.startX + scoreTable.get<int>(gkX0),
+                                                   screenSize_.startY + scoreTable.get<int>(gkY0)};
+
+    const int kCursorPosNameMaxLen = scoreTable.get_child(gkCursorPosName).get<int>(gkWidth);
+    const std::pair<int, int> kPlayerNameCoords = {
+            scoreTable.get_child(gkCursorPosName).get<int>(gkX0) + kScoreTableCoords.first,
+            scoreTable.get_child(gkCursorPosName).get<int>(gkY0) + kScoreTableCoords.second};
+
+    const int kCursorPosScoreMaxLen = scoreTable.get_child(gkCursorPosScore).get<int>(gkWidth);
+    const std::pair<int, int> kPlayerScoreCoords = {
+            scoreTable.get_child(gkCursorPosScore).get<int>(gkX0) + kScoreTableCoords.first,
+            scoreTable.get_child(gkCursorPosScore).get<int>(gkY0) + kScoreTableCoords.second};
+
+    const int kScoreBorderWidth = scoreTable.get<int>(gkWidth);
+    const int kScoreBorderHeight = scoreTable.get<int>(gkHeight);
+
     boost::property_tree::ptree scores;
     boost::property_tree::read_json(gkScorePath, scores);
-    const std::pair<int, int> kCursorPos{scoreTable.get_child(gkCursorPos).get<int>(gkX0),
-                                         scoreTable.get_child(gkCursorPos).get<int>(gkY0)};
-
 
     auto scoreTableDraw = scoreTable.get<std::string>(gkScoreTable);
     for( int y = 0; y < kScoreBorderHeight; y++ ) {
-      mvwaddnstr(window_, kScoreY0 + y, kScoreX0, scoreTableDraw.data() + kScoreBorderWidth * y,
-                 kScoreBorderWidth);
+      mvwaddnstr(window_, kScoreTableCoords.second + y, kScoreTableCoords.first,
+                 scoreTableDraw.data() + kScoreBorderWidth * y, kScoreBorderWidth);
+      wrefresh(window_);
     }
-    
-    for( const auto& field: scores ) {
-      const int y = kScoreY0 + kCursorPos.second;
-      const int x = kScoreX0 + kCursorPos.first;
+
+    int line = 0;
+    for( const auto& field: scores.get_child(gkCcoreTitle) ) {
       std::string score = std::to_string(field.second.get<int>(gkPlayerScore));
       int precision = kCursorPosScoreMaxLen - std::min<int>(kCursorPosScoreMaxLen, score.size());
-      score.insert('_', precision, kCursorPosScoreMaxLen);
+      score.insert(0, precision, gkEmptyNameFiller);
 
-      mvwaddnstr(window_, y, x + kCursorPosX0Name,
+      mvwaddnstr(window_, kPlayerNameCoords.second + line, kPlayerNameCoords.first,
                  field.second.get<std::string>(gkPlayerName).data(), kCursorPosNameMaxLen);
-      mvwaddnstr(window_, y, x + kCursorPosX0Score, score.data(), kCursorPosScoreMaxLen);
+      mvwaddnstr(window_, kPlayerScoreCoords.second + line, kPlayerScoreCoords.first, score.data(),
+                 kCursorPosScoreMaxLen);
+      wrefresh(window_);
+      ++line;
     }
+    wrefresh(window_);
+  }
+
+  bool gameMenu::introducePlayerName(const int input) {
+    if( input == KEY_ENTER || input == 10 ) {
+      playerName_.resize(curNameLen_);
+      nameIntroduced_ = true;
+    }
+    else if( (input == KEY_BACKSPACE || input == KEY_DC || input == 127) ) {
+      if( curNameLen_ > 0 ) {
+        playerName_[--curNameLen_] = gkEmptyNameFiller;
+      }
+    }
+    else if( curNameLen_ < gkMaxNameLen && input != ERR) {
+      playerName_[curNameLen_++] = input;
+    }
+    mvwaddnstr(window_, screenSize_.startY + playerNameInsertPos.second,
+               screenSize_.startX + playerNameInsertPos.first, playerName_.data(),
+               playerName_.size());
+    wrefresh(window_);
+
+    return nameIntroduced_;
+  }
+
+  std::string gameMenu::getPlayerName() {
+    return playerName_;
   }
 
 }// namespace gScreen
