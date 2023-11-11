@@ -25,7 +25,7 @@ namespace gScreen {
     keypad(stdscr, TRUE);
     nodelay(stdscr, TRUE);
     wrefresh(window_);
-    wtimeout(window_, 10);
+    wtimeout(window_, 1);
 
     screenSize_ = terminalSize_;
     ++screenSize_.startX;

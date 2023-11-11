@@ -15,4 +15,8 @@ namespace gameObj {
   char basicObj::avatar() const {
     return Avatar_;
   }
+
+  bool basicObj::isCollision(const basicObj& other) {
+    return Coords_ == other.Coords_;
+  }
 }// namespace gameObj

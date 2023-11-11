@@ -8,6 +8,7 @@ namespace gameObj {
   public:
     Player() = default;
     Player( ObjDirection viewDirection, const std::pair< int,  int>& startCoords);
+
     virtual std::shared_ptr<ShiftingObject> action(const int action) override;
     virtual std::pair<int, int> desiredShift() const override;
     virtual int getAmmoQuantity() const;

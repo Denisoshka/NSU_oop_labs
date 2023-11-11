@@ -100,7 +100,7 @@ namespace gScreen {
     }
   }
 
-  void gameScreen::deleteGameObj(const std::pair<int, int>& objectCoords) {
+  void gameScreen::deleteObj(const std::pair<int, int>& objectCoords) {
     mvwaddch(window_, gameMapSize_.startY + objectCoords.second,
              gameMapSize_.startX + objectCoords.first,
              gameMap_[objectCoords.first + objectCoords.second * gameMapSize_.width]);
@@ -108,8 +108,8 @@ namespace gScreen {
     wrefresh(window_);
   }
 
-  bool gameScreen::fixCoordsToMove(const std::pair<int, int>& objectCoords,
-                                   std::pair<int, int>& objectShift) {
+  bool gameScreen::fixCollision(const std::pair<int, int>& objectCoords,
+                                std::pair<int, int>& objectShift) {
     if( 0 <= (objectCoords.first + objectShift.first)
         && (objectCoords.first + objectShift.first) < gameMapSize_.width
         && 0 <= (objectCoords.second + objectShift.second)
@@ -120,31 +120,33 @@ namespace gScreen {
       return false;
     }
     else {
-      if( objectCoords.first + objectShift.first < 0 ) {
-        objectShift.first = -objectCoords.first;
-      }
-      if( objectCoords.first + objectShift.first >= gameMapSize_.width ) {
-        objectShift.first = gameMapSize_.width - 1 - objectCoords.first;
+      while( objectCoords.first < -objectShift.first ) {
+        ++objectShift.first;
       }
 
-      if( objectCoords.second + objectShift.first < 0 ) {
-        objectShift.second = -objectCoords.second;
-      }
-      if( objectCoords.second + objectShift.second >= gameMapSize_.width ) {
-        objectShift.second = gameMapSize_.height - 1 - objectCoords.second;
+      while( objectCoords.first + objectShift.first >= gameMapSize_.width ) {
+        --objectShift.first;
       }
 
-      if( gameMap_[(objectCoords.first + objectShift.first)
-                   + (objectCoords.second + objectShift.second) * gameMapSize_.width]
-          != emptySpace_ ) {
-        objectShift.first = 0;
-      }
-      if( gameMap_[(objectCoords.first + objectShift.first)
-                   + (objectCoords.second + objectShift.second) * gameMapSize_.width]
-          == emptySpace_ ) {
-        objectShift.second = 0;
+      while( objectCoords.second < -objectShift.second ) {
+        ++objectShift.second;
       }
 
+      while( objectCoords.second + objectShift.second >= gameMapSize_.width ) {
+        --objectShift.second;
+      }
+
+      while( gameMap_[(objectCoords.first + objectShift.first)
+                      + (objectCoords.second) * gameMapSize_.width]
+             != emptySpace_ ) {
+        (objectShift.first > 0) ? --objectShift.first : ++objectShift.first;
+      }
+
+      while( gameMap_[(objectCoords.first)
+                      + (objectCoords.second + objectShift.second) * gameMapSize_.width]
+             != emptySpace_ ) {
+        (objectShift.second > 0) ? --objectShift.second : ++objectShift.second;
+      }
       return true;
     }
   }

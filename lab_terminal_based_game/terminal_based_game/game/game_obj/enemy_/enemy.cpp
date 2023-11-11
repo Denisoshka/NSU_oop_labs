@@ -7,7 +7,9 @@ namespace {
   int elapsedTimeToMove = 3000;
   float shootProbability = 0.5;
   float stayHereProbability = 0.2;
-//  float changeDirProbability = 0.7;
+
+  const int gkEnemyLivesQuantity = 1;
+  const int gkEnemyDamage = 1;
 }// namespace
 
 static bool getRandomBoolean(double probability) {
@@ -23,10 +25,9 @@ static bool getRandomBoolean(double probability) {
 
 namespace gameObj {
   Enemy::Enemy(ObjDirection viewDirection, const std::pair<int, int>& startCoords)
-      : ShiftingObject(viewDirection, startCoords, '$')
+      : ShiftingObject(viewDirection, startCoords, '$', gkEnemyLivesQuantity, gkEnemyDamage)
       , lastShoot_(std::chrono::steady_clock::now())
-      , lastMove_(std::chrono::steady_clock::now())
-  {
+      , lastMove_(std::chrono::steady_clock::now()) {
   }
 
   std::pair<int, int> Enemy::desiredShift() const {
@@ -37,11 +38,12 @@ namespace gameObj {
     auto curTime = std::chrono::steady_clock::now();
     directionShift_.first = 0;
     if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - lastShoot_).count()
-        >= elapsedTimeToMove && !getRandomBoolean(stayHereProbability)) {
-      if (getRandomBoolean(0.5)){
+                >= elapsedTimeToMove
+        && !getRandomBoolean(stayHereProbability) ) {
+      if( getRandomBoolean(0.5) ) {
         directionShift_.first = 1;
       }
-      else{
+      else {
         directionShift_.first = -1;
       }
       lastMove_ += (curTime - lastMove_);

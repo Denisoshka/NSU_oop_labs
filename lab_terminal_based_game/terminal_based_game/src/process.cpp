@@ -59,10 +59,16 @@ namespace gameProcess {
         environmentInf.enemyWeapons.push_back(std::move(action));
       }
 
-      gscreen.fixCoordsToMove(objectCoords, desiredShift);
+      gscreen.fixCollision(objectCoords, desiredShift);
       a->makeShift(desiredShift);
       gscreen.drawMoveGameObj(objectCoords, desiredShift, a->avatar());
     }
+  }
+
+  void gameProcess::deleteGameObject(gScreen::gameScreen& gscreen, auto weapon,
+                                     shootMode& environmentInf) {
+    gscreen.deleteObj((*weapon)->getCoords());
+    environmentInf.enemyWeapons.erase(weapon);
   }
 
   gameProcessConstants gameProcess::updateEnemyWeapons(gScreen::gameScreen& gscreen,
@@ -71,52 +77,59 @@ namespace gameProcess {
          weapon != environmentInf.enemyWeapons.end(); ) {
       std::pair desiredShift{(*weapon)->desiredShift()};
 
-      bool flag = gscreen.fixCoordsToMove((*weapon)->getCoords(), desiredShift);
+      bool flag = gscreen.fixCollision((*weapon)->getCoords(), desiredShift);
       (*weapon)->makeShift(desiredShift);
       gscreen.drawMoveGameObj((*weapon)->getCoords(), desiredShift, (*weapon)->avatar());
 
-      if( flag || (*weapon)->getCoords() == environmentInf.player.getCoords() ) {
-        gscreen.deleteGameObj((*weapon)->getCoords());
-        if( (*weapon)->getCoords() == environmentInf.player.getCoords() ) {
-          --environmentInf.playerLives;
-          if( !environmentInf.playerLives ) {
-            return gameProcessConstants::ekPlayerDead;
-          }
+      if( flag ) {
+        deleteGameObject(gscreen, weapon, environmentInf);
+      }
+      else if( environmentInf.player.isCollision(**weapon) ) {
+        environmentInf.player.battle(**weapon);
+
+        if( !(*weapon)->isAlive() ) {
+          deleteGameObject(gscreen, weapon, environmentInf);
         }
-        environmentInf.enemyWeapons.erase(weapon);
+        if( !environmentInf.player.isAlive() ) {
+          return ekPlayerDead;
+        }
       }
       else {
         ++weapon;
       }
     }
-    return ekNothingHappenedInTiananmenSquare;
+    return ekNothingHappened;
   }
 
   void gameProcess::updateMyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
     for( auto weapon = environmentInf.myWeapons.begin();
          weapon != environmentInf.myWeapons.end(); ) {
       std::pair desiredShift{(*weapon)->desiredShift()};
-      std::pair objectCoords{(*weapon)->getCoords()};
 
-      bool flag = gscreen.fixCoordsToMove(objectCoords, desiredShift);
+      bool deleteWeapon = gscreen.fixCollision((*weapon)->getCoords(), desiredShift);
       (*weapon)->makeShift(desiredShift);
-      gscreen.drawMoveGameObj(objectCoords, desiredShift, (*weapon)->avatar());
+      gscreen.drawMoveGameObj((*weapon)->getCoords(), desiredShift, (*weapon)->avatar());
 
       for( auto object = environmentInf.gameObjects.begin();
            object != environmentInf.gameObjects.end(); ) {
-        if( (*object)->getCoords() == (*weapon)->getCoords() ) {
-          flag = true;
-          gscreen.deleteGameObj((*object)->getCoords());
-          environmentInf.gameObjects.erase(object);
+
+        if( (*object)->isCollision(**weapon) ) {
+          if( !(*object)->battle(**weapon) ) {
+            deleteGameObject(gscreen, object, environmentInf);
+          }
+          if( (*weapon)->isAlive() ) {
+            deleteGameObject(gscreen, weapon, environmentInf);
+            deleteWeapon = false;
+            // todo fix issue;
+          }
         }
         else {
           ++object;
         }
       }
 
-      if( flag ) {
-        gscreen.deleteGameObj((*weapon)->getCoords());
-        environmentInf.myWeapons.erase(weapon);
+      if( deleteWeapon ) {
+        deleteGameObject(gscreen, weapon, environmentInf);
       }
       else {
         ++weapon;
@@ -133,10 +146,12 @@ namespace gameProcess {
     std::pair desiredShift = environmentInf.player.desiredShift();
     std::pair objectCoords = environmentInf.player.getCoords();
 
-    gscreen.fixCoordsToMove(objectCoords, desiredShift);
+    gscreen.fixCollision(objectCoords, desiredShift);
     environmentInf.player.makeShift(desiredShift);
     gscreen.drawMoveGameObj(objectCoords, desiredShift, environmentInf.player.avatar());
-    // todo replace in screen
+
+    // todo maybe replace in screen
+
     std::string ammoQuantity = std::to_string(environmentInf.player.getAmmoQuantity());
     ammoQuantity.insert(0, 3 - ammoQuantity.length(), '0');
     gscreen.updateGameStat(gkBulletsField, std::move(ammoQuantity));
@@ -215,7 +230,6 @@ namespace gameProcess {
     return 0;
   }
 
-  
   static void scanScore(std::vector<std::pair<std::string, int>>& arr) {
     boost::property_tree::ptree scores;
     boost::property_tree::read_json(gkBasicScorePath, scores);

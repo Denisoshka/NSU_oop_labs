@@ -5,32 +5,34 @@
 #include <memory>
 
 namespace {
-  const int kMoveLeft{'a'};
-  const int kMoveRight{'d'};
-  const int kReload{'s'};
-  const int kShoot{'w'};
-  const int maxAmmoQuantity = 10;
+  const int gkMoveLeft{'a'};
+  const int gkMoveRight{'d'};
+  const int gkReload{'s'};
+  const int gkShoot{'w'};
+  const int gkMaxAmmoQuantity = 10;
+  const int gkPlayerLiverQuantity = 5;
+  const int gkPlayerDamage = 1;
   //  std::pair<unsigned, unsigned>
 }// namespace
 
 namespace gameObj {
   Player::Player( ObjDirection viewDirection,const std::pair< int,  int>& startCoords)
-      : ShiftingObject(viewDirection, startCoords, '@') {
+      : ShiftingObject(viewDirection, startCoords, '@', gkPlayerLiverQuantity, gkPlayerDamage) {
   }
 
   std::shared_ptr<ShiftingObject> Player::action(const int action) {
     directionShift_.first = 0;
-    if( action == kMoveLeft ) {
+    if( action == gkMoveLeft ) {
       directionShift_.first = -1;
     }
-    else if( action == kMoveRight ) {
+    else if( action == gkMoveRight ) {
       directionShift_.first = 1;
     }
-    else if( action == kReload ) {
-      ammoQuantity_ = maxAmmoQuantity;
+    else if( action == gkReload ) {
+      ammoQuantity_ = gkMaxAmmoQuantity;
       //      todo make reload;
     }
-    else if( action == kShoot ) {
+    else if( action == gkShoot ) {
       if (ammoQuantity_){
         std::pair bulletCoords{Coords_.first, Coords_.second + viewDirection_};
         ammoQuantity_--;
@@ -48,4 +50,5 @@ namespace gameObj {
   int Player::getAmmoQuantity() const {
     return ammoQuantity_;
   }
+
 }// namespace gameObj

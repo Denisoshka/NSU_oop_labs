@@ -1,29 +1,43 @@
 {
   "width": 70,
   "height": 30,
+  "x": 0,
+  "y": 0,
   "game_stats": {
     "width": 70,
     "height": 5,
-    "x": 0,
-    "y": 0,
+    "x": 1,
+    "y": 20,
     "fields": [
       {
         "field_name": "elapsed time: ",
         "x": 1,
-        "y": 1,
+        "y": 3,
         "field_width": 5
       },
       {
         "field_name": "bullets quantity: ",
         "x": 1,
-        "y": 3,
+        "y": 1,
         "field_width": 5
+      },
+      {
+        "field_name": "lives: ",
+        "x": 25,
+        "y": 1,
+        "field_width": 2
       }
     ]
   },
   "game_map": {
     "width": 70,
     "height": 20,
+    "game_field":{
+      "width": 68,
+      "height": 18
+    },
+    "x": 0,
+    "y": 0,
     "map": "#######################################################################                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    ##                                                                    #######################################################################",
     "empty_space": " ",
     "wall": "#"

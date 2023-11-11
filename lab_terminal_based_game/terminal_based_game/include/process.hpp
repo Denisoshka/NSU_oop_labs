@@ -9,7 +9,7 @@
 
 namespace gameProcess {
   enum gameProcessConstants {
-    ekNothingHappenedInTiananmenSquare = 0,
+    ekNothingHappened = 0,
     ekPlayerDead,
   };
 
@@ -47,6 +47,7 @@ namespace gameProcess {
     void startRate(gScreen::gameScreen& gscreen, const std::string& kPlayerName);
     void startTraining(gScreen::gameScreen& gscreen);
     void updateScore(const std::string & playerName, const int score);
+    void deleteGameObject(gScreen::gameScreen& gscreen, auto weapon, shootMode& environmentInf);
   };
 
 }// namespace gameProcess

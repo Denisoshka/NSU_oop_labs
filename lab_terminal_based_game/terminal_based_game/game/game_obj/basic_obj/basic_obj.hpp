@@ -10,6 +10,7 @@ namespace gameObj {
     basicObj(const std::pair<int, int>& startCoords, char avatar);
     virtual std::pair<int, int> getCoords();
     virtual char avatar() const;
+    virtual bool isCollision(const basicObj & other);
 
   protected:
     std::pair<int, int> Coords_{};
