@@ -16,6 +16,7 @@ namespace gameObj {
     virtual std::pair<int, int> desiredShift() const = 0;
     virtual void makeShift(std::pair<int, int>& allowedShift);
     virtual std::shared_ptr<ShiftingObject> action(const int action);
+    virtual int getLivesQuantity();
     virtual bool isAlive();
     virtual bool battle(gameObj::ShiftingObject& other);
     virtual bool getBattleDamage(gameObj::ShiftingObject& other) noexcept;

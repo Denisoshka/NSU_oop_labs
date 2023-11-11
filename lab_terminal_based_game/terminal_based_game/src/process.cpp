@@ -16,7 +16,7 @@ namespace {
   const char gkQuit{']'};
   const std::string gkBulletsField = "bullets quantity: ";
   const std::string gkElapsedTimeField = "elapsed time: ";
-  const std::string kPlayerLives = "life rest :";
+  const std::string kPlayerLives = "lives: ";
   const int gkEnemyQuantity = 10;
 
   const std::string gkDefPlayerName = "Nigga sweg";
@@ -65,89 +65,84 @@ namespace gameProcess {
     }
   }
 
-  auto gameProcess::eraseGameObject(gScreen::gameScreen& gscreen, auto weapon,
-                                    shootMode& environmentInf) {
-    gscreen.deleteObj((*weapon)->getCoords());
-    return environmentInf.enemyWeapons.erase(weapon);
+  auto gameProcess::eraseProcessObject(
+          gScreen::gameScreen& gscreen, auto objectIterator,
+          std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects) {
+    gscreen.deleteObj((*objectIterator)->getCoords());
+    return objects.erase(objectIterator);
   }
 
-  gameProcessConstants gameProcess::updateEnemyWeapons(gScreen::gameScreen& gscreen,
+  void gameProcess::updateEnemyWeapons(gScreen::gameScreen& gscreen,
                                                        shootMode& environmentInf) {
     for( auto weapon = environmentInf.enemyWeapons.begin();
          weapon != environmentInf.enemyWeapons.end(); ) {
+
       std::pair desiredShift{(*weapon)->desiredShift()};
-      bool weaponErased = false;
       bool isCollision = gscreen.fixCollision((*weapon)->getCoords(), desiredShift);
       (*weapon)->makeShift(desiredShift);
       gscreen.drawMoveGameObj((*weapon)->getCoords(), desiredShift, (*weapon)->avatar());
 
       if( isCollision && !desiredShift.first && !desiredShift.second ) {
-        weapon = eraseGameObject(gscreen, weapon, environmentInf);
-        weaponErased = true;
+        weapon = eraseProcessObject(gscreen, weapon, environmentInf.enemyWeapons);
       }
-      else if( environmentInf.player.isCollision(**weapon) ) {
+      else {
+        ++weapon;
+      }
+    }
+  }
+
+  void gameProcess::checkMyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
+    for( auto weapon = environmentInf.enemyWeapons.begin();
+         weapon != environmentInf.enemyWeapons.end() && environmentInf.player.isAlive(); ) {
+      if( environmentInf.player.isCollision(**weapon)) {
         environmentInf.player.battle(**weapon);
-
-        if( !(*weapon)->isAlive() ) {
-          weapon = eraseGameObject(gscreen, weapon, environmentInf);
-          weaponErased = true;
-        }
-        if( !environmentInf.player.isAlive() ) {
-          return ekPlayerDead;
-        }
       }
-
-      if( !weaponErased ) {
+      if ( !(*weapon)->isAlive()) {
+        weapon = eraseProcessObject(gscreen, weapon, environmentInf.enemyWeapons);
+      }
+      else {
         weapon++;
       }
     }
-    return ekNothingHappened;
+    gscreen.updateGameStat(kPlayerLives, environmentInf.player.getLivesQuantity());
   }
 
   void gameProcess::updateMyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
-    for( auto weapon = environmentInf.myWeapons.begin();
-         weapon != environmentInf.myWeapons.end(); ) {
+    for( auto myWeapon = environmentInf.myWeapons.begin();
+         myWeapon != environmentInf.myWeapons.end(); ) {
 
-      std::pair desiredShift{(*weapon)->desiredShift()};
-      bool weaponErased = false;
-      bool isCollision = gscreen.fixCollision((*weapon)->getCoords(), desiredShift);
-      (*weapon)->makeShift(desiredShift);
-      gscreen.drawMoveGameObj((*weapon)->getCoords(), desiredShift, (*weapon)->avatar());
+      std::pair desiredShift{(*myWeapon)->desiredShift()};
+      bool isCollision = gscreen.fixCollision((*myWeapon)->getCoords(), desiredShift);
+      gscreen.drawMoveGameObj((*myWeapon)->getCoords(), desiredShift, (*myWeapon)->avatar());
+      (*myWeapon)->makeShift(desiredShift);
 
+      if( (isCollision && !desiredShift.first && !desiredShift.second) ) {
+        myWeapon = eraseProcessObject(gscreen, myWeapon, environmentInf.myWeapons);
+      }
+      else {
+        ++myWeapon;
+      }
+    }
+  }
 
-      /*auto objectsToRemove =
-              std::remove_if(environmentInf.gameObjects.begin(), environmentInf.gameObjects.end(),
-                             [&weapon](auto object) {
-                               return (**weapon).isAlive() && object->isCollision(**weapon)
-                                   && object->battle(**weapon);
-                             });
-      environmentInf.gameObjects.erase(objectsToRemove, environmentInf.gameObjects.end());
-      */
-      /*
-            for( auto object = environmentInf.gameObjects.begin(); object != ; ) {
-              if( (*object)->isCollision(**weapon) && (*object)->battle(**weapon) ) {
-                object = eraseGameObject(gscreen, object, environmentInf);
-              }
-              else {
-                ++object;
-              }
-          }
-*/
-
-      if( !(*weapon)->isAlive() ) {
-        weapon = eraseGameObject(gscreen, weapon, environmentInf);
-        weaponErased = true;
-        break;
-        // todo fix issue;
+  void gameProcess::checkEnemyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
+    for( auto myWeapon = environmentInf.myWeapons.begin();
+         myWeapon != environmentInf.myWeapons.end(); ) {
+      for( auto object = environmentInf.gameObjects.begin();
+           object != environmentInf.gameObjects.end() && (**myWeapon).isAlive(); ) {
+        if( (**object).isCollision(**myWeapon) && (**object).battle(**myWeapon) ) {
+          object = eraseProcessObject(gscreen, object, environmentInf.gameObjects);
+        }
+        else {
+          object++;
+        }
       }
 
-      if( isCollision && !desiredShift.first && !desiredShift.second && !weaponErased ) {
-        weapon = eraseGameObject(gscreen, weapon, environmentInf);
-        weaponErased = true;
+      if( (!(**myWeapon).isAlive())) {
+        myWeapon = eraseProcessObject(gscreen, myWeapon, environmentInf.myWeapons);
       }
-
-      if( !weaponErased ) {
-        ++weapon;
+      else {
+        ++myWeapon;
       }
     }
   }
@@ -162,14 +157,10 @@ namespace gameProcess {
     std::pair objectCoords = environmentInf.player.getCoords();
 
     gscreen.fixCollision(objectCoords, desiredShift);
-    environmentInf.player.makeShift(desiredShift);
     gscreen.drawMoveGameObj(objectCoords, desiredShift, environmentInf.player.avatar());
+    environmentInf.player.makeShift(desiredShift);
 
-    // todo maybe replace in screen
-
-    std::string ammoQuantity = std::to_string(environmentInf.player.getAmmoQuantity());
-    ammoQuantity.insert(0, 3 - ammoQuantity.length(), '0');
-    gscreen.updateGameStat(gkBulletsField, std::move(ammoQuantity));
+    gscreen.updateGameStat(gkBulletsField, environmentInf.player.getAmmoQuantity());
   }
 
   int gameProcess::showMenu(std::string& playerName) {
@@ -206,7 +197,8 @@ namespace gameProcess {
     int input;
 
 
-    while( (input = gscreen.screenInput()) != gkQuit && !gameEnvironment.gameObjects.empty() ) {
+    while( (input = gscreen.screenInput()) != gkQuit && !gameEnvironment.gameObjects.empty()
+           && gameEnvironment.player.isAlive() ) {
       if( input != ERR ) {
         updatePlayer(gscreen, gameEnvironment, input);
       }
@@ -214,6 +206,8 @@ namespace gameProcess {
       updateGameProcess(gscreen, gameEnvironment);
       updateMyWeapons(gscreen, gameEnvironment);
       updateEnemyWeapons(gscreen, gameEnvironment);
+      checkMyCollisions(gscreen, gameEnvironment);
+      checkEnemyCollisions(gscreen, gameEnvironment);
 
       auto end = std::chrono::steady_clock::now();
       auto seconds = std::to_string(

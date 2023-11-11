@@ -21,7 +21,7 @@ namespace gameObj {
 
   bool ShiftingObject::battle(gameObj::ShiftingObject& other) {
     getBattleDamage(other);
-    getBattleDamage(*this);
+    other.getBattleDamage(*this);
     return !this->isAlive();
   }
 
@@ -36,6 +36,10 @@ namespace gameObj {
 
   int ShiftingObject::giveBattleDamage() {
     return battleDamage_;
+  }
+
+  int ShiftingObject::getLivesQuantity() {
+    return livesQuantity_;
   }
 
 }// namespace gameObj

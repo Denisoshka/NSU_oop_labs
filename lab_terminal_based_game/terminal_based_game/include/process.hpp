@@ -27,7 +27,7 @@ namespace gameProcess {
       std::vector<std::shared_ptr<gameObj::ShiftingObject>> enemyWeapons{};
     };
 
-    enum gameMode{
+    enum gameMode {
       ekRateMode,
       ekTrainingMode,
     };
@@ -42,12 +42,16 @@ namespace gameProcess {
     void updateGameProcess(gScreen::gameScreen& gscreen, shootMode& environmentInf);
     void updatePlayer(gScreen::gameScreen& gscreen, shootMode& environmentInf, const int action);
     void updateMyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf);
-    gameProcessConstants updateEnemyWeapons(gScreen::gameScreen& gscreen,shootMode& environmentInf);
+    void updateEnemyWeapons(gScreen::gameScreen& gscreen,
+                                            shootMode& environmentInf);
     int startGame(gameMode mode, const std::string& kPlayerName);
     void startRate(gScreen::gameScreen& gscreen, const std::string& kPlayerName);
     void startTraining(gScreen::gameScreen& gscreen);
-    void updateScore(const std::string & playerName, const int score);
-    auto eraseGameObject(gScreen::gameScreen& gscreen, auto weapon, shootMode& environmentInf);
+    void updateScore(const std::string& playerName, const int score);
+    auto eraseProcessObject(gScreen::gameScreen& gscreen, auto objectIterator,
+                         std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects);
+    void checkMyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf);
+    void checkEnemyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf);
   };
 
 }// namespace gameProcess

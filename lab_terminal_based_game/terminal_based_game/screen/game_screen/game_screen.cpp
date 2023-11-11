@@ -4,20 +4,22 @@
 #include <boost/property_tree/ptree.hpp>
 
 namespace {
-  const std::string gkWidth = "width";
-  const std::string gkHeight = "height";
-  const std::string gkX0 = "x";
-  const std::string gkY0 = "y";
-  const std::string gkMap = "map";
-  const std::string kEmptySpace = "empty_space";
-  const std::string kWall = "wall";
+  const char * gkWidth = "width";
+  const char * gkHeight = "height";
+  const char * gkX0 = "x";
+  const char * gkY0 = "y";
+  const char * gkMap = "map";
+  const char * kEmptySpace = "empty_space";
+  const char * kWall = "wall";
 
-  const std::string kGameMap = "game_map";
+  const char * kGameMap = "game_map";
 
-  const std::string kGameStats = "game_stats";
-  const std::string gkFields = "fields";
-  const std::string kStatsFieldName = "field_name";
-  const std::string kStatsFieldWidth = "field_width";
+  const char * kGameStats = "game_stats";
+  const char * gkFields = "fields";
+  const char * kStatsFieldName = "field_name";
+  const char * kStatsFieldWidth = "field_width";
+
+  const char gkEmptyNameFiller = '_';
 }// namespace
 
 namespace gScreen {
@@ -46,7 +48,8 @@ namespace gScreen {
       const auto kFieldName = statsField.second.get<std::string>(kStatsFieldName);
       std::pair<int, int> coords = {gameStatsSize_.startX + statsField.second.get<int>(gkX0),
                                     gameStatsSize_.startY + statsField.second.get<int>(gkY0)};
-      gameStats_[kFieldName] = std::move(coords);
+      gameStats_[kFieldName].first = std::move(coords);
+      gameStats_[kFieldName].second = statsField.second.get<int>(kStatsFieldWidth);
     }
   }
 
@@ -55,18 +58,28 @@ namespace gScreen {
 
     for( const auto& statsField: gameStats_ ) {
       const char *key = statsField.first.data();
-      const int x = statsField.second.first;
-      const int y = statsField.second.second;
+      const int x = statsField.second.first.first;
+      const int y = statsField.second.first.second;
       mvwaddstr(window_, y, x, key);
       wrefresh(window_);
     }
   }
 
   void gameScreen::updateGameStat(const std::string& key, std::string&& value) {
-    const int x = gameStats_[key].first + key.size();
-    const int y = gameStats_[key].second;
-    mvwaddstr(window_, y, x, value.data());
+    const int n = gameStats_[key].second;
+    if (n > value.size()){
+      value.insert(0, n - value.size(), gkEmptyNameFiller);
+    }
+
+    const int x = gameStats_[key].first.first + key.size();
+    const int y = gameStats_[key].first.second;
+    mvwaddnstr(window_, y, x, value.data(), n);
     wrefresh(window_);
+  }
+
+  void gameScreen::updateGameStat(const std::string& key, int value) {
+    std::string strValue = std::to_string(value);
+    updateGameStat(key, std::move(strValue));
   }
 
   void gameScreen::loadGameMap(boost::property_tree::ptree&& kMapSettings) {

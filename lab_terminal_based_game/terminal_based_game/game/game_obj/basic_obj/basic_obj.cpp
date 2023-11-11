@@ -17,6 +17,6 @@ namespace gameObj {
   }
 
   bool basicObj::isCollision(const basicObj& other) {
-    return Coords_ == other.Coords_;
+    return Coords_.first == other.Coords_.first && Coords_.second == other.Coords_.second;
   }
 }// namespace gameObj

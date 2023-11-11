@@ -9,7 +9,10 @@ namespace gScreen {
   public:
     gameScreen(const basicScreen& kScreen, const std::string& kSettingsPath);
     virtual ~gameScreen();
+
     void updateGameStat(const std::string& key, std::string&& value);
+    void updateGameStat(const std::string& key, const int);
+
     void drawMoveGameObj(const std::pair<int, int>& objectCoords,
                          const std::pair<int, int>& objectShift, const char avatar);
     void deleteObj(const std::pair<int, int>& objectCoords);
@@ -20,7 +23,7 @@ namespace gScreen {
     std::string gameMap_;
     char emptySpace_;
     windowSettings gameMapSize_{}, gameStatsSize_{};
-    std::map<std::string, std::pair<int, int>> gameStats_;
+    std::map<std::string, std::pair<std::pair<int, int>, int>> gameStats_;
 
     void loadGameMap(boost::property_tree::ptree&& kMapSettings);
     void drawGameMap(boost::property_tree::ptree&& kMapSettings);
