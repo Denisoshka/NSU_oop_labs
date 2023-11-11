@@ -65,10 +65,10 @@ namespace gameProcess {
     }
   }
 
-  void gameProcess::deleteGameObject(gScreen::gameScreen& gscreen, auto weapon,
-                                     shootMode& environmentInf) {
+  auto gameProcess::eraseGameObject(gScreen::gameScreen& gscreen, auto weapon,
+                                    shootMode& environmentInf) {
     gscreen.deleteObj((*weapon)->getCoords());
-    environmentInf.enemyWeapons.erase(weapon);
+    return environmentInf.enemyWeapons.erase(weapon);
   }
 
   gameProcessConstants gameProcess::updateEnemyWeapons(gScreen::gameScreen& gscreen,
@@ -76,26 +76,29 @@ namespace gameProcess {
     for( auto weapon = environmentInf.enemyWeapons.begin();
          weapon != environmentInf.enemyWeapons.end(); ) {
       std::pair desiredShift{(*weapon)->desiredShift()};
-
-      bool flag = gscreen.fixCollision((*weapon)->getCoords(), desiredShift);
+      bool weaponErased = false;
+      bool isCollision = gscreen.fixCollision((*weapon)->getCoords(), desiredShift);
       (*weapon)->makeShift(desiredShift);
       gscreen.drawMoveGameObj((*weapon)->getCoords(), desiredShift, (*weapon)->avatar());
 
-      if( flag ) {
-        deleteGameObject(gscreen, weapon, environmentInf);
+      if( isCollision && !desiredShift.first && !desiredShift.second ) {
+        weapon = eraseGameObject(gscreen, weapon, environmentInf);
+        weaponErased = true;
       }
       else if( environmentInf.player.isCollision(**weapon) ) {
         environmentInf.player.battle(**weapon);
 
         if( !(*weapon)->isAlive() ) {
-          deleteGameObject(gscreen, weapon, environmentInf);
+          weapon = eraseGameObject(gscreen, weapon, environmentInf);
+          weaponErased = true;
         }
         if( !environmentInf.player.isAlive() ) {
           return ekPlayerDead;
         }
       }
-      else {
-        ++weapon;
+
+      if( !weaponErased ) {
+        weapon++;
       }
     }
     return ekNothingHappened;
@@ -104,34 +107,46 @@ namespace gameProcess {
   void gameProcess::updateMyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
     for( auto weapon = environmentInf.myWeapons.begin();
          weapon != environmentInf.myWeapons.end(); ) {
-      std::pair desiredShift{(*weapon)->desiredShift()};
 
-      bool deleteWeapon = gscreen.fixCollision((*weapon)->getCoords(), desiredShift);
+      std::pair desiredShift{(*weapon)->desiredShift()};
+      bool weaponErased = false;
+      bool isCollision = gscreen.fixCollision((*weapon)->getCoords(), desiredShift);
       (*weapon)->makeShift(desiredShift);
       gscreen.drawMoveGameObj((*weapon)->getCoords(), desiredShift, (*weapon)->avatar());
 
-      for( auto object = environmentInf.gameObjects.begin();
-           object != environmentInf.gameObjects.end(); ) {
 
-        if( (*object)->isCollision(**weapon) ) {
-          if( !(*object)->battle(**weapon) ) {
-            deleteGameObject(gscreen, object, environmentInf);
+      /*auto objectsToRemove =
+              std::remove_if(environmentInf.gameObjects.begin(), environmentInf.gameObjects.end(),
+                             [&weapon](auto object) {
+                               return (**weapon).isAlive() && object->isCollision(**weapon)
+                                   && object->battle(**weapon);
+                             });
+      environmentInf.gameObjects.erase(objectsToRemove, environmentInf.gameObjects.end());
+      */
+      /*
+            for( auto object = environmentInf.gameObjects.begin(); object != ; ) {
+              if( (*object)->isCollision(**weapon) && (*object)->battle(**weapon) ) {
+                object = eraseGameObject(gscreen, object, environmentInf);
+              }
+              else {
+                ++object;
+              }
           }
-          if( (*weapon)->isAlive() ) {
-            deleteGameObject(gscreen, weapon, environmentInf);
-            deleteWeapon = false;
-            // todo fix issue;
-          }
-        }
-        else {
-          ++object;
-        }
+*/
+
+      if( !(*weapon)->isAlive() ) {
+        weapon = eraseGameObject(gscreen, weapon, environmentInf);
+        weaponErased = true;
+        break;
+        // todo fix issue;
       }
 
-      if( deleteWeapon ) {
-        deleteGameObject(gscreen, weapon, environmentInf);
+      if( isCollision && !desiredShift.first && !desiredShift.second && !weaponErased ) {
+        weapon = eraseGameObject(gscreen, weapon, environmentInf);
+        weaponErased = true;
       }
-      else {
+
+      if( !weaponErased ) {
         ++weapon;
       }
     }
