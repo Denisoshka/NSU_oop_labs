@@ -25,7 +25,7 @@
         "field_name": "lives: ",
         "x": 25,
         "y": 1,
-        "field_width": 2
+        "field_width": 3
       }
     ]
   },
@@ -34,7 +34,9 @@
     "height": 20,
     "game_field":{
       "width": 68,
-      "height": 18
+      "height": 18,
+      "x": 1,
+      "y": 1
     },
     "x": 0,
     "y": 0,
