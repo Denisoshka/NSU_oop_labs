@@ -7,7 +7,7 @@ namespace gameObj {
   class basicObj {
   public:
     basicObj() = default;
-    basicObj(std::pair<int, int>&& startCoords, char avatar);
+    basicObj(const std::pair<int, int>& startCoords, char avatar);
     virtual std::pair<int, int> getCoords();
     virtual char avatar() const;
 

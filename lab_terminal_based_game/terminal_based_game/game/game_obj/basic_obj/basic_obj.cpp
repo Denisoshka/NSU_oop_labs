@@ -3,8 +3,8 @@
 #include <utility>
 
 namespace gameObj {
-  basicObj::basicObj(std::pair<int, int>&& startCoords, char avatar)
-      : Coords_(std::move(startCoords))
+  basicObj::basicObj(const std::pair<int, int>& startCoords, char avatar)
+      : Coords_(startCoords)
       , Avatar_(avatar) {
   }
 

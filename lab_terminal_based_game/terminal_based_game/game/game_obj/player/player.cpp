@@ -14,17 +14,17 @@ namespace {
 }// namespace
 
 namespace gameObj {
-  Player::Player( int viewDirection, std::pair< int,  int>&& startCoords)
-      : ShiftingObject(viewDirection, std::move(startCoords), '@') {
+  Player::Player( ObjDirection viewDirection,const std::pair< int,  int>& startCoords)
+      : ShiftingObject(viewDirection, startCoords, '@') {
   }
 
   std::shared_ptr<ShiftingObject> Player::action(const int action) {
-    DirectionShift_.first = 0;
+    directionShift_.first = 0;
     if( action == kMoveLeft ) {
-      DirectionShift_.first = -1;
+      directionShift_.first = -1;
     }
     else if( action == kMoveRight ) {
-      DirectionShift_.first = 1;
+      directionShift_.first = 1;
     }
     else if( action == kReload ) {
       ammoQuantity_ = maxAmmoQuantity;
@@ -34,7 +34,7 @@ namespace gameObj {
       if (ammoQuantity_){
         std::pair bulletCoords{Coords_.first, Coords_.second + viewDirection_};
         ammoQuantity_--;
-        return std::make_unique<Bullet>(viewDirection_, std::move(bulletCoords));
+        return std::make_unique<Bullet>(viewDirection_, bulletCoords);
       }
       return nullptr;
     }
@@ -42,7 +42,7 @@ namespace gameObj {
   }
 
   std::pair<int, int> Player::desiredShift() const {
-    return DirectionShift_;
+    return directionShift_;
   }
 
   int Player::getAmmoQuantity() const {

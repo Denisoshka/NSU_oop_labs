@@ -1,10 +1,10 @@
 #include "shifting_object.hpp"
 
 namespace gameObj {
-  ShiftingObject::ShiftingObject(int viewDirection, std::pair<int, int>&& startCoords, char avatar)
-      : basicObj(std::move(startCoords), avatar)
+  ShiftingObject::ShiftingObject(ObjDirection viewDirection, const std::pair<int, int>& startCoords, char avatar)
+      : basicObj(startCoords, avatar)
       , viewDirection_(viewDirection)
-      , DirectionShift_({0, 0}) {
+      , directionShift_({0, 0}) {
   }
 
   void ShiftingObject::makeShift(std::pair<int, int>& allowedShift) {

@@ -7,7 +7,7 @@ namespace gameObj {
   class Player: public ShiftingObject {
   public:
     Player() = default;
-    Player( int viewDirection, std::pair< int,  int>&& startCoords);
+    Player( ObjDirection viewDirection, const std::pair< int,  int>& startCoords);
     virtual std::shared_ptr<ShiftingObject> action(const int action) override;
     virtual std::pair<int, int> desiredShift() const override;
     virtual int getAmmoQuantity() const;

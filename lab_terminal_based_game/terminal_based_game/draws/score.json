@@ -1,12 +1,23 @@
 {
-  "score": [
-    {
-      "player": "xyi",
-      "score": 1000
-    },
-    {
-      "player": "kojanov",
-      "score": 1090
-    }
-  ]
+  "score": {
+    "max_quantity": 30,
+    "fields": [
+      {
+        "player": "xyi",
+        "score": 1000
+      },
+      {
+        "player": "kojanov",
+        "score": 1090
+      },
+      {
+        "player": "dgmaEnjoyer",
+        "score": 590
+      },
+      {
+        "player": "dnjoyer",
+        "score": 59
+      }
+    ]
+  }
 }

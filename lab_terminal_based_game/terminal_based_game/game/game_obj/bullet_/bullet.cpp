@@ -1,21 +1,18 @@
 #include "bullet.hpp"
 
 namespace {
-  const  int kDegreesPerHalf_ = 180;
-  const std::pair<int, int> BulletDirectionShift{0, 1};
-  const int kUp = -1;
-  const int kDown = 1;
-}// namespace
+   const std::pair<int, int> bulletDirectionShift{0, 1};
+ }// namespace
 
 namespace gameObj {
-  Bullet::Bullet(int viewDirection, std::pair<int, int>&& startCoords)
-      : ShiftingObject(0, std::move(startCoords), '*') {
+  Bullet::Bullet(const ObjDirection viewDirection, const std::pair<int, int>& startCoords)
+      : ShiftingObject(ekObjNone, startCoords, '*') {
     viewDirection_ = viewDirection;
     if( viewDirection == ekObjUp) {
-      DirectionShift_ = std::move(std::pair{0, -BulletDirectionShift.second});
+      directionShift_ = std::move(std::pair{bulletDirectionShift.first, -bulletDirectionShift.second});
     }
     else if (viewDirection == ekOBJDown){
-      DirectionShift_ = std::move(std::pair{0, BulletDirectionShift.second});
+      directionShift_ = std::move(std::pair{bulletDirectionShift.first, bulletDirectionShift.second});
     }
   }
 
@@ -25,7 +22,7 @@ namespace gameObj {
 
   std::pair<int, int> Bullet::desiredShift() const {
     /// todo нужно сделать передвижение через определенное время
-    return DirectionShift_;
+    return directionShift_;
   }
 /*
   void Bullet::makeShift(std::pair<unsigned, unsigned>& allowedShift) {

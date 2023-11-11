@@ -19,16 +19,17 @@ namespace gameProcess {
     int process();
 
   protected:
-    struct screenSize {
-      int height, width, startX0, startY0;
-    } screenSize_{}, mapSize_{}, terminalSize_{};
-
     struct shootMode {
       int playerLives;
       gameObj::Player player{};
       std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
       std::vector<std::shared_ptr<gameObj::ShiftingObject>> myWeapons{};
       std::vector<std::shared_ptr<gameObj::ShiftingObject>> enemyWeapons{};
+    };
+
+    enum gameMode{
+      ekRateMode,
+      ekTrainingMode,
     };
 
     gScreen::coreScreen coreScreen;
@@ -42,7 +43,10 @@ namespace gameProcess {
     void updatePlayer(gScreen::gameScreen& gscreen, shootMode& environmentInf, const int action);
     void updateMyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf);
     gameProcessConstants updateEnemyWeapons(gScreen::gameScreen& gscreen,shootMode& environmentInf);
-    int startGame();
+    int startGame(gameMode mode, const std::string& kPlayerName);
+    void startRate(gScreen::gameScreen& gscreen, const std::string& kPlayerName);
+    void startTraining(gScreen::gameScreen& gscreen);
+    void updateScore(const std::string & playerName, const int score);
   };
 
 }// namespace gameProcess

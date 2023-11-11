@@ -21,18 +21,11 @@ namespace gScreen {
     char emptySpace_;
     windowSettings gameMapSize_{}, gameStatsSize_{};
     std::map<std::string, std::pair<int, int>> gameStats_;
-    enum gameMode{
-      ekRateMode,
-      ekTraining,
-    };
-
 
     void loadGameMap(boost::property_tree::ptree&& kMapSettings);
     void drawGameMap(boost::property_tree::ptree&& kMapSettings);
 
     void loadGameStats(boost::property_tree::ptree&& kStats);
     void drawGameStats(boost::property_tree::ptree&& kStats);
-
-
   };
 }// namespace gScreen

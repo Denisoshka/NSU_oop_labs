@@ -5,24 +5,25 @@
 #include <fstream>
 
 namespace {
-  const std::string gkInsertNameField = "insert_name_field";
-  const std::string gkInsertNameFieldFields = "fields";
-  const std::string gkField = "field";
-  const std::string gkFieldWidth = "field_width";
-  const std::string gkCursorPos = "cursor_pos";
-  const std::string gkCursorPosName = "cursor_pos_name";
-  const std::string gkCursorPosScore = "cursor_pos_score";
-  const std::string gkWidth = "width";
-  const std::string gkHeight = "height";
-  const std::string gkGameName = "game_name";
-  const std::string gkX0 = "x";
-  const std::string gkY0 = "y";
-  const std::string gkScoreTable = "score_table";
-  const std::string gkScorePath = "score.json";
-  const std::string gkPlayerName = "player";
-  const std::string gkPlayerScore = "score";
-  const std::string gkCcoreTitle = "score";
-
+  const char *gkInsertNameField = "insert_name_field";
+  const char *gkInsertNameFieldFields = "fields";
+  const char *gkField = "field";
+  const char *gkFieldWidth = "field_width";
+  const char *gkCursorPos = "cursor_pos";
+  const char *gkCursorPosName = "cursor_pos_name";
+  const char *gkCursorPosScore = "cursor_pos_score";
+  const char *gkWidth = "width";
+  const char *gkHeight = "height";
+  const char *gkGameName = "game_name";
+  const char *gkX0 = "x";
+  const char *gkY0 = "y";
+  const char *gkScoreTable = "score_table";
+  const char *gkScoreTableRowsLimit = "rows_quantity";
+  const char *gkScorePath = "score.json";
+  const char *gkPlayerName = "player";
+  const char *gkPlayerScore = "score";
+  const char *gkScoreTitle = "score";
+  const char *gkScoreFields = "fields";
   const int gkExit = ']';
   const int gkMaxNameLen = 15;// todo hide this inf in json
   const int gkEmptyNameFiller = '_';
@@ -86,8 +87,6 @@ namespace gScreen {
     const int kScoreBorderWidth = scoreTable.get<int>(gkWidth);
     const int kScoreBorderHeight = scoreTable.get<int>(gkHeight);
 
-    boost::property_tree::ptree scores;
-    boost::property_tree::read_json(gkScorePath, scores);
 
     auto scoreTableDraw = scoreTable.get<std::string>(gkScoreTable);
     for( int y = 0; y < kScoreBorderHeight; y++ ) {
@@ -95,19 +94,23 @@ namespace gScreen {
                  scoreTableDraw.data() + kScoreBorderWidth * y, kScoreBorderWidth);
       wrefresh(window_);
     }
-
+    int scoreRowsLimit = scoreTable.get<int>(gkScoreTableRowsLimit);
     int line = 0;
-    for( const auto& field: scores.get_child(gkCcoreTitle) ) {
-      std::string score = std::to_string(field.second.get<int>(gkPlayerScore));
+    boost::property_tree::ptree scores;
+    boost::property_tree::read_json(gkScorePath, scores);
+    for( auto field = scores.get_child(gkScoreTitle).get_child(gkScoreFields).begin();
+         field != scores.get_child(gkScoreTitle).get_child(gkScoreFields).end()
+         && line < scoreRowsLimit;
+         ++field, ++line ) {
+      std::string score = std::to_string(field->second.get<int>(gkPlayerScore));
       int precision = kCursorPosScoreMaxLen - std::min<int>(kCursorPosScoreMaxLen, score.size());
       score.insert(0, precision, gkEmptyNameFiller);
 
       mvwaddnstr(window_, kPlayerNameCoords.second + line, kPlayerNameCoords.first,
-                 field.second.get<std::string>(gkPlayerName).data(), kCursorPosNameMaxLen);
+                 field->second.get<std::string>(gkPlayerName).data(), kCursorPosNameMaxLen);
       mvwaddnstr(window_, kPlayerScoreCoords.second + line, kPlayerScoreCoords.first, score.data(),
                  kCursorPosScoreMaxLen);
       wrefresh(window_);
-      ++line;
     }
     wrefresh(window_);
   }
@@ -122,7 +125,7 @@ namespace gScreen {
         playerName_[--curNameLen_] = gkEmptyNameFiller;
       }
     }
-    else if( curNameLen_ < gkMaxNameLen && input != ERR) {
+    else if( curNameLen_ < gkMaxNameLen && input != ERR ) {
       playerName_[curNameLen_++] = input;
     }
     mvwaddnstr(window_, screenSize_.startY + playerNameInsertPos.second,
