@@ -19,8 +19,7 @@ namespace {
   const std::string kPlayerLives = "lives: ";
   const int gkEnemyQuantity = 10;
 
-  const std::string gkDefPlayerName = "Nigga sweg";
-  const std::string kGameName = "Nigga sweg";
+  const std::string gkDefPlayerName = "unknown player";
 
   const std::string gkBasicGameMenuPath = "game_menu.json";
   const std::string gkBasicGameScreenPath = "game_screen.json";
@@ -72,8 +71,7 @@ namespace gameProcess {
     return objects.erase(objectIterator);
   }
 
-  void gameProcess::updateEnemyWeapons(gScreen::gameScreen& gscreen,
-                                                       shootMode& environmentInf) {
+  void gameProcess::updateEnemyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
     for( auto weapon = environmentInf.enemyWeapons.begin();
          weapon != environmentInf.enemyWeapons.end(); ) {
 
@@ -94,10 +92,10 @@ namespace gameProcess {
   void gameProcess::checkMyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
     for( auto weapon = environmentInf.enemyWeapons.begin();
          weapon != environmentInf.enemyWeapons.end() && environmentInf.player.isAlive(); ) {
-      if( environmentInf.player.isCollision(**weapon)) {
+      if( environmentInf.player.isCollision(**weapon) ) {
         environmentInf.player.battle(**weapon);
       }
-      if ( !(*weapon)->isAlive()) {
+      if( !(*weapon)->isAlive() ) {
         weapon = eraseProcessObject(gscreen, weapon, environmentInf.enemyWeapons);
       }
       else {
@@ -138,7 +136,7 @@ namespace gameProcess {
         }
       }
 
-      if( (!(**myWeapon).isAlive())) {
+      if( (!(**myWeapon).isAlive()) ) {
         myWeapon = eraseProcessObject(gscreen, myWeapon, environmentInf.myWeapons);
       }
       else {

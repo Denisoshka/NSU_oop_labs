@@ -6,16 +6,16 @@
 #include <boost/property_tree/ptree.hpp>
 
 namespace gScreen {
-  class gameMenu: public basicScreen {
+  class gameMenu: public BasicScreen {
   public:
-    gameMenu(const basicScreen& screen, const std::string& kGameMenuPath,
+    gameMenu(const BasicScreen& screen, const std::string& kGameMenuPath,
              const std::string& scorePath);
     virtual ~gameMenu() = default;
 
-   /* void drawGameMenu(const std::string& kScorePath);
-     drawGameMenu(const std::vector<std::pair<std::pair<int, int>, std::string>>& stats);
-    void updateGameMenu(const std::string_view& key, std::string_view&& value);
-    void drawGameMenu(const std::vector<std::pair<std::string, int>>& score);*/
+    /* void drawGameMenu(const std::string& kScorePath);
+      drawGameMenu(const std::vector<std::pair<std::pair<int, int>, std::string>>& stats);
+     void updateGameMenu(const std::string_view& key, std::string_view&& value);
+     void drawGameMenu(const std::vector<std::pair<std::string, int>>& score);*/
 
     void drawScoreTable(boost::property_tree::ptree&& scoreTable, const std::string& scorePath);
     void drawGameName(boost::property_tree::ptree&& gameName);
@@ -24,6 +24,7 @@ namespace gScreen {
     std::string getPlayerName();
 
   protected:
+    windowSettings gameMenuSettings{};
     std::pair<int, int> playerNameInsertPos{};
     std::string playerName_{};
     int curNameLen_ = 0;

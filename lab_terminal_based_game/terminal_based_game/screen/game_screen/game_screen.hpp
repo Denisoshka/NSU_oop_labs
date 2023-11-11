@@ -5,9 +5,9 @@
 #include "basic_screen.hpp"
 
 namespace gScreen {
-  class gameScreen: public basicScreen {
+  class gameScreen: public BasicScreen {
   public:
-    gameScreen(const basicScreen& kScreen, const std::string& kSettingsPath);
+    gameScreen(const BasicScreen& kScreen, const std::string& kSettingsPath);
     virtual ~gameScreen();
 
     void updateGameStat(const std::string& key, std::string&& value);
@@ -17,7 +17,7 @@ namespace gScreen {
                          const std::pair<int, int>& objectShift, const char avatar);
     void deleteObj(const std::pair<int, int>& objectCoords);
     bool fixCollision(const std::pair<int, int>& objectCoords, std::pair<int, int>& objectShift);
-    windowSettings GetMapSize()const noexcept;
+    windowSettings GetMapSize() const noexcept;
 
   protected:
     std::string gameMap_;

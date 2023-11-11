@@ -3,11 +3,11 @@
 namespace gameObj {
   ShiftingObject::ShiftingObject(ObjDirection viewDirection, const std::pair<int, int>& startCoords,
                                  char avatar, const int livesQuantity, const int battleDamage_)
-      : basicObj(startCoords, avatar)
-      , viewDirection_(viewDirection)
-      , directionShift_({0, 0})
-      , livesQuantity_(livesQuantity)
-      , battleDamage_(battleDamage_) {
+      : BasicObj(startCoords, avatar)
+      , ViewDirection_(viewDirection)
+      , DirectionShift_({0, 0})
+      , LivesQuantity_(livesQuantity)
+      , BattleDamage_(battleDamage_) {
   }
 
   void ShiftingObject::makeShift(std::pair<int, int>& allowedShift) {
@@ -26,20 +26,20 @@ namespace gameObj {
   }
 
   bool ShiftingObject::isAlive() {
-    return livesQuantity_ > 0;
+    return LivesQuantity_ > 0;
   }
 
   bool ShiftingObject::getBattleDamage(gameObj::ShiftingObject& other) noexcept {
-    livesQuantity_ -= other.giveBattleDamage();
+    LivesQuantity_ -= other.giveBattleDamage();
     return !this->isAlive();
   }
 
   int ShiftingObject::giveBattleDamage() {
-    return battleDamage_;
+    return BattleDamage_;
   }
 
   int ShiftingObject::getLivesQuantity() {
-    return livesQuantity_;
+    return LivesQuantity_;
   }
 
 }// namespace gameObj

@@ -4,30 +4,30 @@
 #include <boost/property_tree/ptree.hpp>
 
 namespace {
-  const char * gkWidth = "width";
-  const char * gkHeight = "height";
-  const char * gkX0 = "x";
-  const char * gkY0 = "y";
-  const char * gkMap = "map";
-  const char * kEmptySpace = "empty_space";
-  const char * kWall = "wall";
+  const char *gkWidth = "width";
+  const char *gkHeight = "height";
+  const char *gkX0 = "x";
+  const char *gkY0 = "y";
+  const char *gkMap = "map";
+  const char *kEmptySpace = "empty_space";
+  const char *kWall = "wall";
 
-  const char * kGameMap = "game_map";
+  const char *kGameMap = "game_map";
 
-  const char * kGameStats = "game_stats";
-  const char * gkFields = "fields";
-  const char * kStatsFieldName = "field_name";
-  const char * kStatsFieldWidth = "field_width";
+  const char *kGameStats = "game_stats";
+  const char *gkFields = "fields";
+  const char *kStatsFieldName = "field_name";
+  const char *kStatsFieldWidth = "field_width";
 
   const char gkEmptyNameFiller = '_';
 }// namespace
 
 namespace gScreen {
-  gameScreen::gameScreen(const basicScreen& kScreen, const std::string& kSettingsPath)
-      : basicScreen(kScreen) {
+  gameScreen::gameScreen(const BasicScreen& kScreen, const std::string& kSettingsPath)
+      : BasicScreen(kScreen) {
     boost::property_tree::ptree gameScreenConfig;
     boost::property_tree::read_json(kSettingsPath, gameScreenConfig);
-
+    centerScreen(gameScreenConfig);
     drawGameMap(std::move(gameScreenConfig.get_child(kGameMap)));
     drawGameStats(std::move(gameScreenConfig.get_child(kGameStats)));
   }
@@ -41,7 +41,7 @@ namespace gScreen {
             .width = kStats.get<int>(gkWidth),
             .height = kStats.get<int>(gkHeight),
             .startX = kStats.get<int>(gkX0, 0) + screenSize_.startX,
-            .startY = kStats.get<int>(gkY0, 0) + screenSize_.startX,
+            .startY = kStats.get<int>(gkY0, 0) + screenSize_.startY,
     };
 
     for( const auto& statsField: kStats.get_child(gkFields) ) {
@@ -67,7 +67,7 @@ namespace gScreen {
 
   void gameScreen::updateGameStat(const std::string& key, std::string&& value) {
     const int n = gameStats_[key].second;
-    if (n > value.size()){
+    if( n > value.size() ) {
       value.insert(0, n - value.size(), gkEmptyNameFiller);
     }
 
@@ -87,7 +87,7 @@ namespace gScreen {
             .width = kMapSettings.get<int>(gkWidth),
             .height = kMapSettings.get<int>(gkHeight),
             .startX = kMapSettings.get<int>(gkX0, 0) + screenSize_.startX,
-            .startY = kMapSettings.get<int>(gkY0, 0) + screenSize_.startX,
+            .startY = kMapSettings.get<int>(gkY0, 0) + screenSize_.startY,
     };
     gameMap_ = kMapSettings.get<std::string>(gkMap);
     emptySpace_ = kMapSettings.get<char>(kEmptySpace);

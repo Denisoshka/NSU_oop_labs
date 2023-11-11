@@ -8,7 +8,7 @@ namespace gameObj {
     ekOBJDown = 1,
   };
 
-  class ShiftingObject: public basicObj {
+  class ShiftingObject: public BasicObj {
   public:
     ShiftingObject() = default;
     ShiftingObject(ObjDirection viewDirection, const std::pair<int, int>& startCoords, char avatar,
@@ -21,11 +21,12 @@ namespace gameObj {
     virtual bool battle(gameObj::ShiftingObject& other);
     virtual bool getBattleDamage(gameObj::ShiftingObject& other) noexcept;
     virtual int giveBattleDamage();
+
   protected:
-    int livesQuantity_;
-    int battleDamage_;
-    ObjDirection viewDirection_;
-    ObjDirection moveDirection_;
-    std::pair<unsigned, unsigned> directionShift_;
+    int LivesQuantity_;
+    int BattleDamage_;
+    ObjDirection ViewDirection_;
+    ObjDirection MoveDirection_;
+    std::pair<unsigned, unsigned> DirectionShift_;
   };
 }// namespace gameObj

@@ -1,7 +1,7 @@
 #include "core_screen.hpp"
 
 namespace gScreen {
-  coreScreen::coreScreen() {
+  CoreScreen::CoreScreen() {
     initscr();
     getmaxyx(stdscr, terminalSize_.height, terminalSize_.width);
     window_ = newwin(terminalSize_.height, terminalSize_.width, terminalSize_.startY,
@@ -11,16 +11,16 @@ namespace gScreen {
     }
   }
 
-  coreScreen::~coreScreen() {
+  CoreScreen::~CoreScreen() {
     delwin(window_);
     endwin();
   }
 
-  windowSettings coreScreen::getTerminalSize() const noexcept {
+  windowSettings CoreScreen::getTerminalSize() const noexcept {
     return terminalSize_;
   }
 
-  WINDOW *coreScreen::getWINDOW() const noexcept {
+  WINDOW *CoreScreen::getWINDOW() const noexcept {
     return window_;
   }
 }// namespace gScreen

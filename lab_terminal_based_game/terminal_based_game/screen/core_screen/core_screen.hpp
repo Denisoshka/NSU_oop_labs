@@ -8,12 +8,13 @@ namespace gScreen {
     int width, height, startX = 0, startY = 0;
   };
 
-  class coreScreen {
+  class CoreScreen {
   public:
-    coreScreen();
-    virtual ~coreScreen();
+    CoreScreen();
+    virtual ~CoreScreen();
     windowSettings getTerminalSize() const noexcept;
-    WINDOW * getWINDOW() const noexcept;
+    WINDOW *getWINDOW() const noexcept;
+
   protected:
     windowSettings terminalSize_{};
     WINDOW *window_;

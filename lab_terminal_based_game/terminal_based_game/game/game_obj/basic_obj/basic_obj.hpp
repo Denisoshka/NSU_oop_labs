@@ -4,13 +4,13 @@
 #include "vector"
 
 namespace gameObj {
-  class basicObj {
+  class BasicObj {
   public:
-    basicObj() = default;
-    basicObj(const std::pair<int, int>& startCoords, char avatar);
+    BasicObj() = default;
+    BasicObj(const std::pair<int, int>& startCoords, char avatar);
     virtual std::pair<int, int> getCoords();
     virtual char avatar() const;
-    virtual bool isCollision(const basicObj & other);
+    virtual bool isCollision(const BasicObj& other);
 
   protected:
     std::pair<int, int> Coords_{};

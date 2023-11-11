@@ -32,8 +32,8 @@ namespace gameProcess {
       ekTrainingMode,
     };
 
-    gScreen::coreScreen coreScreen;
-    gScreen::basicScreen mainScreen_{coreScreen};
+    gScreen::CoreScreen coreScreen;
+    gScreen::BasicScreen mainScreen_{coreScreen};
 
 
     int showMenu(std::string& playerName);
@@ -42,14 +42,13 @@ namespace gameProcess {
     void updateGameProcess(gScreen::gameScreen& gscreen, shootMode& environmentInf);
     void updatePlayer(gScreen::gameScreen& gscreen, shootMode& environmentInf, const int action);
     void updateMyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf);
-    void updateEnemyWeapons(gScreen::gameScreen& gscreen,
-                                            shootMode& environmentInf);
+    void updateEnemyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf);
     int startGame(gameMode mode, const std::string& kPlayerName);
     void startRate(gScreen::gameScreen& gscreen, const std::string& kPlayerName);
     void startTraining(gScreen::gameScreen& gscreen);
     void updateScore(const std::string& playerName, const int score);
     auto eraseProcessObject(gScreen::gameScreen& gscreen, auto objectIterator,
-                         std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects);
+                            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects);
     void checkMyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf);
     void checkEnemyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf);
   };

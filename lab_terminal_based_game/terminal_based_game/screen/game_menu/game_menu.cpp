@@ -30,12 +30,12 @@ namespace {
 }// namespace
 
 namespace gScreen {
-  gameMenu::gameMenu(const basicScreen& screen, const std::string& kGameMenuPath,
+  gameMenu::gameMenu(const BasicScreen& screen, const std::string& kGameMenuPath,
                      const std::string& scorePath)
-      : basicScreen(screen) {
+      : BasicScreen(screen) {
     boost::property_tree::ptree gameMenuConfig;
     boost::property_tree::read_json(kGameMenuPath, gameMenuConfig);
-
+    centerScreen(gameMenuConfig);
     drawScoreTable(std::move(gameMenuConfig.get_child(gkScoreTable)), scorePath);
     drawGameName(std::move(gameMenuConfig.get_child(gkGameName)));
     drawNameInsertField(std::move(gameMenuConfig.get_child(gkInsertNameField)));
@@ -88,13 +88,14 @@ namespace gScreen {
     const int kScoreBorderHeight = scoreTable.get<int>(gkHeight);
 
 
-    auto scoreTableDraw = scoreTable.get<std::string>(gkScoreTable);
+    const auto scoreTableDraw = scoreTable.get<std::string>(gkScoreTable);
     for( int y = 0; y < kScoreBorderHeight; y++ ) {
       mvwaddnstr(window_, kScoreTableCoords.second + y, kScoreTableCoords.first,
                  scoreTableDraw.data() + kScoreBorderWidth * y, kScoreBorderWidth);
       wrefresh(window_);
     }
-    int scoreRowsLimit = scoreTable.get<int>(gkScoreTableRowsLimit);
+
+    const int scoreRowsLimit = scoreTable.get<int>(gkScoreTableRowsLimit);
     int line = 0;
     boost::property_tree::ptree scores;
     boost::property_tree::read_json(gkScorePath, scores);
