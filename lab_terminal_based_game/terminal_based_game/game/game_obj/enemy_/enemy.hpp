@@ -9,9 +9,16 @@ namespace gameObj {
     Enemy(ObjDirection viewDirection, const std::pair<int, int>& startCoords);
     virtual ~Enemy() = default;
     virtual std::pair<int, int> desiredShift() const override;
-    virtual std::shared_ptr<ShiftingObject> action(const int action) override;
-
+    virtual void action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
+                        std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
+    virtual void updateCondition(
+            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
+    virtual bool fight(ShiftingObject& object,
+                       std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
   private:
+    virtual void interaction(ShiftingObject& other,
+                             std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
+
     std::chrono::time_point<std::chrono::steady_clock> LastShoot_;
     std::chrono::time_point<std::chrono::steady_clock> LastMove_;
   };

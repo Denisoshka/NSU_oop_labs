@@ -3,13 +3,17 @@
 #include "bullet.hpp"
 
 namespace {
-  int elapsedTimeToShoot = 5000;
-  int elapsedTimeToMove = 3000;
-  float shootProbability = 0.5;
-  float stayHereProbability = 0.2;
-
+  const int elapsedMSToShoot = 5000;
+  const int elapsedMSToMove = 3000;
   const int gkEnemyLivesQuantity = 1;
   const int gkEnemyDamage = 1;
+  const int gkBasicXShift = 1;
+
+  const float shootProbability = 0.5;
+  const float stayHereProbability = 0.2;
+  const float gkChangeDirectionProbability = 0.3;
+
+  const char gkEnemyAvatar = '@';
 }// namespace
 
 static bool getRandomBoolean(double probability) {
@@ -25,7 +29,9 @@ static bool getRandomBoolean(double probability) {
 
 namespace gameObj {
   Enemy::Enemy(ObjDirection viewDirection, const std::pair<int, int>& startCoords)
-      : ShiftingObject(viewDirection, startCoords, '$', gkEnemyLivesQuantity, gkEnemyDamage)
+      : ShiftingObject(viewDirection, startCoords, '$', gkEnemyLivesQuantity, gkEnemyDamage,
+                       ObjectFraction::ekEnemyFraction, ObjectProtection::ekNoneProtection,
+                       ObjectType::ekLiveObjectType)
       , LastShoot_(std::chrono::steady_clock::now())
       , LastMove_(std::chrono::steady_clock::now()) {
   }
@@ -34,28 +40,63 @@ namespace gameObj {
     return DirectionShift_;
   }
 
-  std::shared_ptr<ShiftingObject> Enemy::action(const int action) {
+  void Enemy::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    srandom(time(nullptr));
     auto curTime = std::chrono::steady_clock::now();
-    DirectionShift_.first = 0;
-    if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastShoot_).count()
-                >= elapsedTimeToMove
-        && !getRandomBoolean(stayHereProbability) ) {
-      if( getRandomBoolean(0.5) ) {
-        DirectionShift_.first = 1;
+
+    if( getRandomBoolean(stayHereProbability) ) {
+      DirectionShift_.first = 0;
+    }
+    else if( getRandomBoolean(gkChangeDirectionProbability)
+             && std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastShoot_).count()
+                        >= elapsedMSToMove ) {
+      LastMove_ = curTime;
+      if( !DirectionShift_.first ) {
+        DirectionShift_.first = getRandomBoolean(0.5) ? gkBasicXShift : -gkBasicXShift;
       }
       else {
-        DirectionShift_.first = -1;
+        DirectionShift_.first = -DirectionShift_.first;
       }
-      LastMove_ += (curTime - LastMove_);
     }
 
     if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastShoot_).count()
-                >= elapsedTimeToShoot
+                >= elapsedMSToShoot
         && getRandomBoolean(shootProbability) ) {
-      LastShoot_ += (curTime - LastShoot_);
-      std::pair bulletCoords{Coords_.first, Coords_.second + ViewDirection_};
-      return std::make_unique<Bullet>(ViewDirection_, bulletCoords);
+      LastShoot_ = curTime;
+      trace.push_back(std::make_unique<Bullet>(
+              ViewDirection_, std::pair{Coords_.first, Coords_.second + ViewDirection_},
+              Fraction_));
     }
-    return nullptr;
   }
+
+  void Enemy::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
+                     std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    for( auto& object: objects ) {
+      if( this == &(*object) || object->getCoords() != Coords_ ) {
+        continue;
+      }
+      interaction(*object, trace);
+    }
+  }
+
+  bool Enemy::fight(ShiftingObject& object,
+                    std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    if( Protection_ < object.getDamage() ) {
+      LivesQuantity_ -= object.getDamage();
+    }
+    else {
+      LivesQuantity_ -= object.getDamage() / 2;
+    }
+
+    return isAlive();  }
+
+  void Enemy::interaction(ShiftingObject& other,
+                          std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    if( (other.getFraction() != Fraction_ || other.getFraction()) == ObjectFraction::ekNoneFraction
+        && other.getType() == ekLiveObjectType ) {
+      fight(other, trace);
+      other.fight(*this, trace);
+    }
+  }
+
 }// namespace gameObj

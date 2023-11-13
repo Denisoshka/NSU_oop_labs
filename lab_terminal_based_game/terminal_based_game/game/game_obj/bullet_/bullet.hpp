@@ -1,13 +1,23 @@
 #pragma once
+
 #include <memory>
-#include "shifting_object.hpp"
+
+#include "weapon.hpp"
 
 namespace gameObj {
-  class Bullet: public ShiftingObject {
+  class Bullet: public Weapon {
   public:
-    Bullet(const ObjDirection viewDirection, const std::pair<int, int>& startCoords);
-    virtual std::pair<int, int> desiredShift() const override;
+    Bullet(const ObjDirection viewDirection, const std::pair<int, int>& startCoords,
+           const ObjectFraction fraction);
+
+    virtual void action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
+                        std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace);
+    void updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
+    bool fight(ShiftingObject& object,
+               std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
 
   private:
+    virtual void interaction(ShiftingObject& other,
+                             std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
   };
 }// namespace gameObj

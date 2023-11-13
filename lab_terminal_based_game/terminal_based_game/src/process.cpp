@@ -281,5 +281,24 @@ namespace gameProcess {
     write_json(gkBasicScorePath, json);
   }
 
+  void gameProcess::GameController::calculateConditions(std::vector<std::shared_ptr<gameObj::ShiftingObject>> & trace){
+    std::vector<std::shared_ptr<gameObj::ShiftingObject>> newItems{};
+    for (auto & object : gameObjects_){
 
+    }
+  }
+
+  void gameProcess::GameController::updateGameContext(std::vector<std::shared_ptr<gameObj::ShiftingObject>> & trace) {
+    std::vector<std::shared_ptr<gameObj::ShiftingObject>> newItems{};
+    for (auto & object : gameObjects_){
+      object->updateCondition(newItems);
+    }
+    std::move(newItems.begin(), newItems.end(), std::back_inserter(gameObjects_));
+  }
+
+  void gameProcess::GameController::drawGameContext() {
+    for (auto & object : gameObjects_){
+      if ()
+    }
+  }
 }// namespace gameProcess

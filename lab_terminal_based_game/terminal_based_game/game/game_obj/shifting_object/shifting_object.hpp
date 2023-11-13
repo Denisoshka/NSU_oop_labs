@@ -8,21 +8,55 @@ namespace gameObj {
     ekOBJDown = 1,
   };
 
+  enum ObjectFraction : int {
+    ekNoneFraction = 0,
+    ekPlayerFraction = 100,
+    ekPeacefulFraction = 200,
+    ekEnemyFraction = 300,
+  };
+
+  enum ObjectProtection : int {
+    ekNoneProtection = 0,
+    ekBaseProtection = 100,
+    ekStandardProtection = 200,
+    ekHighProtection = 300,
+  };
+
+  enum ObjectType : int {
+    ekNoneType = 0,
+    ekLiveObjectType = 100,
+    ekWeaponType = 200,
+  };
+
   class ShiftingObject: public BasicObj {
   public:
     ShiftingObject() = default;
-    ShiftingObject(ObjDirection viewDirection, const std::pair<int, int>& startCoords, char avatar,
-                   const int livesQuantity, const int battleDamage_);
-    virtual std::pair<int, int> desiredShift() const = 0;
+    ShiftingObject(ObjDirection kViewDirection, const std::pair<int, int>& kStartCoords,
+                   char kAvatar, const int kLivesQuantity, const int kBattleDamage,
+                   const ObjectFraction kFraction, const ObjectProtection kProtection_,
+                   const ObjectType kType);
+    virtual std::pair<int, int> desiredShift() const;
     virtual void makeShift(std::pair<int, int>& allowedShift);
-    virtual std::shared_ptr<ShiftingObject> action(const int action);
-    virtual int getLivesQuantity();
-    virtual bool isAlive();
-    virtual bool battle(gameObj::ShiftingObject& other);
-    virtual bool getBattleDamage(gameObj::ShiftingObject& other) noexcept;
-    virtual int giveBattleDamage();
+    virtual void action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
+                        std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
+    virtual void updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
+    virtual bool fight(ShiftingObject& object,
+                       std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
+
+    virtual ObjectProtection getProtection() const;
+    virtual ObjectFraction getFraction() const;
+    virtual int getDamage() const ;
+    virtual int getLivesQuantity() const;
+    virtual ObjectType getType() const;
+    virtual bool isAlive() const;
 
   protected:
+    virtual void interaction(ShiftingObject& other,
+                             std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
+
+    ObjectFraction Fraction_;
+    ObjectProtection Protection_;
+    ObjectType Type_;
     int LivesQuantity_;
     int BattleDamage_;
     ObjDirection ViewDirection_;

@@ -19,12 +19,16 @@ namespace gameProcess {
     int process();
 
   protected:
-    struct shootMode {
-      int playerLives;
+    class GameController{
+    public:
       gameObj::Player player{};
-      std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects{};
-      std::vector<std::shared_ptr<gameObj::ShiftingObject>> myWeapons{};
-      std::vector<std::shared_ptr<gameObj::ShiftingObject>> enemyWeapons{};
+      std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects_{};
+      void updateGameContext();
+      void drawGameContext();
+    protected:
+    };
+
+    struct shootMode {
     };
 
     enum gameMode {

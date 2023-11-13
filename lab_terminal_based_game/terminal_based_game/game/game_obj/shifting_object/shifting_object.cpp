@@ -1,13 +1,19 @@
 #include "shifting_object.hpp"
 
 namespace gameObj {
-  ShiftingObject::ShiftingObject(ObjDirection viewDirection, const std::pair<int, int>& startCoords,
-                                 char avatar, const int livesQuantity, const int battleDamage_)
-      : BasicObj(startCoords, avatar)
-      , ViewDirection_(viewDirection)
+  ShiftingObject::ShiftingObject(ObjDirection kViewDirection,
+                                 const std::pair<int, int>& kStartCoords, char kAvatar,
+                                 const int kLivesQuantity, const int kBattleDamage,
+                                 const ObjectFraction kFraction,
+                                 const ObjectProtection kProtection_, const ObjectType kType)
+      : BasicObj(kStartCoords, kAvatar)
+      , Fraction_(kFraction)
+      , Protection_(kProtection_)
+      , Type_(kType)
+      , ViewDirection_(kViewDirection)
       , DirectionShift_({0, 0})
-      , LivesQuantity_(livesQuantity)
-      , BattleDamage_(battleDamage_) {
+      , LivesQuantity_(kLivesQuantity)
+      , BattleDamage_(kBattleDamage) {
   }
 
   void ShiftingObject::makeShift(std::pair<int, int>& allowedShift) {
@@ -15,31 +21,50 @@ namespace gameObj {
     Coords_.second += allowedShift.second;
   }
 
-  std::shared_ptr<ShiftingObject> ShiftingObject::action(const int action) {
-    return nullptr;
-  }
-
-  bool ShiftingObject::battle(gameObj::ShiftingObject& other) {
-    getBattleDamage(other);
-    other.getBattleDamage(*this);
-    return !this->isAlive();
-  }
-
-  bool ShiftingObject::isAlive() {
+  bool ShiftingObject::isAlive() const {
     return LivesQuantity_ > 0;
   }
 
-  bool ShiftingObject::getBattleDamage(gameObj::ShiftingObject& other) noexcept {
-    LivesQuantity_ -= other.giveBattleDamage();
-    return !this->isAlive();
+
+  ObjectProtection ShiftingObject::getProtection() const {
+    return Protection_;
   }
 
-  int ShiftingObject::giveBattleDamage() {
+  int ShiftingObject::getLivesQuantity() const {
+    return LivesQuantity_;
+  }
+
+  ObjectFraction ShiftingObject::getFraction() const {
+    return Fraction_;
+  }
+
+  std::pair<int, int> ShiftingObject::desiredShift() const {
+    return DirectionShift_;
+  }
+
+  ObjectType ShiftingObject::getType() const {
+    return Type_;
+  }
+
+  int ShiftingObject::getDamage() const {
     return BattleDamage_;
   }
 
-  int ShiftingObject::getLivesQuantity() {
-    return LivesQuantity_;
+  /*  bool ShiftingObject::fight(ShiftingObject& object,
+                             std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    LivesQuantity_ -= object.BattleDamage_;
+    return !isAlive();
+  }*/
+
+  /* void ShiftingObject::updateCondition() {
   }
+*/
+  /*
+  std::shared_ptr<ShiftingObject> ShiftingObject::action(
+          const int action, std::vector<std::shared_ptr<gameObj::ShiftingObject>> & objects) {
+    for (auto){}
+    return nullptr;
+  }
+*/
 
 }// namespace gameObj

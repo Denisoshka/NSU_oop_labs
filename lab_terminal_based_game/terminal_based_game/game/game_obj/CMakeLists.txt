@@ -20,6 +20,8 @@ file(GLOB PUBLIC_INCLUDES
         "${CMAKE_CURRENT_SOURCE_DIR}/player"
         "${CMAKE_CURRENT_SOURCE_DIR}/shifting_object"
         "${CMAKE_CURRENT_SOURCE_DIR}/enemy_"
+        "${CMAKE_CURRENT_SOURCE_DIR}/weapon"
+
 )
 
 file(GLOB PRIVATE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/*_")

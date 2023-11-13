@@ -17,10 +17,13 @@ namespace {
 
 namespace gameObj {
   Player::Player(ObjDirection viewDirection, const std::pair<int, int>& startCoords)
-      : ShiftingObject(viewDirection, startCoords, '@', gkPlayerLiverQuantity, gkPlayerDamage) {
+      : ShiftingObject(viewDirection, startCoords, '@', gkPlayerLiverQuantity, gkPlayerDamage,
+                       ObjectFraction::ekPlayerFraction, ObjectProtection::ekNoneProtection,
+                       ObjectType::ekLiveObjectType) {
   }
 
-  std::shared_ptr<ShiftingObject> Player::action(const int action) {
+  void Player::updateCondition(const int action,
+                               std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     DirectionShift_.first = 0;
     if( action == gkMoveLeft ) {
       DirectionShift_.first = -1;
@@ -36,11 +39,9 @@ namespace gameObj {
       if( AmmoQuantity_ ) {
         std::pair bulletCoords{Coords_.first, Coords_.second + ViewDirection_};
         AmmoQuantity_--;
-        return std::make_unique<Bullet>(ViewDirection_, bulletCoords);
+        trace.push_back(std::make_unique<Bullet>(ViewDirection_, bulletCoords, Fraction_));
       }
-      return nullptr;
     }
-    return nullptr;
   }
 
   std::pair<int, int> Player::desiredShift() const {
@@ -49,6 +50,34 @@ namespace gameObj {
 
   int Player::getAmmoQuantity() const {
     return AmmoQuantity_;
+  }
+
+  void Player::interaction(ShiftingObject& other,
+                           std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    if( (other.getFraction() != Fraction_ || other.getFraction()) == ObjectFraction::ekNoneFraction
+        && other.getType() == ekLiveObjectType ) {
+      other.fight(*this, trace);
+    }
+  }
+
+  void Player::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
+                      std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    for( auto& object: objects ) {
+      if( object->getCoords() != Coords_ ) {
+        continue;
+      }
+      interaction(*object, trace);
+    }
+  }
+
+  bool Player::fight(ShiftingObject& object,
+                     std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    if( Protection_ < object.getDamage() ) {
+      LivesQuantity_ -= object.getDamage();
+    }
+    else {
+      LivesQuantity_ -= object.getDamage() / 2;
+    }
   }
 
 }// namespace gameObj

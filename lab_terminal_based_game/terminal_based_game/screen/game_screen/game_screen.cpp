@@ -123,7 +123,17 @@ namespace gScreen {
 
   bool gameScreen::fixCollision(const std::pair<int, int>& objectCoords,
                                 std::pair<int, int>& objectShift) {
-    if( 0 <= (objectCoords.first + objectShift.first)
+    auto desiredXShift = std::clamp(-objectCoords.first, objectShift.first,
+                                    gameMapSize_.width - objectCoords.first);
+    auto desiredYShift = std::clamp(-objectCoords.second, objectShift.second,
+                                    gameMapSize_.height - objectCoords.second);
+    if( desiredXShift == objectShift.first && desiredYShift == objectShift.second
+        && gameMap_[(objectCoords.first + desiredXShift)
+                    + (objectCoords.second + desiredYShift) * gameMapSize_.width]
+                   == emptySpace_ ) {
+      return false;
+    }
+    /*if( 0 <= (objectCoords.first + objectShift.first)
         && (objectCoords.first + objectShift.first) < gameMapSize_.width
         && 0 <= (objectCoords.second + objectShift.second)
         && (objectCoords.second + objectShift.second) < gameMapSize_.height
@@ -131,7 +141,7 @@ namespace gScreen {
                     + (objectCoords.second + objectShift.second) * gameMapSize_.width]
                    == emptySpace_ ) {
       return false;
-    }
+    }*/
     else {
       while( objectCoords.first < -objectShift.first ) {
         ++objectShift.first;
