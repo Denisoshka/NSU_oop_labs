@@ -8,12 +8,15 @@ namespace {
   const int gkEnemyLivesQuantity = 1;
   const int gkEnemyDamage = 1;
   const int gkBasicXShift = 1;
+  const int AttemptsToShift = 2;
 
   const float shootProbability = 0.5;
   const float stayHereProbability = 0.2;
   const float gkChangeDirectionProbability = 0.3;
 
   const char gkEnemyAvatar = '@';
+
+  const  std::pair<int, int> gkEnemyShift{1, 0};
 }// namespace
 
 static bool getRandomBoolean(double probability) {
@@ -33,30 +36,21 @@ namespace gameObj {
                        ObjectFraction::ekEnemyFraction, ObjectProtection::ekNoneProtection,
                        ObjectType::ekLiveObjectType)
       , LastShoot_(std::chrono::steady_clock::now())
-      , LastMove_(std::chrono::steady_clock::now()) {
-  }
-
-  std::pair<int, int> Enemy::desiredShift() const {
-    return DirectionShift_;
+      , LastMove_(std::chrono::steady_clock::now()){
+    Shift_ = gkEnemyShift;
   }
 
   void Enemy::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    ShiftingObject::updateCondition(trace);
     srandom(time(nullptr));
     auto curTime = std::chrono::steady_clock::now();
 
-    if( getRandomBoolean(stayHereProbability) ) {
-      DirectionShift_.first = 0;
-    }
-    else if( getRandomBoolean(gkChangeDirectionProbability)
-             && std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastShoot_).count()
-                        >= elapsedMSToMove ) {
+    if( getRandomBoolean(gkChangeDirectionProbability)
+        && std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastShoot_).count()
+                   >= elapsedMSToMove ) {
       LastMove_ = curTime;
-      if( !DirectionShift_.first ) {
-        DirectionShift_.first = getRandomBoolean(0.5) ? gkBasicXShift : -gkBasicXShift;
-      }
-      else {
-        DirectionShift_.first = -DirectionShift_.first;
-      }
+//      todo пофиксить
+      Shift_.first = getRandomBoolean(gkChangeDirectionProbability) ? -Shift_.first : Shift_.first;
     }
 
     if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastShoot_).count()
@@ -64,7 +58,7 @@ namespace gameObj {
         && getRandomBoolean(shootProbability) ) {
       LastShoot_ = curTime;
       trace.push_back(std::make_unique<Bullet>(
-              ViewDirection_, std::pair{Coords_.first, Coords_.second + ViewDirection_},
+              ViewDirection_, std::pair{CoreCoords_.first, CoreCoords_.second + ViewDirection_},
               Fraction_));
     }
   }
@@ -72,7 +66,7 @@ namespace gameObj {
   void Enemy::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
                      std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     for( auto& object: objects ) {
-      if( this == &(*object) || object->getNewCoords() != Coords_ ) {
+      if( this == &(*object) || !isCollision(*object) ) {
         continue;
       }
       interaction(*object, trace);
@@ -88,7 +82,29 @@ namespace gameObj {
       LivesQuantity_ -= object.getDamage() / 2;
     }
 
-    return isAlive();  }
+    return isAlive();
+  }
+
+  bool Enemy::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
+    if (allowedShift.front() != std::pair{true, true}){
+      NewCoords_.front().first += -Shift_.first;
+      --AttemptsToShift;
+    }else{
+      RotationEnd_ = true;
+    }
+
+    if (AttemptsToShift == 0 && !RotationEnd_){
+      RotationEnd_ = true;
+      NewCoords_ = Coords_;
+    }
+
+    return RotationEnd_;
+  }
+
+  const std::vector<std::pair<int, int>>& Enemy::getNewCoords() {
+    NewCoords_.front().first = Coords_.front().first + Shift_.first;
+    return NewCoords_;
+  }
 
   void Enemy::interaction(ShiftingObject& other,
                           std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {

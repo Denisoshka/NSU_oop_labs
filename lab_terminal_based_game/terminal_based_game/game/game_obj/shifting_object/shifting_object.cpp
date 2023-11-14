@@ -11,64 +11,49 @@ namespace gameObj {
       , Protection_(kProtection_)
       , Type_(kType)
       , ViewDirection_(kViewDirection)
-      , DirectionShift_({0, 0})
       , LivesQuantity_(kLivesQuantity)
-      , BattleDamage_(kBattleDamage) {
-  }
-
-  void ShiftingObject::makeShift(std::pair<int, int>& allowedShift) {
-    Coords_.first += allowedShift.first;
-    Coords_.second += allowedShift.second;
+      , BattleDamage_(kBattleDamage)
+      , Shift_({0, 0}) {
   }
 
   bool ShiftingObject::isAlive() const {
     return LivesQuantity_ > 0;
   }
 
+  ObjectFraction ShiftingObject::getFraction() const {
+    return Fraction_;
+  }
 
   ObjectProtection ShiftingObject::getProtection() const {
     return Protection_;
-  }
-
-  int ShiftingObject::getLivesQuantity() const {
-    return LivesQuantity_;
-  }
-
-  ObjectFraction ShiftingObject::getFraction() const {
-    return Fraction_;
   }
 
   ObjectType ShiftingObject::getType() const {
     return Type_;
   }
 
+  bool ShiftingObject::rotationEnd() const {
+    return RotationEnd_;
+  }
+
+  int ShiftingObject::getLivesQuantity() const {
+    return LivesQuantity_;
+  }
+
   int ShiftingObject::getDamage() const {
     return BattleDamage_;
   }
 
-  std::vector<std::pair<std::pair<int, int>>, bool> ShiftingObject::desiredRoute() const {
-    return nullptr;
+  bool ShiftingObject::isCollision(const ShiftingObject& object) {
+    return CoreCoords_ == object.CoreCoords_;
   }
 
-  bool ShiftingObject::goRoute(int) {
-    return false;
+  void ShiftingObject::updateCondition(
+          std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    RotationEnd_ = false;
+    CoreCoords_ = NewCoreCoords_;
+    std::copy(Coords_.begin(), Coords_.end(), NewCoords_.begin());
   }
 
-  /*  bool ShiftingObject::fight(ShiftingObject& object,
-                             std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    LivesQuantity_ -= object.BattleDamage_;
-    return !isAlive();
-  }*/
-
-  /* void ShiftingObject::updateCondition() {
-  }
-*/
-  /*
-  std::shared_ptr<ShiftingObject> ShiftingObject::action(
-          const int action, std::vector<std::shared_ptr<gameObj::ShiftingObject>> & objects) {
-    for (auto){}
-    return nullptr;
-  }
-*/
 
 }// namespace gameObj

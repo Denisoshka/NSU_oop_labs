@@ -13,17 +13,32 @@ namespace gameProcess {
     ekPlayerDead,
   };
 
+  struct TerminationConditions {
+    bool PlayerIsDead = false;
+    bool GameIsEnd = false;
+  };
+
   class GameController {
   public:
     GameController(gScreen::gameScreen& screen);
+
     void updateGameContext(const int kAction);
-    void checkCollisions();
-    void drawGameContext(const int kAction);
+    void drawGameContext();
+
+    TerminationConditions getTerminationConditions() const;
+    bool gameIsEnd() const;
+
   protected:
+    TerminationConditions conditions_{};
+
     gScreen::gameScreen& gscreen_;
-    gameObj::Player player{};
+    gameObj::Player player_{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects_{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> Trace_;
+
+    void checkCollisions();
+    void updateGameRotations();
+    void updateGameConditions(const int kAction);
   };
 
   class gameProcess {
@@ -32,8 +47,6 @@ namespace gameProcess {
     int process();
 
   protected:
-    struct shootMode {};
-
     enum gameMode {
       ekRateMode,
       ekTrainingMode,
@@ -42,22 +55,10 @@ namespace gameProcess {
     gScreen::CoreScreen coreScreen;
     gScreen::BasicScreen mainScreen_{coreScreen};
 
-
     int showMenu(std::string& playerName);
-    void initShootModeEnvironment(gScreen::gameScreen& gscreen, shootMode& environmentInf);
-
-    void updateGameProcess(gScreen::gameScreen& gscreen, shootMode& environmentInf);
-    void updatePlayer(gScreen::gameScreen& gscreen, shootMode& environmentInf, const int action);
-    void updateMyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf);
-    void updateEnemyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf);
     int startGame(gameMode mode, const std::string& kPlayerName);
     void startRate(gScreen::gameScreen& gscreen, const std::string& kPlayerName);
-    void startTraining(gScreen::gameScreen& gscreen);
     void updateScore(const std::string& playerName, const int score);
-    auto eraseProcessObject(gScreen::gameScreen& gscreen, auto objectIterator,
-                            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects);
-    void checkMyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf);
-    void checkEnemyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf);
   };
 
 }// namespace gameProcess

@@ -13,7 +13,7 @@ namespace gScreen {
     void updateGameStat(const std::string& key, std::string&& value);
     void updateGameStat(const std::string& key, const int);
 
-    void drawMoveGameObj(const std::vector<std::pair<int, int>>& objectCoords,
+    void drawObj(const std::vector<std::pair<int, int>>& objectCoords,
                          const std::vector<char>& avatar);
     void deleteObj(const std::vector<std::pair<int, int>>& objectCoords);
     std::vector<std::pair<bool, bool>> fixCollision(const std::vector<std::pair<int, int>>& Route);

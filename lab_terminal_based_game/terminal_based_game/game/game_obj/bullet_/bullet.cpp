@@ -15,25 +15,37 @@ namespace gameObj {
                  const ObjectFraction fraction)
       : Weapon(viewDirection, startCoords, gkBulletAvatar, gkBulletLivesQuantity, gkBulletDamage,
                fraction, ObjectProtection::ekNoneProtection, gkBulletUsesPerFrame) {
+    Shift_ = bulletDirectionShift;
+    if( viewDirection == ObjDirection::ekObjUp ) {
+      Shift_.second = -Shift_.second;
+    }
   }
 
   void Bullet::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    ShiftingObject::updateCondition(trace);
     auto curTime = std::chrono::steady_clock::now();
-    UsesPerFrame_ = gkBulletUsesPerFrame;
-
     if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastMoveTime_).count()
         >= elapsedMSToMove ) {
+      AbleToMove_ = true;
       LastMoveTime_ = curTime;
-      if( ViewDirection_ == ekObjUp ) {
-        DirectionShift_.second = -bulletDirectionShift.second;
-      }
-      else if( ViewDirection_ == ekOBJDown ) {
-        DirectionShift_.second = bulletDirectionShift.second;
-      }
     }
-    else {
-      DirectionShift_.second = 0;
+    UsesPerFrame_ = gkBulletUsesPerFrame;
+  }
+
+  bool Bullet::fight(ShiftingObject& object,
+                     std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    if( UsesPerFrame_ <= 0 ) {
     }
+    else if( Protection_ >= object.getProtection() && LivesQuantity_ > 0 ) {
+      UsesPerFrame_--;
+      LivesQuantity_--;
+    }
+    else if( LivesQuantity_ > 0 ) {
+      UsesPerFrame_--;
+      LivesQuantity_ = 0;
+    }
+
+    return !isAlive();
   }
 
   void Bullet::interaction(ShiftingObject& other,
@@ -45,28 +57,30 @@ namespace gameObj {
     }
   }
 
-  bool Bullet::fight(ShiftingObject& object,
-                     std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if( UsesPerFrame_ <= 0 ) {
-    }
-    else if( Protection_ >= object.getProtection() && LivesQuantity_ > 0 ) {
-      LivesQuantity_--;
-    }
-    else if( LivesQuantity_ > 0 ) {
-      LivesQuantity_ = 0;
-    }
-
-    return !isAlive();
-  }
-
   void Bullet::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
                       std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     for( auto& object: objects ) {
-      if( this == &(*object) || object->getNewCoords() != Coords_ ) {
+      if( this == &(*object) || !isCollision(*object) ) {
         continue;
       }
       interaction(*object, trace);
     }
+  }
+
+  bool Bullet::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
+    if( allowedShift.front() != std::pair{true, true} ) {
+      NewCoreCoords_ = CoreCoords_;
+      NewCoords_ = Coords_;
+      LivesQuantity_ = 0;
+    }
+    RotationEnd_ = true;
+    return RotationEnd_;
+  }
+
+  const std::vector<std::pair<int, int>>& Bullet::getNewCoords() {
+    CoreCoords_.second += Shift_.second;
+    NewCoords_.front().second += Shift_.second;
+    return NewCoords_;
   }
 
 }// namespace gameObj

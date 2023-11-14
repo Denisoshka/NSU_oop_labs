@@ -16,7 +16,7 @@ namespace {
   const char gkQuit{']'};
   const std::string gkBulletsField = "bullets quantity: ";
   const std::string gkElapsedTimeField = "elapsed time: ";
-  const std::string kPlayerLives = "lives: ";
+  const std::string gkPlayerLives = "lives: ";
   const int gkEnemyQuantity = 10;
 
   const std::string gkDefPlayerName = "unknown player";
@@ -33,21 +33,6 @@ namespace {
 }// namespace
 
 namespace gameProcess {
-  void gameProcess::initShootModeEnvironment(gScreen::gameScreen& gscreen,
-                                             shootMode& environmentInf) {
-    gScreen::windowSettings mapSize = gscreen.GetMapSize();
-    std::pair playerCords1 = std::pair{mapSize.width / 2, mapSize.height - 2};
-    std::pair playerCords2 = playerCords1;
-    environmentInf.player = gameObj::Player{gameObj::ekObjUp, std::move(playerCords1)};
-
-    for( int i = 0; i < gkEnemyQuantity; ++i ) {
-      environmentInf.gameObjects.push_back(std::make_shared<gameObj::Enemy>(
-              gameObj::ObjDirection::ekOBJDown, std::pair{mapSize.width / 2, 2}));
-    }
-
-    gscreen.drawMoveGameObj(playerCords2, std::pair{0, 0}, environmentInf.player.avatar());
-  }
-
   int gameProcess::showMenu(std::string& playerName) {
     gScreen::gameMenu menu{mainScreen_, gkBasicGameMenuPath, gkBasicScorePath};
     int input;
@@ -75,44 +60,34 @@ namespace gameProcess {
   }
 
   void gameProcess::startRate(gScreen::gameScreen& gscreen, const std::string& kPlayerName) {
-    shootMode gameEnvironment;
-    initShootModeEnvironment(gscreen, gameEnvironment);
     srandom(time(nullptr));
     auto startGameTime = std::chrono::steady_clock::now();
     int input;
 
+    GameController controller{gscreen};
 
-    while( (input = gscreen.screenInput()) != gkQuit && !gameEnvironment.gameObjects.empty()
-           && gameEnvironment.player.isAlive() ) {
-      if( input != ERR ) {
-        updatePlayer(gscreen, gameEnvironment, input);
-      }
+    while( (input = gscreen.screenInput()) != gkQuit && !controller.gameIsEnd() ) {
+
+      controller.updateGameContext(input);
+      controller.drawGameContext();
 
       auto end = std::chrono::steady_clock::now();
-      auto seconds = std::to_string(
-              std::chrono::duration_cast<std::chrono::seconds>(end - startGameTime).count());
-      gscreen.updateGameStat(gkElapsedTimeField, std::move(seconds));
+      auto seconds = std::chrono::duration_cast<std::chrono::seconds>(end - startGameTime).count();
+      gscreen.updateGameStat(gkElapsedTimeField, seconds);
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    if( gameEnvironment.gameObjects.empty() ) {
+    if( controller.getTerminationConditions().GameIsEnd ) {
       auto gameEndTime = std::chrono::steady_clock::now();
-      const int elapsedTime =
-              std::chrono::duration_cast<std::chrono::seconds>(gameEndTime - startGameTime).count();
+      const int elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(gameEndTime - startGameTime).count();
       updateScore(kPlayerName, elapsedTime);
     }
-  }
-
-  void gameProcess::startTraining(gScreen::gameScreen& gscreen) {
   }
 
   int gameProcess::startGame(gameMode mode, const std::string& kPlayerName) {
     gScreen::gameScreen gscreen{mainScreen_, gkBasicGameScreenPath};
     if( mode == gameMode::ekRateMode ) {
       startRate(gscreen, kPlayerName);
-    }
-    else if( mode == gameMode::ekTrainingMode ) {
-      startTraining(gscreen);
     }
 
     return 0;
@@ -162,47 +137,78 @@ namespace gameProcess {
     write_json(gkBasicScorePath, json);
   }
 
+  void GameController::updateGameConditions(const int kAction) {
+    player_.updateCondition(kAction, Trace_);
+    for( auto& object: gameObjects_ ) {
+      object->updateCondition(Trace_);
+    }
+  }
+
   void GameController::checkCollisions() {
-    player.action(gameObjects_, Trace_);
+    player_.action(gameObjects_, Trace_);
     for( auto& object: gameObjects_ ) {
       object->action(gameObjects_, Trace_);
     }
   }
 
-  void GameController::updateGameContext(const int kAction) {
-    player.updateCondition(kAction, Trace_);
-    for( auto& object: gameObjects_ ) {
-      object->updateCondition(Trace_);
+  void GameController::updateGameRotations() {
+    while( !player_.rotationEnd() ) {
+      auto newCoords = player_.getNewCoords();
+      auto coordsAllow = gscreen_.fixCollision(newCoords);
+      player_.checkRoute(coordsAllow);
     }
 
     for( auto& object: gameObjects_ ) {
       while( !object->rotationEnd() ) {
-        auto newCoords= object->getNewCoords();
+        auto newCoords = object->getNewCoords();
         auto coordsAllow = gscreen_.fixCollision(newCoords);
         object->checkRoute(coordsAllow);
       }
     }
+  }
 
-
+  void GameController::updateGameContext(const int kAction) {
+    updateGameConditions(kAction);
+    updateGameRotations();
     checkCollisions();
-  }
+    drawGameContext();
 
-  void GameController::drawGameContext(const int kAction) {
-    for (auto & obj: gameObjects_ ){
-      gscreen_.deleteObj(obj->getNewCoords());
+    gscreen_.updateGameStat(gkBulletsField, player_.getAmmoQuantity());
+    gscreen_.updateGameStat(gkPlayerLives, player_.getLivesQuantity());
+
+    if( !player_.isAlive() ) {
+      conditions_.PlayerIsDead = true;
     }
-    auto dead = std::remove_if()
+
+    if( gameObjects_.empty() ) {
+      conditions_.GameIsEnd = true;
+    }
   }
-}
 
-GameController::GameController(gScreen::gameScreen& screen)
-    : gscreen_(screen) {
-}
+  void GameController::drawGameContext() {
+    for( auto& obj: gameObjects_ ) {
+      gscreen_.deleteObj(obj->getCoords());
+    }
 
-/*
-GameController::GameController(gScreen::CoreScreen& screen): gscreen_(gScreen::gameScreen{screen})
-{
+    auto deadBegin = std::remove_if(
+            gameObjects_.begin(), gameObjects_.end(),
+            [](std::shared_ptr<gameObj::ShiftingObject>& obj) { return obj->isAlive(); });
+    gameObjects_.erase(deadBegin, gameObjects_.end());
 
-}*/
+    for( auto& obj: gameObjects_ ) {
+      gscreen_.drawObj(obj->getNewCoords(), obj->getAvatar());
+    }
+  }
 
+  GameController::GameController(gScreen::gameScreen& screen)
+      : gscreen_(screen) {
+  }
+
+  bool GameController::gameIsEnd() const {
+    return conditions_.PlayerIsDead || conditions_.GameIsEnd;
+  }
+
+  TerminationConditions GameController::getTerminationConditions() const {
+    return conditions_;
+  }
 }// namespace gameProcess

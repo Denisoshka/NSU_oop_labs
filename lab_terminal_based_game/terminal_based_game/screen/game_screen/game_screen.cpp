@@ -93,7 +93,7 @@ namespace gScreen {
     emptySpace_ = kMapSettings.get<char>(kEmptySpace);
   }
 
-  void gameScreen::drawMoveGameObj(const std::vector<std::pair<int, int>>& objectCoords,
+  void gameScreen::drawObj(const std::vector<std::pair<int, int>>& objectCoords,
                                    const std::vector<char>& avatar) {
     for( int i = 0; i < objectCoords.size(); ++i ) {
       mvwaddch(window_, gameMapSize_.startY + objectCoords[i].second,

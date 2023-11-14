@@ -35,16 +35,16 @@ namespace gameObj {
                    char kAvatar, const int kLivesQuantity, const int kBattleDamage,
                    const ObjectFraction kFraction, const ObjectProtection kProtection_,
                    const ObjectType kType);
-
-    virtual const std::vector<std::pair<int, int>> &getNewCoords() const;
-    virtual bool checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift);
-    virtual bool rotationEnd();
+    virtual bool isCollision(const ShiftingObject& object);
+    virtual bool checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) = 0;
     virtual void action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
                         std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
-    virtual void updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
+    virtual const std::vector<std::pair<int, int>>& getNewCoords() = 0;
     virtual bool fight(ShiftingObject& object,
                        std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
 
+    virtual void updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace);
+    virtual bool rotationEnd() const;
     virtual ObjectProtection getProtection() const;
     virtual ObjectFraction getFraction() const;
     virtual int getDamage() const;
@@ -58,10 +58,16 @@ namespace gameObj {
     ObjectFraction Fraction_;
     ObjectProtection Protection_;
     ObjectType Type_;
+
+    bool RotationEnd_;
+
     int LivesQuantity_;
     int BattleDamage_;
+
     ObjDirection ViewDirection_;
     ObjDirection MoveDirection_;
+
+    std::pair<int, int> Shift_;
     std::pair<int, int> NewCoreCoords_;
     std::vector<std::pair<int, int>> NewCoords_;
   };
