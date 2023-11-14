@@ -38,16 +38,20 @@ namespace gameObj {
     return Fraction_;
   }
 
-  std::pair<int, int> ShiftingObject::desiredShift() const {
-    return DirectionShift_;
-  }
-
   ObjectType ShiftingObject::getType() const {
     return Type_;
   }
 
   int ShiftingObject::getDamage() const {
     return BattleDamage_;
+  }
+
+  std::vector<std::pair<std::pair<int, int>>, bool> ShiftingObject::desiredRoute() const {
+    return nullptr;
+  }
+
+  bool ShiftingObject::goRoute(int) {
+    return false;
   }
 
   /*  bool ShiftingObject::fight(ShiftingObject& object,

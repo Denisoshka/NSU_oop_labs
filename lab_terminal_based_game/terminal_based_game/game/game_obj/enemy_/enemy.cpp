@@ -72,7 +72,7 @@ namespace gameObj {
   void Enemy::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
                      std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     for( auto& object: objects ) {
-      if( this == &(*object) || object->getCoords() != Coords_ ) {
+      if( this == &(*object) || object->getNewCoords() != Coords_ ) {
         continue;
       }
       interaction(*object, trace);

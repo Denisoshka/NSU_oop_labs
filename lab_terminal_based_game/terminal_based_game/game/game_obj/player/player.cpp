@@ -63,7 +63,7 @@ namespace gameObj {
   void Player::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
                       std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     for( auto& object: objects ) {
-      if( object->getCoords() != Coords_ ) {
+      if( object->getNewCoords() != Coords_ ) {
         continue;
       }
       interaction(*object, trace);
@@ -78,6 +78,9 @@ namespace gameObj {
     else {
       LivesQuantity_ -= object.getDamage() / 2;
     }
+  }
+
+  void Player::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
   }
 
 }// namespace gameObj

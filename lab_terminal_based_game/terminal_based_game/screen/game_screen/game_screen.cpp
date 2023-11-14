@@ -93,14 +93,12 @@ namespace gScreen {
     emptySpace_ = kMapSettings.get<char>(kEmptySpace);
   }
 
-  void gameScreen::drawMoveGameObj(const std::pair<int, int>& objectCoords,
-                                   const std::pair<int, int>& objectShift, const char avatar) {
-    mvwaddch(window_, gameMapSize_.startY + objectCoords.second,
-             gameMapSize_.startX + objectCoords.first,
-             gameMap_[objectCoords.first + objectCoords.second * gameMapSize_.width]);
-    mvwaddch(window_, gameMapSize_.startY + objectCoords.second + objectShift.second,
-             gameMapSize_.startX + objectCoords.first + objectShift.first, avatar);
-
+  void gameScreen::drawMoveGameObj(const std::vector<std::pair<int, int>>& objectCoords,
+                                   const std::vector<char>& avatar) {
+    for( int i = 0; i < objectCoords.size(); ++i ) {
+      mvwaddch(window_, gameMapSize_.startY + objectCoords[i].second,
+               gameMapSize_.startX + objectCoords[i].first, avatar[i]);
+    }
     wrefresh(window_);
   }
 
@@ -109,72 +107,32 @@ namespace gScreen {
     for( int y = 0; y < gameMapSize_.height; ++y ) {
       mvwaddnstr(window_, gameMapSize_.startY + y, gameMapSize_.startX,
                  gameMap_.data() + y * gameMapSize_.width, gameMapSize_.width);
-      wrefresh(window_);
     }
   }
 
-  void gameScreen::deleteObj(const std::pair<int, int>& objectCoords) {
-    mvwaddch(window_, gameMapSize_.startY + objectCoords.second,
-             gameMapSize_.startX + objectCoords.first,
-             gameMap_[objectCoords.first + objectCoords.second * gameMapSize_.width]);
-
+  void gameScreen::deleteObj(const std::vector<std::pair<int, int>>& objectCoords) {
+    for( auto& coords: objectCoords ) {
+      mvwaddch(window_, gameMapSize_.startY + coords.second, gameMapSize_.startX + coords.first,
+               gameMap_[coords.first + coords.second * gameMapSize_.width]);
+    }
     wrefresh(window_);
   }
 
-  bool gameScreen::fixCollision(const std::pair<int, int>& objectCoords,
-                                std::pair<int, int>& objectShift) {
-    auto desiredXShift = std::clamp(-objectCoords.first, objectShift.first,
-                                    gameMapSize_.width - objectCoords.first);
-    auto desiredYShift = std::clamp(-objectCoords.second, objectShift.second,
-                                    gameMapSize_.height - objectCoords.second);
-    if( desiredXShift == objectShift.first && desiredYShift == objectShift.second
-        && gameMap_[(objectCoords.first + desiredXShift)
-                    + (objectCoords.second + desiredYShift) * gameMapSize_.width]
-                   == emptySpace_ ) {
-      return false;
+  std::vector<std::pair<bool, bool>> gameScreen::fixCollision(
+          const std::vector<std::pair<int, int>>& Route) {
+    std::vector<std::pair<bool, bool>> routeAllow{};
+    for( auto& RouteBlock: Route ) {
+      int desiredX = std::clamp(RouteBlock.first, gameMapSize_.startX, gameMapSize_.width - 1);
+      int desiredY = std::clamp(RouteBlock.second, gameMapSize_.startY, gameMapSize_.height - 1);
+      routeAllow.emplace_back(desiredX == RouteBlock.first && RouteBlock.second == desiredY,
+                              gameMap_[desiredX + desiredY * gameMapSize_.width] == emptySpace_);
     }
-    /*if( 0 <= (objectCoords.first + objectShift.first)
-        && (objectCoords.first + objectShift.first) < gameMapSize_.width
-        && 0 <= (objectCoords.second + objectShift.second)
-        && (objectCoords.second + objectShift.second) < gameMapSize_.height
-        && gameMap_[(objectCoords.first + objectShift.first)
-                    + (objectCoords.second + objectShift.second) * gameMapSize_.width]
-                   == emptySpace_ ) {
-      return false;
-    }*/
-    else {
-      while( objectCoords.first < -objectShift.first ) {
-        ++objectShift.first;
-      }
-
-      while( objectCoords.first + objectShift.first >= gameMapSize_.width ) {
-        --objectShift.first;
-      }
-
-      while( objectCoords.second < -objectShift.second ) {
-        ++objectShift.second;
-      }
-
-      while( objectCoords.second + objectShift.second >= gameMapSize_.width ) {
-        --objectShift.second;
-      }
-
-      while( gameMap_[(objectCoords.first + objectShift.first)
-                      + (objectCoords.second) * gameMapSize_.width]
-             != emptySpace_ ) {
-        (objectShift.first > 0) ? --objectShift.first : ++objectShift.first;
-      }
-
-      while( gameMap_[(objectCoords.first)
-                      + (objectCoords.second + objectShift.second) * gameMapSize_.width]
-             != emptySpace_ ) {
-        (objectShift.second > 0) ? --objectShift.second : ++objectShift.second;
-      }
-      return true;
-    }
+    return routeAllow;
   }
 
   windowSettings gameScreen::GetMapSize() const noexcept {
     return gameMapSize_;
   }
+
+
 }// namespace gScreen

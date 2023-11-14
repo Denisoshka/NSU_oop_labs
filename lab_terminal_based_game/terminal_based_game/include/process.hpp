@@ -13,23 +13,26 @@ namespace gameProcess {
     ekPlayerDead,
   };
 
+  class GameController {
+  public:
+    GameController(gScreen::gameScreen& screen);
+    void updateGameContext(const int kAction);
+    void checkCollisions();
+    void drawGameContext(const int kAction);
+  protected:
+    gScreen::gameScreen& gscreen_;
+    gameObj::Player player{};
+    std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects_{};
+    std::vector<std::shared_ptr<gameObj::ShiftingObject>> Trace_;
+  };
+
   class gameProcess {
   public:
     gameProcess() = default;
     int process();
 
   protected:
-    class GameController{
-    public:
-      gameObj::Player player{};
-      std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects_{};
-      void updateGameContext();
-      void drawGameContext();
-    protected:
-    };
-
-    struct shootMode {
-    };
+    struct shootMode {};
 
     enum gameMode {
       ekRateMode,

@@ -11,6 +11,7 @@ namespace gameObj {
 
     virtual void updateCondition(const int action,
                                  std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace);
+    virtual void updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
     virtual std::pair<int, int> desiredShift() const override;
     virtual int getAmmoQuantity() const;
     virtual void action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
@@ -22,6 +23,6 @@ namespace gameObj {
     virtual void interaction(ShiftingObject& other,
                              std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
     int AmmoQuantity_ = 0;
-    std::chrono::seconds ReloadStart_;
+    std::chrono::seconds ReloadStart_{};
   };
 }// namespace gameObj

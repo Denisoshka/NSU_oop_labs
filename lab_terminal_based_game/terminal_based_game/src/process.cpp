@@ -48,119 +48,6 @@ namespace gameProcess {
     gscreen.drawMoveGameObj(playerCords2, std::pair{0, 0}, environmentInf.player.avatar());
   }
 
-  void gameProcess::updateGameProcess(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
-    for( const auto& a: environmentInf.gameObjects ) {
-      std::pair desiredShift = a->desiredShift();
-      std::pair objectCoords = a->getCoords();
-
-      auto action = a->action('_');
-      if( action ) {
-        environmentInf.enemyWeapons.push_back(std::move(action));
-      }
-
-      gscreen.fixCollision(objectCoords, desiredShift);
-      a->makeShift(desiredShift);
-      gscreen.drawMoveGameObj(objectCoords, desiredShift, a->avatar());
-    }
-  }
-
-  auto gameProcess::eraseProcessObject(
-          gScreen::gameScreen& gscreen, auto objectIterator,
-          std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects) {
-    gscreen.deleteObj((*objectIterator)->getCoords());
-    return objects.erase(objectIterator);
-  }
-
-  void gameProcess::updateEnemyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
-    for( auto weapon = environmentInf.enemyWeapons.begin();
-         weapon != environmentInf.enemyWeapons.end(); ) {
-
-      std::pair desiredShift{(*weapon)->desiredShift()};
-      bool isCollision = gscreen.fixCollision((*weapon)->getCoords(), desiredShift);
-      (*weapon)->makeShift(desiredShift);
-      gscreen.drawMoveGameObj((*weapon)->getCoords(), desiredShift, (*weapon)->avatar());
-
-      if( isCollision && !desiredShift.first && !desiredShift.second ) {
-        weapon = eraseProcessObject(gscreen, weapon, environmentInf.enemyWeapons);
-      }
-      else {
-        ++weapon;
-      }
-    }
-  }
-
-  void gameProcess::checkMyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
-    for( auto weapon = environmentInf.enemyWeapons.begin();
-         weapon != environmentInf.enemyWeapons.end() && environmentInf.player.isAlive(); ) {
-      if( environmentInf.player.isCollision(**weapon) ) {
-        environmentInf.player.battle(**weapon);
-      }
-      if( !(*weapon)->isAlive() ) {
-        weapon = eraseProcessObject(gscreen, weapon, environmentInf.enemyWeapons);
-      }
-      else {
-        weapon++;
-      }
-    }
-    gscreen.updateGameStat(kPlayerLives, environmentInf.player.getLivesQuantity());
-  }
-
-  void gameProcess::updateMyWeapons(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
-    for( auto myWeapon = environmentInf.myWeapons.begin();
-         myWeapon != environmentInf.myWeapons.end(); ) {
-
-      std::pair desiredShift{(*myWeapon)->desiredShift()};
-      bool isCollision = gscreen.fixCollision((*myWeapon)->getCoords(), desiredShift);
-      gscreen.drawMoveGameObj((*myWeapon)->getCoords(), desiredShift, (*myWeapon)->avatar());
-      (*myWeapon)->makeShift(desiredShift);
-
-      if( (isCollision && !desiredShift.first && !desiredShift.second) ) {
-        myWeapon = eraseProcessObject(gscreen, myWeapon, environmentInf.myWeapons);
-      }
-      else {
-        ++myWeapon;
-      }
-    }
-  }
-
-  void gameProcess::checkEnemyCollisions(gScreen::gameScreen& gscreen, shootMode& environmentInf) {
-    for( auto myWeapon = environmentInf.myWeapons.begin();
-         myWeapon != environmentInf.myWeapons.end(); ) {
-      for( auto object = environmentInf.gameObjects.begin();
-           object != environmentInf.gameObjects.end() && (**myWeapon).isAlive(); ) {
-        if( (**object).isCollision(**myWeapon) && (**object).battle(**myWeapon) ) {
-          object = eraseProcessObject(gscreen, object, environmentInf.gameObjects);
-        }
-        else {
-          object++;
-        }
-      }
-
-      if( (!(**myWeapon).isAlive()) ) {
-        myWeapon = eraseProcessObject(gscreen, myWeapon, environmentInf.myWeapons);
-      }
-      else {
-        ++myWeapon;
-      }
-    }
-  }
-
-  void gameProcess::updatePlayer(gScreen::gameScreen& gscreen, shootMode& environmentInf,
-                                 const int action) {
-    std::shared_ptr<gameObj::ShiftingObject> playerAction = environmentInf.player.action(action);
-    if( playerAction != nullptr ) {
-      environmentInf.myWeapons.push_back(playerAction);
-    }
-    std::pair desiredShift = environmentInf.player.desiredShift();
-    std::pair objectCoords = environmentInf.player.getCoords();
-
-    gscreen.fixCollision(objectCoords, desiredShift);
-    gscreen.drawMoveGameObj(objectCoords, desiredShift, environmentInf.player.avatar());
-    environmentInf.player.makeShift(desiredShift);
-
-    gscreen.updateGameStat(gkBulletsField, environmentInf.player.getAmmoQuantity());
-  }
-
   int gameProcess::showMenu(std::string& playerName) {
     gScreen::gameMenu menu{mainScreen_, gkBasicGameMenuPath, gkBasicScorePath};
     int input;
@@ -200,12 +87,6 @@ namespace gameProcess {
       if( input != ERR ) {
         updatePlayer(gscreen, gameEnvironment, input);
       }
-
-      updateGameProcess(gscreen, gameEnvironment);
-      updateMyWeapons(gscreen, gameEnvironment);
-      updateEnemyWeapons(gscreen, gameEnvironment);
-      checkMyCollisions(gscreen, gameEnvironment);
-      checkEnemyCollisions(gscreen, gameEnvironment);
 
       auto end = std::chrono::steady_clock::now();
       auto seconds = std::to_string(
@@ -281,24 +162,47 @@ namespace gameProcess {
     write_json(gkBasicScorePath, json);
   }
 
-  void gameProcess::GameController::calculateConditions(std::vector<std::shared_ptr<gameObj::ShiftingObject>> & trace){
-    std::vector<std::shared_ptr<gameObj::ShiftingObject>> newItems{};
-    for (auto & object : gameObjects_){
-
+  void GameController::checkCollisions() {
+    player.action(gameObjects_, Trace_);
+    for( auto& object: gameObjects_ ) {
+      object->action(gameObjects_, Trace_);
     }
   }
 
-  void gameProcess::GameController::updateGameContext(std::vector<std::shared_ptr<gameObj::ShiftingObject>> & trace) {
-    std::vector<std::shared_ptr<gameObj::ShiftingObject>> newItems{};
-    for (auto & object : gameObjects_){
-      object->updateCondition(newItems);
+  void GameController::updateGameContext(const int kAction) {
+    player.updateCondition(kAction, Trace_);
+    for( auto& object: gameObjects_ ) {
+      object->updateCondition(Trace_);
     }
-    std::move(newItems.begin(), newItems.end(), std::back_inserter(gameObjects_));
+
+    for( auto& object: gameObjects_ ) {
+      while( !object->rotationEnd() ) {
+        auto newCoords= object->getNewCoords();
+        auto coordsAllow = gscreen_.fixCollision(newCoords);
+        object->checkRoute(coordsAllow);
+      }
+    }
+
+
+    checkCollisions();
   }
 
-  void gameProcess::GameController::drawGameContext() {
-    for (auto & object : gameObjects_){
-      if ()
+  void GameController::drawGameContext(const int kAction) {
+    for (auto & obj: gameObjects_ ){
+      gscreen_.deleteObj(obj->getNewCoords());
     }
+    auto dead = std::remove_if()
   }
+}
+
+GameController::GameController(gScreen::gameScreen& screen)
+    : gscreen_(screen) {
+}
+
+/*
+GameController::GameController(gScreen::CoreScreen& screen): gscreen_(gScreen::gameScreen{screen})
+{
+
+}*/
+
 }// namespace gameProcess

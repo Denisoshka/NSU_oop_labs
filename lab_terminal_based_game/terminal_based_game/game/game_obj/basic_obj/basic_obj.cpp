@@ -8,15 +8,19 @@ namespace gameObj {
       , Avatar_(avatar) {
   }
 
-  std::pair<int, int> BasicObj::getCoords() {
+  const std::vector<std::pair<int, int>>& BasicObj::getCoords()  {
     return Coords_;
   }
 
-  char BasicObj::avatar() const {
+  const std::vector<std::pair<int, int>>& BasicObj::getPrevCoords()  {
+    return PrevCoords_;
+  }
+
+  const std::vector<char>& BasicObj::getAvatar()  {
     return Avatar_;
   }
 
   bool BasicObj::isCollision(const BasicObj& other) {
-    return Coords_.first == other.Coords_.first && Coords_.second == other.Coords_.second;
+    return Coords_ == other.Coords_;
   }
 }// namespace gameObj
