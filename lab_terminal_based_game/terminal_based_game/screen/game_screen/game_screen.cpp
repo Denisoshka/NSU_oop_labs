@@ -130,7 +130,7 @@ namespace gScreen {
     return routeAllow;
   }
 
-  windowSettings gameScreen::GetMapSize() const noexcept {
+  windowSettings gameScreen::getMapSize() const noexcept {
     return gameMapSize_;
   }
 

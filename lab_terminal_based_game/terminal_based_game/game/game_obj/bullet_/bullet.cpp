@@ -6,7 +6,7 @@ namespace {
   const int elapsedMSToMove = 300;
   const int gkBulletLivesQuantity = 2;
   const int gkBulletDamage = 1;
-  const char gkBulletAvatar = '*';
+  const char gkBulletAvatar = '|';
   const int gkBulletUsesPerFrame = 1;
 }// namespace
 
@@ -70,11 +70,11 @@ namespace gameObj {
   bool Bullet::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
     if( allowedShift.front() != std::pair{true, true} ) {
       NewCoreCoords_ = CoreCoords_;
-      NewCoords_ = Coords_;
+      NewCoords_.front().first = Coords_.front().first;
+      NewCoords_.front().second = Coords_.front().second;
       LivesQuantity_ = 0;
     }
-    RotationEnd_ = true;
-    return RotationEnd_;
+    return RotationEnd_ = true;
   }
 
   const std::vector<std::pair<int, int>>& Bullet::getNewCoords() {

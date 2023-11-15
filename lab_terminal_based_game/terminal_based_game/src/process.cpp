@@ -17,7 +17,7 @@ namespace {
   const std::string gkBulletsField = "bullets quantity: ";
   const std::string gkElapsedTimeField = "elapsed time: ";
   const std::string gkPlayerLives = "lives: ";
-  const int gkEnemyQuantity = 10;
+  const int gkEnemyQuantity = 20;
 
   const std::string gkDefPlayerName = "unknown player";
 
@@ -79,7 +79,8 @@ namespace gameProcess {
 
     if( controller.getTerminationConditions().GameIsEnd ) {
       auto gameEndTime = std::chrono::steady_clock::now();
-      const int elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(gameEndTime - startGameTime).count();
+      const int elapsedTime =
+              std::chrono::duration_cast<std::chrono::seconds>(gameEndTime - startGameTime).count();
       updateScore(kPlayerName, elapsedTime);
     }
   }
@@ -201,7 +202,18 @@ namespace gameProcess {
   }
 
   GameController::GameController(gScreen::gameScreen& screen)
-      : gscreen_(screen) {
+      : gscreen_(screen)
+      , mapSize_(gscreen_.getMapSize())
+      , player_(gameObj::ObjDirection::ekObjUp,
+                std::pair{mapSize_.width / 2, mapSize_.height - 2}) {
+
+    for( int pidorsQuantity = 0;
+         pidorsQuantity < gkEnemyQuantity && pidorsQuantity < mapSize_.width; ++pidorsQuantity ) {
+      gameObjects_.push_back(std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
+                                                              std::pair{pidorsQuantity, 1}));
+    }
+
+    drawGameContext();
   }
 
   bool GameController::gameIsEnd() const {

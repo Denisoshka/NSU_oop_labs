@@ -24,12 +24,13 @@ namespace gameObj {
 
   void Player::updateCondition(const int action,
                                std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    DirectionShift_.first = 0;
+
+    Shift_.first = 0;
     if( action == gkMoveLeft ) {
-      DirectionShift_.first = -1;
+      Shift_.first = -1;
     }
     else if( action == gkMoveRight ) {
-      DirectionShift_.first = 1;
+      Shift_.first = 1;
     }
     else if( action == gkReload ) {
       AmmoQuantity_ = gkMaxAmmoQuantity;
@@ -37,15 +38,12 @@ namespace gameObj {
     }
     else if( action == gkShoot ) {
       if( AmmoQuantity_ ) {
-        std::pair bulletCoords{Coords_.first, Coords_.second + ViewDirection_};
+        std::pair bulletCoords{CoreCoords_.first, CoreCoords_.second + ViewDirection_};
         AmmoQuantity_--;
         trace.push_back(std::make_unique<Bullet>(ViewDirection_, bulletCoords, Fraction_));
       }
     }
-  }
-
-  std::pair<int, int> Player::desiredShift() const {
-    return DirectionShift_;
+    RotationEnd_ = !Shift_.first;
   }
 
   int Player::getAmmoQuantity() const {
@@ -78,9 +76,24 @@ namespace gameObj {
     else {
       LivesQuantity_ -= object.getDamage() / 2;
     }
+    return isAlive();
   }
 
   void Player::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+  }
+
+  bool Player::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
+    if( allowedShift.front() != std::pair{true, true} ) {
+      NewCoreCoords_.first = CoreCoords_.first;
+      NewCoords_.front().first = Coords_.front().first;
+    }
+    return RotationEnd_ = true;
+  }
+
+  const std::vector<std::pair<int, int>>& Player::getNewCoords() {
+    NewCoreCoords_.first += Shift_.first;
+    NewCoords_.front().first += Shift_.first;
+    return NewCoords_;
   }
 
 }// namespace gameObj

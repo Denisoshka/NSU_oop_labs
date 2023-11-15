@@ -19,7 +19,7 @@ namespace gScreen {
     std::vector<std::pair<bool, bool>> fixCollision(const std::vector<std::pair<int, int>>& Route);
     //    bool fixCollision(const std::pair<int, int>& objectCoords, std::pair<int, int>&
     //    objectShift);
-    windowSettings GetMapSize() const noexcept;
+    windowSettings getMapSize() const noexcept;
 
   protected:
     std::string gameMap_;

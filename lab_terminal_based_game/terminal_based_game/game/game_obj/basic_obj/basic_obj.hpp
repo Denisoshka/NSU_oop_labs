@@ -8,9 +8,9 @@ namespace gameObj {
   public:
     BasicObj() = default;
     BasicObj(const std::pair<int, int>& startCoords, char avatar);
-    virtual bool isCollision(const BasicObj& other);
-    virtual const std::vector<char>& getAvatar() const;
-    virtual const std::vector<std::pair<int, int>>& getCoords() const;
+    bool isCollision(const BasicObj& other);
+    virtual const std::vector<char>& getAvatar();
+    virtual const std::vector<std::pair<int, int>>& getCoords();
 
   protected:
     const std::vector<char> Avatar_;

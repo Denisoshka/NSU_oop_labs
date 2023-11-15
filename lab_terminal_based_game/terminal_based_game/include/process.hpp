@@ -29,9 +29,11 @@ namespace gameProcess {
     bool gameIsEnd() const;
 
   protected:
+    gScreen::gameScreen& gscreen_;
+    gScreen::windowSettings mapSize_;
+
     TerminationConditions conditions_{};
 
-    gScreen::gameScreen& gscreen_;
     gameObj::Player player_{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects_{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> Trace_;

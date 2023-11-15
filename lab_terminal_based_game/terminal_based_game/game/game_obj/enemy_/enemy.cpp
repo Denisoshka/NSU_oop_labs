@@ -14,7 +14,7 @@ namespace {
   const float stayHereProbability = 0.2;
   const float gkChangeDirectionProbability = 0.3;
 
-  const char gkEnemyAvatar = '@';
+  const char gkEnemyAvatar = 'W';
 
   const  std::pair<int, int> gkEnemyShift{1, 0};
 }// namespace
@@ -32,7 +32,7 @@ static bool getRandomBoolean(double probability) {
 
 namespace gameObj {
   Enemy::Enemy(ObjDirection viewDirection, const std::pair<int, int>& startCoords)
-      : ShiftingObject(viewDirection, startCoords, '$', gkEnemyLivesQuantity, gkEnemyDamage,
+      : ShiftingObject(viewDirection, startCoords, gkEnemyAvatar, gkEnemyLivesQuantity, gkEnemyDamage,
                        ObjectFraction::ekEnemyFraction, ObjectProtection::ekNoneProtection,
                        ObjectType::ekLiveObjectType)
       , LastShoot_(std::chrono::steady_clock::now())
@@ -49,7 +49,7 @@ namespace gameObj {
         && std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastShoot_).count()
                    >= elapsedMSToMove ) {
       LastMove_ = curTime;
-//      todo пофиксить
+//      todo пофиксить вроде как он не будет двигаться
       Shift_.first = getRandomBoolean(gkChangeDirectionProbability) ? -Shift_.first : Shift_.first;
     }
 
