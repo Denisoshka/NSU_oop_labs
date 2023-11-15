@@ -24,6 +24,8 @@ namespace gameObj {
 
   void Player::updateCondition(const int action,
                                std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    CoreCoords_ = NewCoreCoords_;
+    Coords_.front() = NewCoords_.front();
 
     Shift_.first = 0;
     if( action == gkMoveLeft ) {
@@ -43,6 +45,7 @@ namespace gameObj {
         trace.push_back(std::make_unique<Bullet>(ViewDirection_, bulletCoords, Fraction_));
       }
     }
+
     RotationEnd_ = !Shift_.first;
   }
 
@@ -84,9 +87,11 @@ namespace gameObj {
 
   bool Player::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
     if( allowedShift.front() != std::pair{true, true} ) {
-      NewCoreCoords_.first = CoreCoords_.first;
-      NewCoords_.front().first = Coords_.front().first;
+      // todo нет коллизии со стеной
+      NewCoreCoords_= CoreCoords_;
+      NewCoords_.front()= Coords_.front();
     }
+
     return RotationEnd_ = true;
   }
 

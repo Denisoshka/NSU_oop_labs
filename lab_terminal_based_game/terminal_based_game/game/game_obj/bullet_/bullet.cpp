@@ -22,11 +22,13 @@ namespace gameObj {
   }
 
   void Bullet::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    ShiftingObject::updateCondition(trace);
+    CoreCoords_ = NewCoreCoords_;
+    Coords_.front() = NewCoords_.front();
+
     auto curTime = std::chrono::steady_clock::now();
     if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastMoveTime_).count()
         >= elapsedMSToMove ) {
-      AbleToMove_ = true;
+      RotationEnd_ = false;
       LastMoveTime_ = curTime;
     }
     UsesPerFrame_ = gkBulletUsesPerFrame;
@@ -70,8 +72,7 @@ namespace gameObj {
   bool Bullet::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
     if( allowedShift.front() != std::pair{true, true} ) {
       NewCoreCoords_ = CoreCoords_;
-      NewCoords_.front().first = Coords_.front().first;
-      NewCoords_.front().second = Coords_.front().second;
+      NewCoords_.front()= Coords_.front();
       LivesQuantity_ = 0;
     }
     return RotationEnd_ = true;

@@ -122,8 +122,9 @@ namespace gScreen {
           const std::vector<std::pair<int, int>>& Route) {
     std::vector<std::pair<bool, bool>> routeAllow{};
     for( auto& RouteBlock: Route ) {
-      int desiredX = std::clamp(RouteBlock.first, gameMapSize_.startX, gameMapSize_.width - 1);
-      int desiredY = std::clamp(RouteBlock.second, gameMapSize_.startY, gameMapSize_.height - 1);
+      // todo look here for collisions;
+      int desiredX = std::clamp(RouteBlock.first, gameMapSize_.startX+1, gameMapSize_.width - 4);
+      int desiredY = std::clamp(RouteBlock.second, gameMapSize_.startY, gameMapSize_.height - 3);
       routeAllow.emplace_back(desiredX == RouteBlock.first && RouteBlock.second == desiredY,
                               gameMap_[desiredX + desiredY * gameMapSize_.width] == emptySpace_);
     }

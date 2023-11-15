@@ -17,7 +17,7 @@ namespace {
   const std::string gkBulletsField = "bullets quantity: ";
   const std::string gkElapsedTimeField = "elapsed time: ";
   const std::string gkPlayerLives = "lives: ";
-  const int gkEnemyQuantity = 20;
+  const int gkEnemyQuantity = 0;
 
   const std::string gkDefPlayerName = "unknown player";
 
@@ -172,7 +172,6 @@ namespace gameProcess {
     updateGameConditions(kAction);
     updateGameRotations();
     checkCollisions();
-    drawGameContext();
 
     gscreen_.updateGameStat(gkBulletsField, player_.getAmmoQuantity());
     gscreen_.updateGameStat(gkPlayerLives, player_.getLivesQuantity());
@@ -181,21 +180,23 @@ namespace gameProcess {
       conditions_.PlayerIsDead = true;
     }
 
-    if( gameObjects_.empty() ) {
+    /*if( gameObjects_.empty() ) {
       conditions_.GameIsEnd = true;
-    }
+    }*/
   }
 
   void GameController::drawGameContext() {
+    gscreen_.deleteObj(player_.getCoords());
     for( auto& obj: gameObjects_ ) {
       gscreen_.deleteObj(obj->getCoords());
     }
 
     auto deadBegin = std::remove_if(
             gameObjects_.begin(), gameObjects_.end(),
-            [](std::shared_ptr<gameObj::ShiftingObject>& obj) { return obj->isAlive(); });
+            [](std::shared_ptr<gameObj::ShiftingObject>& obj) { return !obj->isAlive(); });
     gameObjects_.erase(deadBegin, gameObjects_.end());
 
+    gscreen_.drawObj(player_.getNewCoords(), player_.getAvatar());
     for( auto& obj: gameObjects_ ) {
       gscreen_.drawObj(obj->getNewCoords(), obj->getAvatar());
     }
@@ -210,7 +211,7 @@ namespace gameProcess {
     for( int pidorsQuantity = 0;
          pidorsQuantity < gkEnemyQuantity && pidorsQuantity < mapSize_.width; ++pidorsQuantity ) {
       gameObjects_.push_back(std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
-                                                              std::pair{pidorsQuantity, 1}));
+                                                              std::pair{pidorsQuantity, 2}));
     }
 
     drawGameContext();

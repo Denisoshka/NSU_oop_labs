@@ -1,4 +1,5 @@
 #include "shifting_object.hpp"
+#include <algorithm>
 
 namespace gameObj {
   ShiftingObject::ShiftingObject(ObjDirection kViewDirection,
@@ -6,14 +7,18 @@ namespace gameObj {
                                  const int kLivesQuantity, const int kBattleDamage,
                                  const ObjectFraction kFraction,
                                  const ObjectProtection kProtection_, const ObjectType kType)
-      : BasicObj(kStartCoords, kAvatar)
+      : Avatar_(std::vector{kAvatar})
+      , CoreCoords_(kStartCoords)
+      , Coords_(std::vector{kStartCoords})
       , Fraction_(kFraction)
       , Protection_(kProtection_)
       , Type_(kType)
       , ViewDirection_(kViewDirection)
       , LivesQuantity_(kLivesQuantity)
       , BattleDamage_(kBattleDamage)
-      , Shift_({0, 0}) {
+      , Shift_({0, 0})
+      , NewCoreCoords_(kStartCoords)
+      , NewCoords_({kStartCoords}) {
   }
 
   bool ShiftingObject::isAlive() const {
@@ -44,16 +49,20 @@ namespace gameObj {
     return BattleDamage_;
   }
 
-  bool ShiftingObject::isCollision(const ShiftingObject& object) {
-    return CoreCoords_ == object.CoreCoords_;
+  bool ShiftingObject::isCollision(const ShiftingObject& other) {
+    bool flag = NewCoreCoords_ == other.NewCoreCoords_;
+    for( auto cords = NewCoords_.begin(); cords != NewCoords_.end() && !flag; ++cords ) {
+      flag = std::ranges::any_of(other.NewCoords_.begin(), other.NewCoords_.end(),
+                                 [&cords](auto& x) { return x == *cords; });
+    }
+    return flag;
   }
 
-  void ShiftingObject::updateCondition(
-          std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    RotationEnd_ = false;
-    CoreCoords_ = NewCoreCoords_;
-    std::copy(Coords_.begin(), Coords_.end(), NewCoords_.begin());
+  const std::vector<char>& ShiftingObject::getAvatar() {
+    return Avatar_;
   }
 
-
+  const std::vector<std::pair<int, int>>& ShiftingObject::getCoords() {
+    return Coords_;
+  }
 }// namespace gameObj

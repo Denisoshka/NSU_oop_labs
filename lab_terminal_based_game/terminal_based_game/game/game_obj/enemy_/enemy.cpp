@@ -8,7 +8,7 @@ namespace {
   const int gkEnemyLivesQuantity = 1;
   const int gkEnemyDamage = 1;
   const int gkBasicXShift = 1;
-  const int AttemptsToShift = 2;
+  const int gkAttemptsToShift = 2;
 
   const float shootProbability = 0.5;
   const float stayHereProbability = 0.2;
@@ -16,7 +16,7 @@ namespace {
 
   const char gkEnemyAvatar = 'W';
 
-  const  std::pair<int, int> gkEnemyShift{1, 0};
+  const std::pair<int, int> gkEnemyShift{1, 0};
 }// namespace
 
 static bool getRandomBoolean(double probability) {
@@ -32,24 +32,27 @@ static bool getRandomBoolean(double probability) {
 
 namespace gameObj {
   Enemy::Enemy(ObjDirection viewDirection, const std::pair<int, int>& startCoords)
-      : ShiftingObject(viewDirection, startCoords, gkEnemyAvatar, gkEnemyLivesQuantity, gkEnemyDamage,
-                       ObjectFraction::ekEnemyFraction, ObjectProtection::ekNoneProtection,
-                       ObjectType::ekLiveObjectType)
+      : ShiftingObject(viewDirection, startCoords, gkEnemyAvatar, gkEnemyLivesQuantity,
+                       gkEnemyDamage, ObjectFraction::ekEnemyFraction,
+                       ObjectProtection::ekNoneProtection, ObjectType::ekLiveObjectType)
       , LastShoot_(std::chrono::steady_clock::now())
-      , LastMove_(std::chrono::steady_clock::now()){
+      , LastMove_(std::chrono::steady_clock::now()),
+      AttemptsToShift_(gkAttemptsToShift){
     Shift_ = gkEnemyShift;
   }
 
   void Enemy::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    ShiftingObject::updateCondition(trace);
+    CoreCoords_ = NewCoreCoords_;
+    Coords_.front() = NewCoords_.front();
+
     srandom(time(nullptr));
     auto curTime = std::chrono::steady_clock::now();
 
     if( getRandomBoolean(gkChangeDirectionProbability)
-        && std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastShoot_).count()
+        && std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastMove_).count()
                    >= elapsedMSToMove ) {
+      RotationEnd_ = false;
       LastMove_ = curTime;
-//      todo пофиксить вроде как он не будет двигаться
       Shift_.first = getRandomBoolean(gkChangeDirectionProbability) ? -Shift_.first : Shift_.first;
     }
 
@@ -86,16 +89,18 @@ namespace gameObj {
   }
 
   bool Enemy::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
-    if (allowedShift.front() != std::pair{true, true}){
+    if( allowedShift.front() != std::pair{true, true} ) {
       NewCoords_.front().first += -Shift_.first;
-      --AttemptsToShift;
-    }else{
+      --AttemptsToShift_;
+    }
+    else {
       RotationEnd_ = true;
     }
 
-    if (AttemptsToShift == 0 && !RotationEnd_){
+    if( !AttemptsToShift_ && !RotationEnd_ ) {
       RotationEnd_ = true;
       NewCoords_ = Coords_;
+      NewCoreCoords_ = CoreCoords_;
     }
 
     return RotationEnd_;

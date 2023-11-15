@@ -21,7 +21,7 @@ namespace gameObj {
   private:
     virtual void interaction(ShiftingObject& other,
                              std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
-    int AttemptsToShift;
+    int AttemptsToShift_;
     std::chrono::time_point<std::chrono::steady_clock> LastShoot_;
     std::chrono::time_point<std::chrono::steady_clock> LastMove_;
   };

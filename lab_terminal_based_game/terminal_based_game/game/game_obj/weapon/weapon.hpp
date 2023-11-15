@@ -12,7 +12,6 @@ namespace gameObj {
            const ObjectProtection kProtection, const int kUsesPerFrame);
   protected:
     int UsesPerFrame_;
-    bool AbleToMove_;
     std::chrono::time_point<std::chrono::steady_clock> LastMoveTime_;
   };
 }// namespace gameObj
