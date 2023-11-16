@@ -10,8 +10,8 @@ namespace {
   const int gkReload{'s'};
   const int gkShoot{'w'};
   const int gkMaxAmmoQuantity = 10;
-  const int gkPlayerLiverQuantity = 5;
-  const int gkPlayerDamage = 1;
+  const int gkPlayerLiverQuantity = 100;
+  const int gkPlayerDamage = 50;
   //  std::pair<unsigned, unsigned>
 }// namespace
 
@@ -64,7 +64,7 @@ namespace gameObj {
   void Player::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
                       std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     for( auto& object: objects ) {
-      if( object->getNewCoords() != Coords_ ) {
+      if( !isCollision(*object) ) {
         continue;
       }
       interaction(*object, trace);
@@ -88,14 +88,14 @@ namespace gameObj {
   bool Player::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
     if( allowedShift.front() != std::pair{true, true} ) {
       // todo нет коллизии со стеной
-      NewCoreCoords_= CoreCoords_;
-      NewCoords_.front()= Coords_.front();
+      NewCoreCoords_ = CoreCoords_;
+      NewCoords_.front() = Coords_.front();
     }
 
     return RotationEnd_ = true;
   }
 
-  const std::vector<std::pair<int, int>>& Player::getNewCoords() {
+  const std::vector<std::pair<int, int>>& Player::offerNewCoords() {
     NewCoreCoords_.first += Shift_.first;
     NewCoords_.front().first += Shift_.first;
     return NewCoords_;

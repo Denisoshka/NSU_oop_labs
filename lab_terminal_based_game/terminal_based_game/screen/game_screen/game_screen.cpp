@@ -114,15 +114,15 @@ namespace gScreen {
   void GameScreen::drawObj(const std::vector<std::pair<int, int>>& objectCoords,
                            const std::vector<char>& avatar) {
     for( int i = 0; i < objectCoords.size(); ++i ) {
-      mvwaddch(window_, gameMapSettings_.Y0 + objectCoords[i].second,
-               gameMapSettings_.X0 + objectCoords[i].first, avatar[i]);
+      mvwaddch(window_, gameMapIndentSettings_.Y0 + objectCoords[i].second,
+               gameMapIndentSettings_.X0 + objectCoords[i].first, avatar[i]);
     }
     wrefresh(window_);
   }
 
   void GameScreen::deleteObj(const std::vector<std::pair<int, int>>& objectCoords) {
     for( auto& coords: objectCoords ) {
-      mvwaddch(window_, gameMapSettings_.Y0 + coords.second, gameMapSettings_.X0 + coords.first,
+      mvwaddch(window_, gameMapIndentSettings_.Y0 + coords.second, gameMapIndentSettings_.X0 + coords.first,
                gameMap_[coords.first + coords.second * gameMapSettings_.w]);
     }
     wrefresh(window_);

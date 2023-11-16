@@ -14,7 +14,7 @@ namespace gameObj {
     virtual void action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
                         std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
     virtual void updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
-    virtual const std::vector<std::pair<int, int>>& getNewCoords() override;
+    virtual const std::vector<std::pair<int, int>>& offerNewCoords() override;
     virtual bool fight(ShiftingObject& object,
                        std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
   private:

@@ -3,10 +3,10 @@
 #include "bullet.hpp"
 
 namespace {
-  const int elapsedMSToShoot = 5000;
-  const int elapsedMSToMove = 3000;
-  const int gkEnemyLivesQuantity = 1;
-  const int gkEnemyDamage = 1;
+  const int elapsedMSToShoot = 700;
+  const int elapsedMSToMove = 1000;
+  const int gkEnemyLivesQuantity = 50;
+  const int gkEnemyDamage = 30;
   const int gkBasicXShift = 1;
   const int gkAttemptsToShift = 2;
 
@@ -36,14 +36,15 @@ namespace gameObj {
                        gkEnemyDamage, ObjectFraction::ekEnemyFraction,
                        ObjectProtection::ekNoneProtection, ObjectType::ekLiveObjectType)
       , LastShoot_(std::chrono::steady_clock::now())
-      , LastMove_(std::chrono::steady_clock::now()),
-      AttemptsToShift_(gkAttemptsToShift){
+      , LastMove_(std::chrono::steady_clock::now())
+      , AttemptsToShift_(gkAttemptsToShift) {
     Shift_ = gkEnemyShift;
   }
 
   void Enemy::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     CoreCoords_ = NewCoreCoords_;
     Coords_.front() = NewCoords_.front();
+    AttemptsToShift_ = gkAttemptsToShift;
 
     srandom(time(nullptr));
     auto curTime = std::chrono::steady_clock::now();
@@ -91,13 +92,13 @@ namespace gameObj {
   bool Enemy::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
     if( allowedShift.front() != std::pair{true, true} ) {
       NewCoords_.front().first += -Shift_.first;
-      --AttemptsToShift_;
+      NewCoreCoords_.first += -Shift_.first;
     }
     else {
       RotationEnd_ = true;
     }
 
-    if( !AttemptsToShift_ && !RotationEnd_ ) {
+    if( AttemptsToShift_ <= 0 && !RotationEnd_ ) {
       RotationEnd_ = true;
       NewCoords_ = Coords_;
       NewCoreCoords_ = CoreCoords_;
@@ -106,7 +107,9 @@ namespace gameObj {
     return RotationEnd_;
   }
 
-  const std::vector<std::pair<int, int>>& Enemy::getNewCoords() {
+  const std::vector<std::pair<int, int>>& Enemy::offerNewCoords() {
+    --AttemptsToShift_;
+    NewCoreCoords_.first = CoreCoords_.first + Shift_.first;
     NewCoords_.front().first = Coords_.front().first + Shift_.first;
     return NewCoords_;
   }

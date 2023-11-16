@@ -3,9 +3,9 @@
 namespace {
   const std::pair<int, int> bulletDirectionShift{0, 1};
 
-  const int elapsedMSToMove = 300;
+  const int elapsedMSToMove = 100;
   const int gkBulletLivesQuantity = 2;
-  const int gkBulletDamage = 1;
+  const int gkBulletDamage = 50;
   const char gkBulletAvatar = '|';
   const int gkBulletUsesPerFrame = 1;
 }// namespace
@@ -52,8 +52,8 @@ namespace gameObj {
 
   void Bullet::interaction(ShiftingObject& other,
                            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if( (other.getFraction() != Fraction_ || other.getFraction()) == ObjectFraction::ekNoneFraction
-        && other.getType() == ekLiveObjectType ) {
+    if(((other.getFraction() != Fraction_ || other.getFraction() == ObjectFraction::ekNoneFraction)
+        && other.getType() == ekLiveObjectType ) ){
       fight(other, trace);
       other.fight(*this, trace);
     }
@@ -72,13 +72,13 @@ namespace gameObj {
   bool Bullet::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
     if( allowedShift.front() != std::pair{true, true} ) {
       NewCoreCoords_ = CoreCoords_;
-      NewCoords_.front()= Coords_.front();
+      NewCoords_.front() = Coords_.front();
       LivesQuantity_ = 0;
     }
     return RotationEnd_ = true;
   }
 
-  const std::vector<std::pair<int, int>>& Bullet::getNewCoords() {
+  const std::vector<std::pair<int, int>>& Bullet::offerNewCoords() {
     CoreCoords_.second += Shift_.second;
     NewCoords_.front().second += Shift_.second;
     return NewCoords_;

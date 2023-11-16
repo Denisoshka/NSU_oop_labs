@@ -65,4 +65,8 @@ namespace gameObj {
   const std::vector<std::pair<int, int>>& ShiftingObject::getCoords() {
     return Coords_;
   }
+
+  const std::vector<std::pair<int, int>>& ShiftingObject::getNewCoords() {
+    return NewCoords_;
+  }
 }// namespace gameObj
