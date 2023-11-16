@@ -17,7 +17,7 @@ namespace gScreen {
     virtual ~BasicScreen() = default;
     void initBaseScreen();
 
-    int screenInput();
+    int input();
 
   protected:
     windowSettings terminalSize_{}, screenSize_{};

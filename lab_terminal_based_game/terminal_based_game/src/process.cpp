@@ -22,7 +22,7 @@ namespace {
   const std::string gkDefPlayerName = "unknown player";
 
   const std::string gkBasicGameMenuPath = "game_menu.json";
-  const std::string gkBasicGameScreenPath = "game_screen.json";
+  const std::string gkBasicGameScreenSettingsPath = "game_screen.json";
   const std::string gkBasicScorePath = "score.json";
 
   const char *gkScoreTitle = "score";
@@ -30,13 +30,24 @@ namespace {
   const char *gkScoreScore = "score";
   const char *gkScoreMaxFieldsQuantity = "max_quantity";
   const char *gkScoreFields = "fields";
+
+
+  /// for game controller
+  const char *gkGameMapSettingPath = "game_map.json";
+  const char *gkWidth = "width";
+  const char *gkHeight = "height";
+  const char *gkX0 = "x";
+  const char *gkY0 = "y";
+  const char *gkMap = "map";
+//  const char *gkEmptySpace = "empty_space";
+
 }// namespace
 
 namespace gameProcess {
   int gameProcess::showMenu(std::string& playerName) {
     gScreen::gameMenu menu{mainScreen_, gkBasicGameMenuPath, gkBasicScorePath};
     int input;
-    while( (input = menu.screenInput()) != gkQuit ) {
+    while( (input = menu.input()) != gkQuit ) {
       if( menu.introducePlayerName(input) ) {
         break;
       }
@@ -46,7 +57,7 @@ namespace gameProcess {
   }
 
   int gameProcess::process() {
-    while( mainScreen_.screenInput() != gkQuit ) {
+    while( mainScreen_.input() != gkQuit ) {
       std::string playerName{};
 
       if( showMenu(playerName) == gkQuit ) {
@@ -59,21 +70,26 @@ namespace gameProcess {
     return 0;
   }
 
-  void gameProcess::startRate(gScreen::gameScreen& gscreen, const std::string& kPlayerName) {
+  void gameProcess::startRate(const std::string& kPlayerName) {
     srandom(time(nullptr));
     auto startGameTime = std::chrono::steady_clock::now();
     int input;
 
-    GameController controller{gscreen};
+    LolGameController controller{
+            coreScreen_,
+            gkBasicGameScreenSettingsPath,
+            gkGameMapSettingPath,
+    };
 
-    while( (input = gscreen.screenInput()) != gkQuit && !controller.gameIsEnd() ) {
+    while( (input = controller.input()) != gkQuit && !controller.gameIsEnd() ) {
 
       controller.updateGameContext(input);
       controller.drawGameContext();
 
       auto end = std::chrono::steady_clock::now();
       auto seconds = std::chrono::duration_cast<std::chrono::seconds>(end - startGameTime).count();
-      gscreen.updateGameStat(gkElapsedTimeField, seconds);
+      controller.updateStat(gkElapsedTimeField, seconds);
+
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -86,9 +102,8 @@ namespace gameProcess {
   }
 
   int gameProcess::startGame(gameMode mode, const std::string& kPlayerName) {
-    gScreen::gameScreen gscreen{mainScreen_, gkBasicGameScreenPath};
     if( mode == gameMode::ekRateMode ) {
-      startRate(gscreen, kPlayerName);
+      startRate(kPlayerName);
     }
 
     return 0;
@@ -138,37 +153,37 @@ namespace gameProcess {
     write_json(gkBasicScorePath, json);
   }
 
-  void GameController::updateGameConditions(const int kAction) {
+  void LolGameController::updateGameConditions(const int kAction) {
     player_.updateCondition(kAction, Trace_);
     for( auto& object: gameObjects_ ) {
       object->updateCondition(Trace_);
     }
   }
 
-  void GameController::checkCollisions() {
+  void LolGameController::checkCollisions() {
     player_.action(gameObjects_, Trace_);
     for( auto& object: gameObjects_ ) {
       object->action(gameObjects_, Trace_);
     }
   }
 
-  void GameController::updateGameRotations() {
+  void LolGameController::updateGameRotations() {
     while( !player_.rotationEnd() ) {
       auto newCoords = player_.getNewCoords();
-      auto coordsAllow = gscreen_.fixCollision(newCoords);
+      auto coordsAllow = fixCollision(newCoords);
       player_.checkRoute(coordsAllow);
     }
 
     for( auto& object: gameObjects_ ) {
       while( !object->rotationEnd() ) {
         auto newCoords = object->getNewCoords();
-        auto coordsAllow = gscreen_.fixCollision(newCoords);
+        auto coordsAllow = fixCollision(newCoords);
         object->checkRoute(coordsAllow);
       }
     }
   }
 
-  void GameController::updateGameContext(const int kAction) {
+  void LolGameController::updateGameContext(const int kAction) {
     updateGameConditions(kAction);
     updateGameRotations();
     checkCollisions();
@@ -185,7 +200,7 @@ namespace gameProcess {
     }*/
   }
 
-  void GameController::drawGameContext() {
+  void LolGameController::drawGameContext() {
     gscreen_.deleteObj(player_.getCoords());
     for( auto& obj: gameObjects_ ) {
       gscreen_.deleteObj(obj->getCoords());
@@ -202,26 +217,77 @@ namespace gameProcess {
     }
   }
 
-  GameController::GameController(gScreen::gameScreen& screen)
-      : gscreen_(screen)
-      , mapSize_(gscreen_.getMapSize())
-      , player_(gameObj::ObjDirection::ekObjUp,
-                std::pair{mapSize_.width / 2, mapSize_.height - 2}) {
+  BasicGameController::BasicGameController(const gScreen::BasicScreen& kScreen,
+                                           const std::string& kGameScreenSettings,
+                                           const std::string& kGameMapSettings)
+      : gscreen_(gScreen::GameScreen{kScreen, kGameScreenSettings, gameMap_, gameMapSize_}) {
+    loadGameMap(kGameMapSettings);
+    gscreen_.updateMapSettings();
+  }
 
+  void BasicGameController::loadGameMap(const std::string& kGameMapSettings) {
+    boost::property_tree::ptree ptreeMapSettings;
+    boost::property_tree::read_json(kGameMapSettings, ptreeMapSettings);
+    gameMapSize_ = gScreen::windowSettings{
+            .w = ptreeMapSettings.get<int>(gkWidth),
+            .h = ptreeMapSettings.get<int>(gkHeight),
+            .X0 = ptreeMapSettings.get<int>(gkX0, 0),
+            .Y0 = ptreeMapSettings.get<int>(gkY0, 0),
+    };
+//    todo i dont know how to use X0
+    gameMap_ = ptreeMapSettings.get<std::string>(gkMap);
+  }
+
+  void LolGameController::initGameContext() {
     for( int pidorsQuantity = 0;
-         pidorsQuantity < gkEnemyQuantity && pidorsQuantity < mapSize_.width; ++pidorsQuantity ) {
+         pidorsQuantity < gkEnemyQuantity && pidorsQuantity < gameMapSize_.w; ++pidorsQuantity ) {
       gameObjects_.push_back(std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
                                                               std::pair{pidorsQuantity, 2}));
     }
-
-    drawGameContext();
   }
 
-  bool GameController::gameIsEnd() const {
+  LolGameController::LolGameController(const gScreen::BasicScreen& kScreen,
+                                       const std::string& kGameScreenSettings,
+                                       const std::string kGameMapSettings)
+      : BasicGameController(kScreen, kGameScreenSettings, kGameMapSettings)
+      , player_(gameObj::ObjDirection::ekObjUp, std::pair{gameMapSize_.w / 2, gameMapSize_.h - 2}) {
+
+    LolGameController::drawGameContext();
+    gscreen_.drawGameMap();
+  }
+
+  std::vector<std::pair<bool, bool>> LolGameController::fixCollision(
+          const std::vector<std::pair<int, int>>& Route) {
+    std::vector<std::pair<bool, bool>> routeAllow{};
+    for( auto& RouteBlock: Route ) {
+      // todo look here for collisions;
+      int desiredX = std::clamp(RouteBlock.first, gameMapSize_.X0, gameMapSize_.w - 2);
+      int desiredY = std::clamp(RouteBlock.second, gameMapSize_.Y0, gameMapSize_.h - 2);
+      routeAllow.emplace_back(desiredX == RouteBlock.first && RouteBlock.second == desiredY,
+                              gameMap_[desiredX + desiredY * gameMapSize_.w] == emptySpace_);
+    }
+    return routeAllow;
+  }
+
+  bool LolGameController::gameIsEnd() const {
     return conditions_.PlayerIsDead || conditions_.GameIsEnd;
   }
 
-  TerminationConditions GameController::getTerminationConditions() const {
+  TerminationConditions LolGameController::getTerminationConditions() const {
     return conditions_;
   }
+
+  bool LolGameController::isEmptySpase(const int x) {
+    return x == emptySpace_;
+  }
+
+  int LolGameController::input() {
+    return gscreen_.input();
+  }
+
+  void LolGameController::updateStat(const std::string& kField, const int kValue) {
+    gscreen_.updateGameStat(kField, kValue);
+  }
+
+
 }// namespace gameProcess

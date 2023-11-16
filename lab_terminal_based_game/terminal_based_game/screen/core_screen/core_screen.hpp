@@ -5,7 +5,7 @@
 
 namespace gScreen {
   struct windowSettings {
-    int width, height, startX = 0, startY = 0;
+    int w, h, X0 = 0, Y0 = 0;
   };
 
   class CoreScreen {

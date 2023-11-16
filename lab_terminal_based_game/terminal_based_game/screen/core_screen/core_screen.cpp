@@ -3,9 +3,9 @@
 namespace gScreen {
   CoreScreen::CoreScreen() {
     initscr();
-    getmaxyx(stdscr, terminalSize_.height, terminalSize_.width);
-    window_ = newwin(terminalSize_.height, terminalSize_.width, terminalSize_.startY,
-                     terminalSize_.startX);
+    getmaxyx(stdscr, terminalSize_.h, terminalSize_.w);
+    window_ = newwin(terminalSize_.h, terminalSize_.w, terminalSize_.Y0,
+                     terminalSize_.X0);
     if( !window_ ) {
       throw;// todo
     }

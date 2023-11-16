@@ -5,32 +5,42 @@
 #include "basic_screen.hpp"
 
 namespace gScreen {
-  class gameScreen: public BasicScreen {
+  class BasicGameScreen: public BasicScreen {
   public:
-    gameScreen(const BasicScreen& kScreen, const std::string& kSettingsPath);
-    virtual ~gameScreen();
+  protected:
+  };
+
+  class GameScreen: public BasicScreen {
+  public:
+    GameScreen(const BasicScreen& kScreen, const std::string& kSettingsPath,
+               const std::string& kGameMap, const windowSettings& kGameMapSize);
+    virtual ~GameScreen();
 
     void updateGameStat(const std::string& key, std::string&& value);
     void updateGameStat(const std::string& key, const int);
+    void updateMapSettings();
 
     void drawObj(const std::vector<std::pair<int, int>>& objectCoords,
-                         const std::vector<char>& avatar);
+                 const std::vector<char>& avatar);
     void deleteObj(const std::vector<std::pair<int, int>>& objectCoords);
-    std::vector<std::pair<bool, bool>> fixCollision(const std::vector<std::pair<int, int>>& Route);
-    //    bool fixCollision(const std::pair<int, int>& objectCoords, std::pair<int, int>&
-    //    objectShift);
+    void drawGameMap();
+
     windowSettings getMapSize() const noexcept;
 
   protected:
-    std::string gameMap_;
-    char emptySpace_;
-    windowSettings gameMapSize_{}, gameStatsSize_{};
+    const std::string& gameMap_{};
+    const windowSettings& gameMapSettings_{};
+
+    windowSettings gameMapIndentSettings_{};
+    windowSettings gameMapScreenSettings_{};
+
+//    windowSettings gameStatsIndentSettings_{};
+    windowSettings gameStatsScreenSettings_{};
+
     std::map<std::string, std::pair<std::pair<int, int>, int>> gameStats_;
+    void loadMapScreenSettings(boost::property_tree::ptree&& settings);
+    void loadStatsScreenSettings(boost::property_tree::ptree&& settings);
 
-    void loadGameMap(boost::property_tree::ptree&& kMapSettings);
-    void drawGameMap(boost::property_tree::ptree&& kMapSettings);
-
-    void loadGameStats(boost::property_tree::ptree&& kStats);
-    void drawGameStats(boost::property_tree::ptree&& kStats);
+    void drawGameStats();
   };
 }// namespace gScreen

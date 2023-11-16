@@ -37,20 +37,20 @@ namespace gScreen {
     wtimeout(window_, 1);
 
     screenSize_ = terminalSize_;
-    ++screenSize_.startX;
-    ++screenSize_.startY;
-    screenSize_.width -= 2;
-    screenSize_.height -= 2;
+    ++screenSize_.X0;
+    ++screenSize_.Y0;
+    screenSize_.w -= 2;
+    screenSize_.h -= 2;
   }
 
   void BasicScreen::centerScreen(const boost::property_tree::ptree& gameScreenConfig) {
     const int screenWidth = gameScreenConfig.get<int>(gkWidth);
     const int screenHeight = gameScreenConfig.get<int>(gkHeight);
-    screenSize_.startX += (screenSize_.width - screenWidth) / 2;
-    screenSize_.startY += (screenSize_.height - screenHeight) / 2;
+    screenSize_.X0 += (screenSize_.w - screenWidth) / 2;
+    screenSize_.Y0 += (screenSize_.h - screenHeight) / 2;
   }
 
-  int BasicScreen::screenInput() {
+  int BasicScreen::input() {
     int input = wgetch(window_);
     flushinp();
     return input;

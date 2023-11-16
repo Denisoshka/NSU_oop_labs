@@ -45,7 +45,7 @@ namespace gScreen {
     const int kX0 = gameName.get<int>(gkX0, 0);
     const int kY0 = gameName.get<int>(gkY0, 0);
     const auto name = gameName.get<std::string>(gkGameName);
-    mvwaddstr(window_, screenSize_.startY + kY0, screenSize_.startX + kX0, name.data());
+    mvwaddstr(window_, screenSize_.Y0 + kY0, screenSize_.X0 + kX0, name.data());
     wrefresh(window_);
   }
 
@@ -61,18 +61,18 @@ namespace gScreen {
       const int kX = kField.second.get<int>(gkX0, 0);
       const int kY = kField.second.get<int>(gkY0, 0);
       const auto name = kField.second.get<std::string>(gkField);
-      mvwaddstr(window_, screenSize_.startY + kY0 + kY, screenSize_.startX + kX0 + kX, name.data());
+      mvwaddstr(window_, screenSize_.Y0 + kY0 + kY, screenSize_.X0 + kX0 + kX, name.data());
       wrefresh(window_);
     }
-    mvwaddstr(window_, screenSize_.startY + playerNameInsertPos.second,
-              screenSize_.startX + playerNameInsertPos.first, playerName_.data());
+    mvwaddstr(window_, screenSize_.Y0 + playerNameInsertPos.second,
+              screenSize_.X0 + playerNameInsertPos.first, playerName_.data());
     wrefresh(window_);
   }
 
   void gameMenu::drawScoreTable(boost::property_tree::ptree&& scoreTable,
                                 const std::string& scorePath) {
-    const std::pair<int, int> kScoreTableCoords = {screenSize_.startX + scoreTable.get<int>(gkX0),
-                                                   screenSize_.startY + scoreTable.get<int>(gkY0)};
+    const std::pair<int, int> kScoreTableCoords = {screenSize_.X0 + scoreTable.get<int>(gkX0),
+                                                   screenSize_.Y0 + scoreTable.get<int>(gkY0)};
 
     const int kCursorPosNameMaxLen = scoreTable.get_child(gkCursorPosName).get<int>(gkWidth);
     const std::pair<int, int> kPlayerNameCoords = {
@@ -129,8 +129,8 @@ namespace gScreen {
     else if( curNameLen_ < gkMaxNameLen && input != ERR ) {
       playerName_[curNameLen_++] = input;
     }
-    mvwaddnstr(window_, screenSize_.startY + playerNameInsertPos.second,
-               screenSize_.startX + playerNameInsertPos.first, playerName_.data(),
+    mvwaddnstr(window_, screenSize_.Y0 + playerNameInsertPos.second,
+               screenSize_.X0 + playerNameInsertPos.first, playerName_.data(),
                playerName_.size());
     wrefresh(window_);
 

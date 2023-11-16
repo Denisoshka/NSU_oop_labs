@@ -23,39 +23,59 @@ namespace {
 }// namespace
 
 namespace gScreen {
-  gameScreen::gameScreen(const BasicScreen& kScreen, const std::string& kSettingsPath)
-      : BasicScreen(kScreen) {
+  GameScreen::GameScreen(const BasicScreen& kScreen, const std::string& kSettingsPath,
+                         const std::string& kGameMap, const windowSettings& kGameMapSize)
+      : BasicScreen(kScreen)
+      , gameMap_(kGameMap)
+      , gameMapSettings_(kGameMapSize) {
     boost::property_tree::ptree gameScreenConfig;
     boost::property_tree::read_json(kSettingsPath, gameScreenConfig);
+
     centerScreen(gameScreenConfig);
-    drawGameMap(std::move(gameScreenConfig.get_child(kGameMap)));
-    drawGameStats(std::move(gameScreenConfig.get_child(kGameStats)));
+
+    loadMapScreenSettings(std::move(gameScreenConfig.get_child(kGameMap)));
+//    updateMapSettings();
+
+    loadStatsScreenSettings(std::move(gameScreenConfig.get_child(kGameStats)));
+    drawGameStats();
   }
 
-  gameScreen::~gameScreen() {
+  GameScreen::~GameScreen() {
     initBaseScreen();
   }
 
-  void gameScreen::loadGameStats(boost::property_tree::ptree&& kStats) {
-    gameStatsSize_ = windowSettings{
-            .width = kStats.get<int>(gkWidth),
-            .height = kStats.get<int>(gkHeight),
-            .startX = kStats.get<int>(gkX0, 0) + screenSize_.startX,
-            .startY = kStats.get<int>(gkY0, 0) + screenSize_.startY,
+  void GameScreen::loadStatsScreenSettings(boost::property_tree::ptree&& settings) {
+    gameStatsScreenSettings_ = windowSettings{
+            .w = settings.get<int>(gkWidth),
+            .h = settings.get<int>(gkHeight),
+            .X0 = settings.get<int>(gkX0, 0) + screenSize_.X0,
+            .Y0 = settings.get<int>(gkY0, 0) + screenSize_.Y0,
     };
 
-    for( const auto& statsField: kStats.get_child(gkFields) ) {
+    for( const auto& statsField: settings.get_child(gkFields) ) {
       const auto kFieldName = statsField.second.get<std::string>(kStatsFieldName);
-      std::pair<int, int> coords = {gameStatsSize_.startX + statsField.second.get<int>(gkX0),
-                                    gameStatsSize_.startY + statsField.second.get<int>(gkY0)};
+      std::pair<int, int> coords = {gameStatsScreenSettings_.X0 + statsField.second.get<int>(gkX0),
+                                    gameStatsScreenSettings_.Y0 + statsField.second.get<int>(gkY0)};
       gameStats_[kFieldName].first = std::move(coords);
       gameStats_[kFieldName].second = statsField.second.get<int>(kStatsFieldWidth);
     }
   }
 
-  void gameScreen::drawGameStats(boost::property_tree::ptree&& kStats) {
-    loadGameStats(std::move(kStats));
+  void GameScreen::updateMapSettings() {
+    gameMapIndentSettings_.X0 =
+            gameMapScreenSettings_.X0 + (gameMapScreenSettings_.w - gameMapSettings_.w) / 2;
+    gameMapIndentSettings_.Y0 =
+            gameMapScreenSettings_.Y0 + (gameMapScreenSettings_.h - gameMapSettings_.h) / 2;
+  }
 
+  void GameScreen::drawGameMap() {
+    for( int y = 0; y < gameMapSettings_.h; ++y ) {
+      mvwaddnstr(window_, gameMapIndentSettings_.Y0 + y, gameMapIndentSettings_.X0,
+                 gameMap_.data() + y * gameMapSettings_.w, gameMapSettings_.w);
+    }
+  }
+
+  void GameScreen::drawGameStats() {
     for( const auto& statsField: gameStats_ ) {
       const char *key = statsField.first.data();
       const int x = statsField.second.first.first;
@@ -65,7 +85,7 @@ namespace gScreen {
     }
   }
 
-  void gameScreen::updateGameStat(const std::string& key, std::string&& value) {
+  void GameScreen::updateGameStat(const std::string& key, std::string&& value) {
     const int n = gameStats_[key].second;
     if( n > value.size() ) {
       value.insert(0, n - value.size(), gkEmptyNameFiller);
@@ -77,63 +97,38 @@ namespace gScreen {
     wrefresh(window_);
   }
 
-  void gameScreen::updateGameStat(const std::string& key, int value) {
+  void GameScreen::updateGameStat(const std::string& key, int value) {
     std::string strValue = std::to_string(value);
     updateGameStat(key, std::move(strValue));
   }
 
-  void gameScreen::loadGameMap(boost::property_tree::ptree&& kMapSettings) {
-    gameMapSize_ = windowSettings{
-            .width = kMapSettings.get<int>(gkWidth),
-            .height = kMapSettings.get<int>(gkHeight),
-            .startX = kMapSettings.get<int>(gkX0, 0) + screenSize_.startX,
-            .startY = kMapSettings.get<int>(gkY0, 0) + screenSize_.startY,
+  void GameScreen::loadMapScreenSettings(boost::property_tree::ptree&& settings) {
+    gameMapScreenSettings_ = windowSettings{
+            .w = settings.get<int>(gkWidth),
+            .h = settings.get<int>(gkHeight),
+            .X0 = settings.get<int>(gkX0, 0) + screenSize_.X0,
+            .Y0 = settings.get<int>(gkY0, 0) + screenSize_.Y0,
     };
-    gameMap_ = kMapSettings.get<std::string>(gkMap);
-    emptySpace_ = kMapSettings.get<char>(kEmptySpace);
   }
 
-  void gameScreen::drawObj(const std::vector<std::pair<int, int>>& objectCoords,
-                                   const std::vector<char>& avatar) {
+  void GameScreen::drawObj(const std::vector<std::pair<int, int>>& objectCoords,
+                           const std::vector<char>& avatar) {
     for( int i = 0; i < objectCoords.size(); ++i ) {
-      mvwaddch(window_, gameMapSize_.startY + objectCoords[i].second,
-               gameMapSize_.startX + objectCoords[i].first, avatar[i]);
+      mvwaddch(window_, gameMapSettings_.Y0 + objectCoords[i].second,
+               gameMapSettings_.X0 + objectCoords[i].first, avatar[i]);
     }
     wrefresh(window_);
   }
 
-  void gameScreen::drawGameMap(boost::property_tree::ptree&& kMapSettings) {
-    loadGameMap(std::move(kMapSettings));
-    for( int y = 0; y < gameMapSize_.height; ++y ) {
-      mvwaddnstr(window_, gameMapSize_.startY + y, gameMapSize_.startX,
-                 gameMap_.data() + y * gameMapSize_.width, gameMapSize_.width);
-    }
-  }
-
-  void gameScreen::deleteObj(const std::vector<std::pair<int, int>>& objectCoords) {
+  void GameScreen::deleteObj(const std::vector<std::pair<int, int>>& objectCoords) {
     for( auto& coords: objectCoords ) {
-      mvwaddch(window_, gameMapSize_.startY + coords.second, gameMapSize_.startX + coords.first,
-               gameMap_[coords.first + coords.second * gameMapSize_.width]);
+      mvwaddch(window_, gameMapSettings_.Y0 + coords.second, gameMapSettings_.X0 + coords.first,
+               gameMap_[coords.first + coords.second * gameMapSettings_.w]);
     }
     wrefresh(window_);
   }
 
-  std::vector<std::pair<bool, bool>> gameScreen::fixCollision(
-          const std::vector<std::pair<int, int>>& Route) {
-    std::vector<std::pair<bool, bool>> routeAllow{};
-    for( auto& RouteBlock: Route ) {
-      // todo look here for collisions;
-      int desiredX = std::clamp(RouteBlock.first, gameMapSize_.startX+1, gameMapSize_.width - 4);
-      int desiredY = std::clamp(RouteBlock.second, gameMapSize_.startY, gameMapSize_.height - 3);
-      routeAllow.emplace_back(desiredX == RouteBlock.first && RouteBlock.second == desiredY,
-                              gameMap_[desiredX + desiredY * gameMapSize_.width] == emptySpace_);
-    }
-    return routeAllow;
+  windowSettings GameScreen::getMapSize() const noexcept {
+    return gameMapSettings_;
   }
-
-  windowSettings gameScreen::getMapSize() const noexcept {
-    return gameMapSize_;
-  }
-
-
 }// namespace gScreen
