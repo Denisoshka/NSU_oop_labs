@@ -1,4 +1,8 @@
 #include "weapon.hpp"
+namespace {
+  const int gkStandartUsesForMove = 1;
+}
+
 
 namespace gameObj {
   Weapon::Weapon(ObjDirection kViewDirection, const std::pair<int, int>& kStartCoords, char kAvatar,
@@ -6,7 +10,8 @@ namespace gameObj {
                  const ObjectProtection kProtection, const int kUsesPerFrame)
       : ShiftingObject(kViewDirection, kStartCoords, kAvatar, kLivesQuantity, kBattleDamage,
                        kFraction, kProtection, ObjectType::ekWeaponType)
-      , UsesPerMove_(kUsesPerFrame)
-      , LastMoveTime_(std::chrono::steady_clock::now()) {
+      , WeaponCond_(WeaponConditions::ekNewWeapon)
+      , UsesForMove_(gkStandartUsesForMove)
+      , LastMove_(std::chrono::steady_clock::now()) {
   }
 }// namespace gameObj

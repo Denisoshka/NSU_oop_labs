@@ -256,13 +256,13 @@ namespace gameProcess {
 
   void LolGameController::initGameContext() {
     playerObjects.push_back(player_);
-   /* for( int enemyQuantity = 0; enemyQuantity < gkEnemyQuantity && enemyQuantity < gameMapSize_.w; ++enemyQuantity ) {
+    for( int enemyQuantity = 0; enemyQuantity < gkEnemyQuantity && enemyQuantity < gameMapSize_.w; ++enemyQuantity ) {
       auto enemy = std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
                                                     std::pair{(1 + enemyQuantity)*5, 2});
       gameObjects_.push_back(enemy);
       endGameIndicator_.push_back(std::weak_ptr(enemy));
-    }*/
-    auto barricade = std::make_shared<gameObj::BarricadeGenerator>(gameObj::ObjDirection::ekOBJDown, std::pair{10,4},gameObj::ObjectFraction::ekEnemyFraction, '-');
+    }
+    auto barricade = std::make_shared<gameObj::DroneGenerator>(gameObj::ObjDirection::ekOBJDown, std::pair{10,4},gameObj::ObjectFraction::ekEnemyFraction, '-');
     gameObjects_.push_back(barricade);
     endGameIndicator_.push_back(std::weak_ptr(barricade));
 
@@ -311,6 +311,4 @@ namespace gameProcess {
   void LolGameController::updateStat(const std::string& kField, const int kValue) {
     gscreen_.updateGameStat(kField, kValue);
   }
-
-
 }// namespace gameProcess

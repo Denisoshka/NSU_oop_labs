@@ -10,6 +10,7 @@ namespace {
   const int gkBasicXShift = 1;
   const int gkAttemptsToShift = 2;
 
+  const float gkBasicLowerCoef = 0.75;
   const float shootProbability = 0.5;
   const float stayHereProbability = 0.2;
   const float gkChangeDirectionProbability = 0.3;
@@ -32,9 +33,9 @@ static bool getRandomBoolean(double probability) {
 
 namespace gameObj {
   Enemy::Enemy(ObjDirection viewDirection, const std::pair<int, int>& startCoords)
-      : ShiftingObject(viewDirection, startCoords, gkEnemyAvatar, gkEnemyLivesQuantity,
-                       gkEnemyDamage, ObjectFraction::ekEnemyFraction,
-                       ObjectProtection::ekNoneProtection, ObjectType::ekLiveObjectType)
+      : LiveObject(viewDirection, startCoords, gkEnemyAvatar, gkEnemyLivesQuantity, gkEnemyDamage,
+                   ObjectFraction::ekEnemyFraction, ObjectProtection::ekNoneProtection,
+                   ObjectType::ekLiveObjectType)
       , LastShoot_(std::chrono::steady_clock::now())
       , LastMove_(std::chrono::steady_clock::now())
       , AttemptsToShift_(gkAttemptsToShift) {
@@ -46,9 +47,9 @@ namespace gameObj {
     Coords_.front() = NewCoords_.front();
     AttemptsToShift_ = gkAttemptsToShift;
 
-    srandom(time(nullptr));
+    WeaponCond_ = (WeaponCond_ != WeaponConditions::ekNewWeapon) ? WeaponConditions::ekNotUsable
+                                                                : WeaponConditions::ekNewWeapon;
     auto curTime = std::chrono::steady_clock::now();
-
     if( getRandomBoolean(gkChangeDirectionProbability)
         && std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastMove_).count()
                    >= elapsedMSToMove ) {
@@ -64,29 +65,12 @@ namespace gameObj {
       trace.push_back(std::make_shared<Bullet>(
               ViewDirection_, std::pair{CoreCoords_.first, CoreCoords_.second + ViewDirection_},
               Fraction_));
-
     }
   }
 
-  void Enemy::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
-                     std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    for( auto& object: objects ) {
-      if( this == &(*object) || !isCollision(*object) ) {
-        continue;
-      }
-      interaction(*object, trace);
-    }
-  }
-
-  bool Enemy::fight(ShiftingObject& object,
-                    std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if( Protection_ < object.getDamage() ) {
-      LivesQuantity_ -= object.getDamage();
-    }
-    else {
-      LivesQuantity_ -= object.getDamage() / 2;
-    }
-
+  bool Enemy::getFight(ShiftingObject& object,
+                       std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    LivesQuantity_ -= object.getDamage(*this);
     return isAlive();
   }
 
@@ -117,11 +101,33 @@ namespace gameObj {
 
   void Enemy::interaction(ShiftingObject& other,
                           std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if( (other.getFraction() != Fraction_ || other.getFraction()) == ObjectFraction::ekNoneFraction
-        && other.getType() == ekLiveObjectType ) {
-      fight(other, trace);
-      other.fight(*this, trace);
+    getFight(other, trace);
+  }
+
+  int Enemy::sayDamage(const ShiftingObject& object) const {
+    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
+        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+      return 0;
     }
+
+    if( Protection_ < object.sayDamage(*this) ) {
+      return BattleDamage_ * gkBasicLowerCoef;
+    }
+    return BattleDamage_;
+  }
+
+  int Enemy::getDamage(const ShiftingObject& object) {
+    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
+        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+      return 0;
+    }
+
+    if( Protection_ < object.sayDamage(*this) ) {
+      WeaponCond_ = WeaponConditions::ekWasInUse;
+      return BattleDamage_ * gkBasicLowerCoef;
+    }
+    WeaponCond_ = WeaponConditions::ekWasInUse;
+    return BattleDamage_;
   }
 
 }// namespace gameObj

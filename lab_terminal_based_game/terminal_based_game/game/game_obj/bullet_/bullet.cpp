@@ -4,7 +4,7 @@ namespace {
   const std::pair<int, int> bulletDirectionShift{0, 1};
 
   const int elapsedMSToMove = 100;
-  const int gkBulletLivesQuantity = 2;
+  const int gkBulletLivesQuantity = 10;
   const int gkBulletDamage = 30;
   const char gkBulletAvatar = '|';
   const int gkBulletUsesPerMove = 1;
@@ -14,7 +14,7 @@ namespace gameObj {
   Bullet::Bullet(const ObjDirection viewDirection, const std::pair<int, int>& startCoords,
                  const ObjectFraction fraction)
       : Weapon(viewDirection, startCoords, gkBulletAvatar, gkBulletLivesQuantity, gkBulletDamage,
-               fraction, ObjectProtection::ekNoneProtection, gkBulletUsesPerMove) {
+               fraction, ObjectProtection::ekBaseProtection, gkBulletUsesPerMove) {
     Shift_ = bulletDirectionShift;
     if( viewDirection == ObjDirection::ekObjUp ) {
       Shift_.second = -Shift_.second;
@@ -25,49 +25,61 @@ namespace gameObj {
     CoreCoords_ = NewCoreCoords_;
     Coords_.front() = NewCoords_.front();
 
+    if( WeaponCond_ == WeaponConditions::ekWasInUse ) {
+      WeaponCond_ = WeaponConditions::ekNotUsable;
+    }
+
     auto curTime = std::chrono::steady_clock::now();
-    if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastMoveTime_).count()
+    if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastMove_).count()
         >= elapsedMSToMove ) {
       RotationEnd_ = false;
-      LastMoveTime_ = curTime;
-      UsesPerMove_ = gkBulletUsesPerMove;
+      LastMove_ = curTime;
+      WeaponCond_ = WeaponConditions::ekNewWeapon;
+      UsesForMove_ = gkBulletUsesPerMove;
     }
   }
 
-  bool Bullet::fight(ShiftingObject& object,
-                     std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if( Protection_ >= object.getProtection() && LivesQuantity_ > 0 ) {
-      UsesPerMove_--;
-      LivesQuantity_--;
-    }
-    else if( LivesQuantity_ > 0 ) {
-      UsesPerMove_--;
-      LivesQuantity_ = 0;
+  bool Bullet::getFight(ShiftingObject& object,
+                        std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    return !isAlive();
+  }
+
+  int Bullet::sayDamage(const ShiftingObject& object) const {
+    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
+        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+      return 0;
     }
 
-    return !isAlive();
+    if( BattleDamage_ < object.getProtection() ) {
+      return BattleDamage_ / 2;
+    }
+    else {
+      return BattleDamage_;
+    }
+  }
+
+  int Bullet::getDamage(const ShiftingObject& object) {
+    if( (object.getFraction() == Fraction_
+         && object.getFraction() != ObjectFraction::ekNoneFraction)
+        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+      return 0;
+    }
+
+    if( BattleDamage_ < object.getProtection() ) {
+      UsesForMove_ -= LivesQuantity_ / 2 + 1;
+      LivesQuantity_ -= LivesQuantity_ / 2 + 1;
+      WeaponCond_ = WeaponConditions::ekWasInUse;
+      return BattleDamage_ / 2;
+    }
+    --UsesForMove_;
+    --LivesQuantity_;
+    WeaponCond_ = WeaponConditions::ekWasInUse;
+    return BattleDamage_;
   }
 
   void Bullet::interaction(ShiftingObject& other,
                            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if(((other.getFraction() != Fraction_ || other.getFraction() == ObjectFraction::ekNoneFraction)
-        && other.getType() == ekLiveObjectType ) ){
-      if (UsesPerMove_> 0 && isAlive()){
-        fight(other, trace);
-        other.fight(*this, trace);
-      }
-
-    }
-  }
-
-  void Bullet::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
-                      std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    for( auto& object: objects ) {
-      if( this == &(*object) || !isCollision(*object) ) {
-        continue;
-      }
-      interaction(*object, trace);
-    }
+    getFight(other, trace);
   }
 
   bool Bullet::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
@@ -84,5 +96,4 @@ namespace gameObj {
     NewCoords_.front().second += Shift_.second;
     return NewCoords_;
   }
-
 }// namespace gameObj

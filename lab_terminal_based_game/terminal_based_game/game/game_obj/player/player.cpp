@@ -12,6 +12,9 @@ namespace {
   const int gkMaxAmmoQuantity = 10;
   const int gkPlayerLiverQuantity = 200;
   const int gkPlayerDamage = 50;
+  const int gkReloadMilisecondsTimeout = 250;
+
+  const float gkBasicLowerCoef = 0.7;
   //  std::pair<unsigned, unsigned>
 }// namespace
 
@@ -26,7 +29,11 @@ namespace gameObj {
                                std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     CoreCoords_ = NewCoreCoords_;
     Coords_.front() = NewCoords_.front();
-
+    auto curTime = std::chrono::steady_clock::now();
+    if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastWeaponReload_).count()
+        >= gkReloadMilisecondsTimeout ) {
+      WeaponCond_ = WeaponConditions::ekNotUsable;
+    }
     Shift_.first = 0;
     if( action == gkMoveLeft ) {
       Shift_.first = -1;
@@ -55,30 +62,12 @@ namespace gameObj {
 
   void Player::interaction(ShiftingObject& other,
                            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if( (other.getFraction() != Fraction_ || other.getFraction() == ObjectFraction::ekNoneFraction)
-        && other.getType() == ekLiveObjectType ) {
-      other.fight(*this, trace);
-    }
+    getFight(other, trace);
   }
 
-  void Player::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
-                      std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    for( auto& object: objects ) {
-      if( !isCollision(*object) ) {
-        continue;
-      }
-      interaction(*object, trace);
-    }
-  }
-
-  bool Player::fight(ShiftingObject& object,
-                     std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if( Protection_ < object.getDamage() ) {
-      LivesQuantity_ -= object.getDamage();
-    }
-    else {
-      LivesQuantity_ -= object.getDamage() / 2;
-    }
+  bool Player::getFight(ShiftingObject& object,
+                        std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    LivesQuantity_ -= object.getDamage(*this);
     return isAlive();
   }
 
@@ -100,4 +89,29 @@ namespace gameObj {
     return NewCoords_;
   }
 
+  int Player::sayDamage(const ShiftingObject& object) const {
+    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
+        || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+      return 0;
+    }
+    if( Protection_ < object.sayDamage(*this) ) {
+      return BattleDamage_ * gkBasicLowerCoef;
+    }
+    return BattleDamage_;
+  }
+
+  int Player::getDamage(const ShiftingObject& object) {
+    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
+        || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+      return 0;
+    }
+
+    if( Protection_ < object.sayDamage(*this) ) {
+      WeaponCond_ = WeaponConditions::ekWasInUse;
+      return BattleDamage_ * gkBasicLowerCoef;
+    }
+
+    WeaponCond_ = WeaponConditions::ekWasInUse;
+    return BattleDamage_;
+  }
 }// namespace gameObj

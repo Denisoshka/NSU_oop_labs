@@ -9,16 +9,19 @@ namespace gameObj {
   public:
     Bullet(const ObjDirection viewDirection, const std::pair<int, int>& startCoords,
            const ObjectFraction fraction);
+    virtual ~Bullet() = default;
 
+    virtual bool getFight(ShiftingObject& object,
+                          std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
     virtual bool checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) override;
-    virtual void action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
-                        std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
-    virtual void updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
+    virtual void updateCondition(
+            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
     virtual const std::vector<std::pair<int, int>>& offerNewCoords() override;
-    virtual bool fight(ShiftingObject& object,
-                       std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
-  private:
+
+    virtual int sayDamage(const ShiftingObject& object) const override;
+    virtual int getDamage(const ShiftingObject& object) override;
     virtual void interaction(ShiftingObject& other,
                              std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
+  protected:
   };
 }// namespace gameObj

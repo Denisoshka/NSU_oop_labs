@@ -45,8 +45,14 @@ namespace gameObj {
     return LivesQuantity_;
   }
 
-  int ShiftingObject::getDamage() const {
-    return BattleDamage_;
+  void ShiftingObject::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
+                              std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    for( auto& object: objects ) {
+      if( this == &(*object) || !isCollision(*object) ) {
+        continue;
+      }
+      interaction(*object, trace);
+    }
   }
 
   bool ShiftingObject::isCollision(const ShiftingObject& other) {
