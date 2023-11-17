@@ -256,12 +256,12 @@ namespace gameProcess {
 
   void LolGameController::initGameContext() {
     playerObjects.push_back(player_);
-    for( int enemyQuantity = 0; enemyQuantity < gkEnemyQuantity && enemyQuantity < gameMapSize_.w; ++enemyQuantity ) {
+   /* for( int enemyQuantity = 0; enemyQuantity < gkEnemyQuantity && enemyQuantity < gameMapSize_.w; ++enemyQuantity ) {
       auto enemy = std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
                                                     std::pair{(1 + enemyQuantity)*5, 2});
       gameObjects_.push_back(enemy);
       endGameIndicator_.push_back(std::weak_ptr(enemy));
-    }
+    }*/
     auto barricade = std::make_shared<gameObj::BarricadeGenerator>(gameObj::ObjDirection::ekOBJDown, std::pair{10,4},gameObj::ObjectFraction::ekEnemyFraction, '-');
     gameObjects_.push_back(barricade);
     endGameIndicator_.push_back(std::weak_ptr(barricade));

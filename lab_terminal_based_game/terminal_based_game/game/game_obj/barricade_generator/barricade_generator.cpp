@@ -7,7 +7,7 @@
 namespace {
   const int gkBarricadeLivesQuantity = 100;
   const int gkGeneratorLivesQuantity = 300;
-  const int gkGeneratorDamage = 0;
+  const int gkGeneratorDamage = 5;
   const int gkBarricadeDamage = 10;
   const int gkGenerateBarricadeTimeout = 500;
   const int gkGeneratorMoveTimeout = 1000;
@@ -99,6 +99,7 @@ namespace gameObj {
       LivesQuantity_ -= object.getDamage();
     }
     else {
+      Protection_ = ObjectProtection::ekBaseProtection;
       LivesQuantity_ -= object.getDamage() / gkBarricadeDamageLOverCoef;
     }
     return isAlive();
@@ -106,6 +107,10 @@ namespace gameObj {
 
   void Barricade::interaction(ShiftingObject& other,
                               std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    if( (other.getFraction() != Fraction_ || other.getFraction() == ObjectFraction::ekNoneFraction)
+        && other.getType() == ekLiveObjectType) {
+      other.fight(*this, trace);
+    }
   }
 
 
@@ -187,7 +192,6 @@ namespace gameObj {
           ShiftingObject& other, std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     if( (other.getFraction() != Fraction_ || other.getFraction()) == ObjectFraction::ekNoneFraction
         && other.getType() == ekLiveObjectType ) {
-      fight(other, trace);
       other.fight(*this, trace);
     }
   }

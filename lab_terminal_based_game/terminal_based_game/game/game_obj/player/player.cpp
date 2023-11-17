@@ -55,7 +55,7 @@ namespace gameObj {
 
   void Player::interaction(ShiftingObject& other,
                            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if( (other.getFraction() != Fraction_ || other.getFraction()) == ObjectFraction::ekNoneFraction
+    if( (other.getFraction() != Fraction_ || other.getFraction() == ObjectFraction::ekNoneFraction)
         && other.getType() == ekLiveObjectType ) {
       other.fight(*this, trace);
     }
