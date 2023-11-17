@@ -11,7 +11,7 @@ namespace gameObj {
            const int kLivesQuantity, const int kBattleDamage, const ObjectFraction kFraction,
            const ObjectProtection kProtection, const int kUsesPerFrame);
   protected:
-    int UsesPerFrame_;
+    int UsesPerMove_;
     std::chrono::time_point<std::chrono::steady_clock> LastMoveTime_;
   };
 }// namespace gameObj

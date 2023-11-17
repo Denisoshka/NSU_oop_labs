@@ -61,9 +61,10 @@ namespace gameObj {
                 >= elapsedMSToShoot
         && getRandomBoolean(shootProbability) ) {
       LastShoot_ = curTime;
-      trace.push_back(std::make_unique<Bullet>(
+      trace.push_back(std::make_shared<Bullet>(
               ViewDirection_, std::pair{CoreCoords_.first, CoreCoords_.second + ViewDirection_},
               Fraction_));
+
     }
   }
 

@@ -7,7 +7,7 @@ namespace gameObj {
                                  const int kLivesQuantity, const int kBattleDamage,
                                  const ObjectFraction kFraction,
                                  const ObjectProtection kProtection_, const ObjectType kType)
-      : Avatar_(std::vector{kAvatar})
+      : Avatar_(std::string{kAvatar})
       , CoreCoords_(kStartCoords)
       , Coords_(std::vector{kStartCoords})
       , Fraction_(kFraction)
@@ -58,7 +58,7 @@ namespace gameObj {
     return flag;
   }
 
-  const std::vector<char>& ShiftingObject::getAvatar() {
+  const std::string& ShiftingObject::getAvatar() {
     return Avatar_;
   }
 

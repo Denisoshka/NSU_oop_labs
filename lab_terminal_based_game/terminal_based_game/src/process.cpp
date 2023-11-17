@@ -17,7 +17,7 @@ namespace {
   const std::string gkBulletsField = "bullets quantity: ";
   const std::string gkElapsedTimeField = "elapsed time: ";
   const std::string gkPlayerLives = "lives: ";
-  const int gkEnemyQuantity = 4;
+  const int gkEnemyQuantity = 3;
 
   const std::string gkDefPlayerName = "unknown player";
 
@@ -39,7 +39,7 @@ namespace {
   const char *gkX0 = "x";
   const char *gkY0 = "y";
   const char *gkMap = "map";
-    const char *gkEmptySpace = "empty_space";
+  const char *gkEmptySpace = "empty_space";
 }// namespace
 
 namespace gameProcess {
@@ -161,14 +161,17 @@ namespace gameProcess {
     player_->action(gameObjects_, Trace_);
     for( auto& object: gameObjects_ ) {
       object->action(gameObjects_, Trace_);
+      object->action(playerObjects, Trace_);
     }
   }
 
   void LolGameController::updateGameRotations() {
-    while( !player_->rotationEnd() ) {
-      auto newCoords = player_->offerNewCoords();
-      auto coordsAllow = fixCollision(newCoords);
-      player_->checkRoute(coordsAllow);
+    for( auto& playerObj: playerObjects ) {
+      while( !playerObj->rotationEnd() ) {
+        auto newCoords = playerObj->offerNewCoords();
+        auto coordsAllow = fixCollision(newCoords);
+        playerObj->checkRoute(coordsAllow);
+      }
     }
 
     for( auto& object: gameObjects_ ) {
@@ -192,13 +195,21 @@ namespace gameProcess {
       conditions_.PlayerIsDead = true;
     }
 
-    if( gameObjects_.empty() ) {
+    auto deadBegin = std::remove_if(
+            endGameIndicator_.begin(), endGameIndicator_.end(),
+            [](std::weak_ptr<gameObj::ShiftingObject>& obj) { return obj.expired(); });
+    endGameIndicator_.erase(deadBegin, endGameIndicator_.end());
+
+    if (endGameIndicator_.empty()){
       conditions_.GameIsEnd = true;
     }
+
   }
 
   void LolGameController::drawGameContext() {
-    gscreen_.deleteObj(player_->getCoords());
+    for( auto& playerObj: playerObjects ) {
+      gscreen_.deleteObj(playerObj->getCoords());
+    }
     for( auto& obj: gameObjects_ ) {
       gscreen_.deleteObj(obj->getCoords());
     }
@@ -208,10 +219,14 @@ namespace gameProcess {
             [](std::shared_ptr<gameObj::ShiftingObject>& obj) { return !obj->isAlive(); });
     gameObjects_.erase(deadBegin, gameObjects_.end());
 
-    gscreen_.drawObj(player_->getNewCoords(), player_->getAvatar());
     gameObjects_.insert(gameObjects_.end(), std::make_move_iterator(Trace_.begin()),
                         std::make_move_iterator(Trace_.end()));
     Trace_.clear();
+
+    for( auto& playerObj: playerObjects ) {
+      gscreen_.drawObj(playerObj->getNewCoords(), playerObj->getAvatar());
+    }
+
     for( auto& obj: gameObjects_ ) {
       gscreen_.drawObj(obj->getNewCoords(), obj->getAvatar());
     }
@@ -240,11 +255,17 @@ namespace gameProcess {
   }
 
   void LolGameController::initGameContext() {
-    for( int pidorsQuantity = 0;
-         pidorsQuantity < gkEnemyQuantity && pidorsQuantity < gameMapSize_.w; ++pidorsQuantity ) {
-      gameObjects_.push_back(std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
-                                                              std::pair{1+ pidorsQuantity, 2}));
+    playerObjects.push_back(player_);
+    for( int enemyQuantity = 0; enemyQuantity < gkEnemyQuantity && enemyQuantity < gameMapSize_.w; ++enemyQuantity ) {
+      auto enemy = std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
+                                                    std::pair{(1 + enemyQuantity)*5, 2});
+      gameObjects_.push_back(enemy);
+      endGameIndicator_.push_back(std::weak_ptr(enemy));
     }
+    auto barricade = std::make_shared<gameObj::BarricadeGenerator>(gameObj::ObjDirection::ekOBJDown, std::pair{10,4},gameObj::ObjectFraction::ekEnemyFraction, '-');
+    gameObjects_.push_back(barricade);
+    endGameIndicator_.push_back(std::weak_ptr(barricade));
+
   }
 
   LolGameController::LolGameController(const gScreen::BasicScreen& kScreen,
@@ -252,7 +273,7 @@ namespace gameProcess {
                                        const std::string kGameMapSettings)
       : BasicGameController(kScreen, kGameScreenSettings, kGameMapSettings) {
     player_ = std::make_shared<gameObj::Player>(gameObj::ObjDirection::ekObjUp,
-                      std::pair{gameMapSize_.w / 2, gameMapSize_.h - 2});
+                                                std::pair{gameMapSize_.w / 2, gameMapSize_.h - 2});
     LolGameController::initGameContext();
     LolGameController::drawGameContext();
     gscreen_.drawGameMap();

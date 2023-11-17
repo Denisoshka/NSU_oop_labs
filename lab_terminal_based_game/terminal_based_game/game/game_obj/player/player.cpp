@@ -10,7 +10,7 @@ namespace {
   const int gkReload{'s'};
   const int gkShoot{'w'};
   const int gkMaxAmmoQuantity = 10;
-  const int gkPlayerLiverQuantity = 100;
+  const int gkPlayerLiverQuantity = 200;
   const int gkPlayerDamage = 50;
   //  std::pair<unsigned, unsigned>
 }// namespace
@@ -42,7 +42,7 @@ namespace gameObj {
       if( AmmoQuantity_ ) {
         std::pair bulletCoords{CoreCoords_.first, CoreCoords_.second + ViewDirection_};
         AmmoQuantity_--;
-        trace.push_back(std::make_unique<Bullet>(ViewDirection_, bulletCoords, Fraction_));
+        trace.push_back(std::make_shared<Bullet>(ViewDirection_, bulletCoords, Fraction_));
       }
     }
 
@@ -87,7 +87,6 @@ namespace gameObj {
 
   bool Player::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
     if( allowedShift.front() != std::pair{true, true} ) {
-      // todo нет коллизии со стеной
       NewCoreCoords_ = CoreCoords_;
       NewCoords_.front() = Coords_.front();
     }

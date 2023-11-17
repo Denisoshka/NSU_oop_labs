@@ -6,7 +6,7 @@ namespace gameObj {
                  const ObjectProtection kProtection, const int kUsesPerFrame)
       : ShiftingObject(kViewDirection, kStartCoords, kAvatar, kLivesQuantity, kBattleDamage,
                        kFraction, kProtection, ObjectType::ekWeaponType)
-      , UsesPerFrame_(kUsesPerFrame)
+      , UsesPerMove_(kUsesPerFrame)
       , LastMoveTime_(std::chrono::steady_clock::now()) {
   }
 }// namespace gameObj

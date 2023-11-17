@@ -37,7 +37,7 @@ namespace gameObj {
                    char kAvatar, const int kLivesQuantity, const int kBattleDamage,
                    const ObjectFraction kFraction, const ObjectProtection kProtection_,
                    const ObjectType kType);
-    virtual const std::vector<char>& getAvatar();
+    virtual const std::string& getAvatar();
     virtual bool isCollision(const ShiftingObject& other);
     virtual bool checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) = 0;
     virtual void action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
@@ -77,7 +77,7 @@ namespace gameObj {
 
     std::pair<int, int> Shift_;
 
-    const std::vector<char> Avatar_;
+    std::string Avatar_;
 
 ///    must update only in updateCondition,
     std::pair<int, int> CoreCoords_;

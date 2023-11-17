@@ -5,16 +5,16 @@ namespace {
 
   const int elapsedMSToMove = 100;
   const int gkBulletLivesQuantity = 2;
-  const int gkBulletDamage = 50;
+  const int gkBulletDamage = 30;
   const char gkBulletAvatar = '|';
-  const int gkBulletUsesPerFrame = 1;
+  const int gkBulletUsesPerMove = 1;
 }// namespace
 
 namespace gameObj {
   Bullet::Bullet(const ObjDirection viewDirection, const std::pair<int, int>& startCoords,
                  const ObjectFraction fraction)
       : Weapon(viewDirection, startCoords, gkBulletAvatar, gkBulletLivesQuantity, gkBulletDamage,
-               fraction, ObjectProtection::ekNoneProtection, gkBulletUsesPerFrame) {
+               fraction, ObjectProtection::ekNoneProtection, gkBulletUsesPerMove) {
     Shift_ = bulletDirectionShift;
     if( viewDirection == ObjDirection::ekObjUp ) {
       Shift_.second = -Shift_.second;
@@ -30,20 +30,18 @@ namespace gameObj {
         >= elapsedMSToMove ) {
       RotationEnd_ = false;
       LastMoveTime_ = curTime;
+      UsesPerMove_ = gkBulletUsesPerMove;
     }
-    UsesPerFrame_ = gkBulletUsesPerFrame;
   }
 
   bool Bullet::fight(ShiftingObject& object,
                      std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if( UsesPerFrame_ <= 0 ) {
-    }
-    else if( Protection_ >= object.getProtection() && LivesQuantity_ > 0 ) {
-      UsesPerFrame_--;
+    if( Protection_ >= object.getProtection() && LivesQuantity_ > 0 ) {
+      UsesPerMove_--;
       LivesQuantity_--;
     }
     else if( LivesQuantity_ > 0 ) {
-      UsesPerFrame_--;
+      UsesPerMove_--;
       LivesQuantity_ = 0;
     }
 
@@ -54,8 +52,11 @@ namespace gameObj {
                            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     if(((other.getFraction() != Fraction_ || other.getFraction() == ObjectFraction::ekNoneFraction)
         && other.getType() == ekLiveObjectType ) ){
-      fight(other, trace);
-      other.fight(*this, trace);
+      if (UsesPerMove_> 0 && isAlive()){
+        fight(other, trace);
+        other.fight(*this, trace);
+      }
+
     }
   }
 

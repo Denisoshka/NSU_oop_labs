@@ -21,7 +21,7 @@ namespace gScreen {
     void updateMapSettings();
 
     void drawObj(const std::vector<std::pair<int, int>>& objectCoords,
-                 const std::vector<char>& avatar);
+                 const std::string avatar);
     void deleteObj(const std::vector<std::pair<int, int>>& objectCoords);
     void drawGameMap();
 

@@ -41,7 +41,6 @@ namespace gameProcess {
   public:
     LolGameController(const gScreen::BasicScreen& kScreen, const std::string& kGameScreenSettings,
                       const std::string kGameMapSettings);
-    virtual void initGameContext() override;
     virtual void updateGameContext(const int kAction) override;
     virtual void drawGameContext() override;
     virtual void updateStat(const std::string& kField, const int kValue);
@@ -54,9 +53,12 @@ namespace gameProcess {
     virtual bool gameIsEnd() const override;
 
   protected:
+
     TerminationConditions conditions_{};
 
     std::shared_ptr<gameObj::Player> player_{};
+    std::vector<std::weak_ptr<gameObj::ShiftingObject>> endGameIndicator_;
+    std::vector<std::shared_ptr<gameObj::ShiftingObject>> playerObjects{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> gameObjects_{};
     std::vector<std::shared_ptr<gameObj::ShiftingObject>> Trace_;
 
@@ -65,7 +67,10 @@ namespace gameProcess {
     void checkCollisions();
     void updateGameRotations();
     void updateGameConditions(const int kAction);
+
+    virtual void initGameContext() override;
   };
+
 
   class gameProcess {
   public:

@@ -21,6 +21,13 @@ file(GLOB PUBLIC_INCLUDES
         "${CMAKE_CURRENT_SOURCE_DIR}/shifting_object"
         "${CMAKE_CURRENT_SOURCE_DIR}/enemy_"
         "${CMAKE_CURRENT_SOURCE_DIR}/weapon"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cool_bullet"
+        "${CMAKE_CURRENT_SOURCE_DIR}/benefits"
+        "${CMAKE_CURRENT_SOURCE_DIR}/enemy_with_shield"
+        "${CMAKE_CURRENT_SOURCE_DIR}/minigun_enemy"
+        "${CMAKE_CURRENT_SOURCE_DIR}/shield"
+        "${CMAKE_CURRENT_SOURCE_DIR}/barricade_generator"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tracking_enemy"
 
 )
 

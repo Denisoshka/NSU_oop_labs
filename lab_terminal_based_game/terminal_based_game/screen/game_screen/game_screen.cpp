@@ -112,7 +112,7 @@ namespace gScreen {
   }
 
   void GameScreen::drawObj(const std::vector<std::pair<int, int>>& objectCoords,
-                           const std::vector<char>& avatar) {
+                           const std::string avatar) {
     for( int i = 0; i < objectCoords.size(); ++i ) {
       mvwaddch(window_, gameMapIndentSettings_.Y0 + objectCoords[i].second,
                gameMapIndentSettings_.X0 + objectCoords[i].first, avatar[i]);
