@@ -7,7 +7,7 @@ namespace {
   const int gkBulletLivesQuantity = 10;
   const int gkBulletDamage = 30;
   const char gkBulletAvatar = '|';
-  const int gkBulletUsesPerMove = 1;
+  const int gkBulletUsesPerMove = 6;
 }// namespace
 
 namespace gameObj {
@@ -24,10 +24,8 @@ namespace gameObj {
   void Bullet::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     CoreCoords_ = NewCoreCoords_;
     Coords_.front() = NewCoords_.front();
-
-    if( WeaponCond_ == WeaponConditions::ekWasInUse ) {
-      WeaponCond_ = WeaponConditions::ekNotUsable;
-    }
+    WeaponCond_ = (WeaponCond_ != WeaponConditions::ekNewWeapon) ? WeaponConditions::ekUnUsable
+                                                                 : WeaponConditions::ekNewWeapon;
 
     auto curTime = std::chrono::steady_clock::now();
     if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastMove_).count()
@@ -39,14 +37,15 @@ namespace gameObj {
     }
   }
 
-  bool Bullet::getFight(ShiftingObject& object,
+  bool Bullet::getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
                         std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     return !isAlive();
   }
 
   int Bullet::sayDamage(const ShiftingObject& object) const {
-    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
-        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+    if( (object.getFraction() == Fraction_
+         && object.getFraction() != ObjectFraction::ekNoneFraction)
+        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
 
@@ -61,7 +60,7 @@ namespace gameObj {
   int Bullet::getDamage(const ShiftingObject& object) {
     if( (object.getFraction() == Fraction_
          && object.getFraction() != ObjectFraction::ekNoneFraction)
-        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+        || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
 
@@ -77,7 +76,7 @@ namespace gameObj {
     return BattleDamage_;
   }
 
-  void Bullet::interaction(ShiftingObject& other,
+  void Bullet::interaction(std::shared_ptr<gameObj::ShiftingObject>& other,
                            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     getFight(other, trace);
   }

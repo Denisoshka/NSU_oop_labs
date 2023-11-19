@@ -32,8 +32,9 @@ namespace gameObj {
     auto curTime = std::chrono::steady_clock::now();
     if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastWeaponReload_).count()
         >= gkReloadMilisecondsTimeout ) {
-      WeaponCond_ = WeaponConditions::ekNotUsable;
+      WeaponCond_ = WeaponConditions::ekUnUsable;
     }
+
     Shift_.first = 0;
     if( action == gkMoveLeft ) {
       Shift_.first = -1;
@@ -60,14 +61,14 @@ namespace gameObj {
     return AmmoQuantity_;
   }
 
-  void Player::interaction(ShiftingObject& other,
+  void Player::interaction(std::shared_ptr<gameObj::ShiftingObject>& other,
                            std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     getFight(other, trace);
   }
 
-  bool Player::getFight(ShiftingObject& object,
+  bool Player::getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
                         std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    LivesQuantity_ -= object.getDamage(*this);
+    LivesQuantity_ -= enemy->getDamage(*this);
     return isAlive();
   }
 
@@ -91,7 +92,7 @@ namespace gameObj {
 
   int Player::sayDamage(const ShiftingObject& object) const {
     if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
-        || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+        || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
     if( Protection_ < object.sayDamage(*this) ) {
@@ -102,7 +103,7 @@ namespace gameObj {
 
   int Player::getDamage(const ShiftingObject& object) {
     if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
-        || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+        || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
 

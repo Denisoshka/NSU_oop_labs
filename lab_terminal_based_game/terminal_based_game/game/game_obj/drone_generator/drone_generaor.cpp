@@ -8,10 +8,10 @@ namespace {
   const int gkBarricadeLivesQuantity = 10;
   const int gkGeneratorLivesQuantity = 300;
   const int gkGeneratorDamage = 30;
-  const int gkBarricadeDamage = 5;
+  const int gkDroneDamage = 10;
   const int gkGenerateDroneReloadTimeout = 5000;
-  const int gkGeneratorMoveTimeout = 1000;
-  const int gkBarricadeMoveTimeout = 700;
+  const int gkGeneratorMoveTimeout = 7000;
+  const int gkBarricadeMoveTimeout = 600;
   const int gkBarricadeDamageLOverCoef = 4;
   const int gkUsesPerMove = 1;
   const int gkDronesToGenerateQuantity = 10;
@@ -41,17 +41,16 @@ static bool getRandomBoolean(double probability) {
 }
 
 namespace gameObj {
-  Barricade::Barricade(ObjDirection kViewDirection, const std::pair<int, int>& kStartCoords,
-                       const std::pair<int, int>& kShift, const ObjectFraction kFraction,
-                       const char kAvatar)
-      : LiveObject(kViewDirection, kStartCoords, kAvatar, gkBarricadeLivesQuantity,
-                   gkGeneratorDamage, kFraction, ObjectProtection::ekNoneProtection,
-                   ObjectType::ekLiveObjectType) {
+  Drone::Drone(ObjDirection kViewDirection, const std::pair<int, int>& kStartCoords,
+               const std::pair<int, int>& kShift, const ObjectFraction kFraction,
+               const char kAvatar)
+      : LiveObject(kViewDirection, kStartCoords, kAvatar, gkBarricadeLivesQuantity, gkDroneDamage,
+                   kFraction, ObjectProtection::ekNoneProtection, ObjectType::ekLiveObjectType) {
     Shift_ = kShift;
     NewCoords_ = Coords_;
   }
 
-  void Barricade::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+  void Drone::updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     Coords_ = NewCoords_;
     CoreCoords_ = NewCoreCoords_;
 
@@ -59,11 +58,7 @@ namespace gameObj {
       Protection_ = ObjectProtection::ekNoneProtection;
     }
 
-    if( WeaponCond_ != WeaponConditions::ekNewWeapon ) {
-      WeaponCond_ = WeaponConditions::ekNotUsable;
-    }
-
-    WeaponCond_ = (WeaponCond_ != WeaponConditions::ekNewWeapon) ? WeaponConditions::ekNotUsable
+    WeaponCond_ = (WeaponCond_ != WeaponConditions::ekNewWeapon) ? WeaponConditions::ekUnUsable
                                                                  : WeaponConditions::ekNewWeapon;
 
     auto curTime = std::chrono::steady_clock::now();
@@ -71,6 +66,7 @@ namespace gameObj {
     if( getRandomBoolean(gkChangeDirectionProbability)
         && std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastMove_).count()
                    >= gkBarricadeMoveTimeout ) {
+      UsesPerMove_ = gkUsesPerMove;
       RotationEnd_ = false;
       LastMove_ = curTime;
       WeaponCond_ = WeaponConditions::ekNewWeapon;
@@ -78,7 +74,7 @@ namespace gameObj {
     }
   }
 
-  const std::vector<std::pair<int, int>>& Barricade::offerNewCoords() {
+  const std::vector<std::pair<int, int>>& Drone::offerNewCoords() {
     NewCoreCoords_.first = CoreCoords_.first + Shift_.first;
     NewCoreCoords_.second = CoreCoords_.second + Shift_.second;
     NewCoords_.front().first = Coords_.front().first + Shift_.first;
@@ -87,7 +83,7 @@ namespace gameObj {
     return NewCoords_;
   }
 
-  bool Barricade::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
+  bool Drone::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
     if( allowedShift.front() != std::pair{true, true} ) {
       NewCoords_ = Coords_;
       NewCoreCoords_ = CoreCoords_;
@@ -96,42 +92,40 @@ namespace gameObj {
     return RotationEnd_ = true;
   }
 
-  bool Barricade::getFight(ShiftingObject& object,
-                           std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    if( Protection_ <= object.sayDamage(*this) ) {
+  bool Drone::getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
+                       std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    if( Protection_ <= enemy->sayDamage(*this) ) {
       Protection_ = ObjectProtection::ekNoneProtection;
     }
     else {
       Protection_ = ObjectProtection::ekBaseProtection;
     }
-    LivesQuantity_ -= object.getDamage(*this);
+    LivesQuantity_ -= enemy->getDamage(*this);
     return isAlive();
   }
 
-  int Barricade::getDamage(const ShiftingObject& object) {
-    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
-        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+  int Drone::getDamage(const ShiftingObject& object) {
+    if( (object.getFraction() == Fraction_
+         && object.getFraction() != ObjectFraction::ekNoneFraction)
+        || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
-
+    WeaponCond_ = WeaponConditions::ekWasInUse;
     if( BattleDamage_ < object.getProtection() ) {
-      WeaponCond_ = WeaponConditions::ekWasInUse;
       return BattleDamage_ * gkBasicDroneLowerCoef;
     }
-    else {
-      WeaponCond_ = WeaponConditions::ekWasInUse;
-      return BattleDamage_;
-    }
+    return BattleDamage_;
   }
 
-  void Barricade::interaction(ShiftingObject& other,
-                              std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    getFight(*this, trace);
+  void Drone::interaction(std::shared_ptr<gameObj::ShiftingObject>& other,
+                          std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+    getFight(other, trace);
   }
 
-  int Barricade::sayDamage(const ShiftingObject& object) const {
-    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
-        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+  int Drone::sayDamage(const ShiftingObject& object) const {
+    if( (object.getFraction() == Fraction_
+         && object.getFraction() != ObjectFraction::ekNoneFraction)
+        || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
 
@@ -165,25 +159,15 @@ namespace gameObj {
     CoreCoords_ = NewCoreCoords_;
     Coords_ = NewCoords_;
 
-    if( LivesQuantity_ < gkBarricadeLivesQuantity / 2 ) {
-      Avatar_.front() = '~';
-      Avatar_.back() = '~';
-    }
-
-    Barricade obg{
-            ViewDirection_, std::pair{Coords_.front().first - 1, Coords_.front().second},
-            std::pair{-1,                        0                     },
-             Fraction_, (Fraction_ == ekPlayerFraction) ? '+' : '-'
-    };
     auto curTime = std::chrono::steady_clock::now();
 
     if( DronesQuantity_ > 0 ) {
       --DronesQuantity_;
-      trace.push_back(std::make_shared<Barricade>(
+      trace.push_back(std::make_shared<Drone>(
               ViewDirection_, std::pair{Coords_.front().first - 1, Coords_.front().second},
               std::pair{-1, (Fraction_ == ekPlayerFraction) ? -1 : 1}, Fraction_,
               (Fraction_ == ekPlayerFraction) ? '+' : '-'));
-      trace.push_back(std::make_shared<Barricade>(
+      trace.push_back(std::make_shared<Drone>(
               ViewDirection_, std::pair{Coords_.front().first + 1, Coords_.front().second},
               std::pair{1, (Fraction_ == ekPlayerFraction) ? -1 : 1}, Fraction_,
               (Fraction_ == ekPlayerFraction) ? '+' : '-'));
@@ -211,7 +195,7 @@ namespace gameObj {
     return NewCoords_;
   }
 
-  void DroneGenerator::interaction(ShiftingObject& other,
+  void DroneGenerator::interaction(std::shared_ptr<gameObj::ShiftingObject>& other,
                                    std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     getFight(other, trace);
   }
@@ -225,15 +209,16 @@ namespace gameObj {
     return RotationEnd_ = true;
   }
 
-  bool DroneGenerator::getFight(ShiftingObject& object,
+  bool DroneGenerator::getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
                                 std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    LivesQuantity_ -= object.getDamage(*this);
+    LivesQuantity_ -= enemy->getDamage(*this);
     return isAlive();
   }
 
   int DroneGenerator::sayDamage(const ShiftingObject& object) const {
-    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
-        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+    if( (object.getFraction() == Fraction_
+         && object.getFraction() != ObjectFraction::ekNoneFraction)
+        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
 
@@ -244,8 +229,9 @@ namespace gameObj {
   }
 
   int DroneGenerator::getDamage(const ShiftingObject& object) {
-    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
-        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+    if( (object.getFraction() == Fraction_
+         && object.getFraction() != ObjectFraction::ekNoneFraction)
+        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
 

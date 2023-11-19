@@ -203,7 +203,6 @@ namespace gameProcess {
     if (endGameIndicator_.empty()){
       conditions_.GameIsEnd = true;
     }
-
   }
 
   void LolGameController::drawGameContext() {
@@ -257,15 +256,17 @@ namespace gameProcess {
   void LolGameController::initGameContext() {
     playerObjects.push_back(player_);
     for( int enemyQuantity = 0; enemyQuantity < gkEnemyQuantity && enemyQuantity < gameMapSize_.w; ++enemyQuantity ) {
-      auto enemy = std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
+      auto defenemy = std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
                                                     std::pair{(1 + enemyQuantity)*5, 2});
-      gameObjects_.push_back(enemy);
-      endGameIndicator_.push_back(std::weak_ptr(enemy));
+      gameObjects_.push_back(defenemy);
+      endGameIndicator_.push_back(std::weak_ptr(defenemy));
     }
     auto barricade = std::make_shared<gameObj::DroneGenerator>(gameObj::ObjDirection::ekOBJDown, std::pair{10,4},gameObj::ObjectFraction::ekEnemyFraction, '-');
     gameObjects_.push_back(barricade);
-    endGameIndicator_.push_back(std::weak_ptr(barricade));
-
+    endGameIndicator_.push_back(barricade);
+    auto tracking = std::make_shared<gameObj::TrackingEnemy>(gameObj::ObjDirection::ekOBJDown, std::pair{10, 5});
+    gameObjects_.push_back(tracking);
+    endGameIndicator_.push_back(barricade);
   }
 
   LolGameController::LolGameController(const gScreen::BasicScreen& kScreen,

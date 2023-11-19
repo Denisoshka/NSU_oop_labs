@@ -9,5 +9,6 @@ gameObj::LiveObject::LiveObject(gameObj::ObjDirection kViewDirection,
     : ShiftingObject(kViewDirection, kStartCoords, kAvatar, kLivesQuantity, kBattleDamage,
                      kFraction, kProtection_, kType)
     , LastMove_(std::chrono::steady_clock::now())
-    , LastShoot_(std::chrono::steady_clock::now()) {
+    , LastShoot_(std::chrono::steady_clock::now())
+    , WeaponCond_(WeaponConditions::ekNewWeapon) {
 }

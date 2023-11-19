@@ -48,17 +48,17 @@ namespace gameObj {
   void ShiftingObject::action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
                               std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     for( auto& object: objects ) {
-      if( this == &(*object) || !isCollision(*object) ) {
+      if( this == &(*object) || !isCollision(object) ) {
         continue;
       }
-      interaction(*object, trace);
+      interaction(object, trace);
     }
   }
 
-  bool ShiftingObject::isCollision(const ShiftingObject& other) {
-    bool flag = NewCoreCoords_ == other.NewCoreCoords_;
+  bool ShiftingObject::isCollision(const std::shared_ptr<gameObj::ShiftingObject>& other) {
+    bool flag = NewCoreCoords_ == other->NewCoreCoords_;
     for( auto cords = NewCoords_.begin(); cords != NewCoords_.end() && !flag; ++cords ) {
-      flag = std::ranges::any_of(other.NewCoords_.begin(), other.NewCoords_.end(),
+      flag = std::ranges::any_of(other->NewCoords_.begin(), other->NewCoords_.end(),
                                  [&cords](auto& x) { return x == *cords; });
     }
     return flag;
@@ -74,5 +74,13 @@ namespace gameObj {
 
   const std::vector<std::pair<int, int>>& ShiftingObject::getNewCoords() {
     return NewCoords_;
+  }
+
+  const std::pair<int, int>& ShiftingObject::getCoreCords() {
+    return CoreCoords_;
+  }
+
+  const std::pair<int, int>& ShiftingObject::getNewCoreCords() {
+    return NewCoreCoords_;
   }
 }// namespace gameObj

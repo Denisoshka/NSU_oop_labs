@@ -33,7 +33,7 @@ namespace gameObj {
   enum WeaponConditions {
     ekNewWeapon,
     ekWasInUse,
-    ekNotUsable,
+    ekUnUsable,
   };
 
   class ShiftingObject {
@@ -50,6 +50,8 @@ namespace gameObj {
     virtual const std::vector<std::pair<int, int>>& offerNewCoords() = 0;
     virtual const std::vector<std::pair<int, int>>& getCoords();
     virtual const std::vector<std::pair<int, int>>& getNewCoords();
+    virtual const std::pair<int, int>& getCoreCords();
+    virtual const std::pair<int, int>& getNewCoreCords();
 
     virtual void updateCondition(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
 
@@ -66,11 +68,11 @@ namespace gameObj {
     virtual int sayDamage(const ShiftingObject& object) const = 0;
     virtual int getDamage(const ShiftingObject& object) = 0;
 
-    virtual void interaction(ShiftingObject& other,
+    virtual void interaction(std::shared_ptr<gameObj::ShiftingObject>& other,
                              std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
-    virtual bool getFight(ShiftingObject& object,
+    virtual bool getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
                           std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
-    virtual bool isCollision(const ShiftingObject& other);
+    virtual bool isCollision(const std::shared_ptr<gameObj::ShiftingObject>& other);
   protected:
     ObjectFraction Fraction_;
     ObjectProtection Protection_;

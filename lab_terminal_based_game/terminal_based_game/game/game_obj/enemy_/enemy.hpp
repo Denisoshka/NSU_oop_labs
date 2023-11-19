@@ -12,13 +12,13 @@ namespace gameObj {
     virtual void updateCondition(
             std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
     virtual const std::vector<std::pair<int, int>>& offerNewCoords() override;
-    virtual bool getFight(ShiftingObject& object,
+    virtual bool getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
                           std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
     virtual int sayDamage(const ShiftingObject& object) const override;
     virtual int getDamage(const ShiftingObject& object) override;
 
   private:
-    virtual void interaction(ShiftingObject& other,
+    virtual void interaction(std::shared_ptr<gameObj::ShiftingObject>& other,
                              std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
     int AttemptsToShift_;
     std::chrono::time_point<std::chrono::steady_clock> LastShoot_;

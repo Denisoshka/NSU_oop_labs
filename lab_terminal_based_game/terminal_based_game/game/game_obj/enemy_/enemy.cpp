@@ -47,8 +47,8 @@ namespace gameObj {
     Coords_.front() = NewCoords_.front();
     AttemptsToShift_ = gkAttemptsToShift;
 
-    WeaponCond_ = (WeaponCond_ != WeaponConditions::ekNewWeapon) ? WeaponConditions::ekNotUsable
-                                                                : WeaponConditions::ekNewWeapon;
+    WeaponCond_ = (WeaponCond_ != WeaponConditions::ekNewWeapon) ? WeaponConditions::ekUnUsable
+                                                                 : WeaponConditions::ekNewWeapon;
     auto curTime = std::chrono::steady_clock::now();
     if( getRandomBoolean(gkChangeDirectionProbability)
         && std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastMove_).count()
@@ -68,9 +68,9 @@ namespace gameObj {
     }
   }
 
-  bool Enemy::getFight(ShiftingObject& object,
+  bool Enemy::getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
                        std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    LivesQuantity_ -= object.getDamage(*this);
+    LivesQuantity_ -= enemy->getDamage(*this);
     return isAlive();
   }
 
@@ -99,14 +99,15 @@ namespace gameObj {
     return NewCoords_;
   }
 
-  void Enemy::interaction(ShiftingObject& other,
+  void Enemy::interaction(std::shared_ptr<gameObj::ShiftingObject>& other,
                           std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     getFight(other, trace);
   }
 
   int Enemy::sayDamage(const ShiftingObject& object) const {
-    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
-        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+    if( (object.getFraction() == Fraction_
+         && object.getFraction() != ObjectFraction::ekNoneFraction)
+        || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
 
@@ -118,7 +119,7 @@ namespace gameObj {
 
   int Enemy::getDamage(const ShiftingObject& object) {
     if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
-        || UsesForMove_ <= 0 || WeaponCond_ == WeaponConditions::ekNotUsable ) {
+        || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
 
