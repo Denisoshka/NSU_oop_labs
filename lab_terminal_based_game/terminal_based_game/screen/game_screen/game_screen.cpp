@@ -34,7 +34,6 @@ namespace gScreen {
     centerScreen(gameScreenConfig);
 
     loadMapScreenSettings(std::move(gameScreenConfig.get_child(kGameMap)));
-//    updateMapSettings();
 
     loadStatsScreenSettings(std::move(gameScreenConfig.get_child(kGameStats)));
     drawGameStats();

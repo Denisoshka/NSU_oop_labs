@@ -53,7 +53,6 @@ namespace gameProcess {
     virtual bool gameIsEnd() const override;
 
   protected:
-
     TerminationConditions conditions_{};
 
     std::shared_ptr<gameObj::Player> player_{};
@@ -71,7 +70,6 @@ namespace gameProcess {
     virtual void initGameContext() override;
   };
 
-
   class gameProcess {
   public:
     gameProcess() = default;
@@ -86,10 +84,10 @@ namespace gameProcess {
     gScreen::CoreScreen coreScreen_;
     gScreen::BasicScreen mainScreen_{coreScreen_};
 
-    int showMenu(std::string& playerName);
-    int startGame(gameMode mode, const std::string& kPlayerName);
-    void startRate(const std::string& kPlayerName);
-    void updateScore(const std::string& playerName, const int score);
+    int showMenu(std::tuple<std::string, std::vector<int>>& introducedInf);
+    int startGame(gameMode mode, const std::tuple<std::string, std::vector<int>>& introducedInf);
+    void startRate(const std::tuple<std::string, std::vector<int>>& introducedInf);
+    void updateScore(const std::string& playerName, const std::vector<int>& enemy);
   };
 
 }// namespace gameProcess

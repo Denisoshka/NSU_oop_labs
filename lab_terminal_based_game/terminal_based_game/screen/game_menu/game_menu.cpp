@@ -5,28 +5,51 @@
 #include <fstream>
 
 namespace {
-  const char *gkInsertNameField = "insert_name_field";
-  const char *gkInsertNameFieldFields = "fields";
-  const char *gkField = "field";
-  const char *gkFieldWidth = "field_width";
-  const char *gkCursorPos = "cursor_pos";
-  const char *gkCursorPosName = "cursor_pos_name";
-  const char *gkCursorPosScore = "cursor_pos_score";
-  const char *gkWidth = "width";
-  const char *gkHeight = "height";
-  const char *gkGameName = "game_name";
-  const char *gkX0 = "x";
-  const char *gkY0 = "y";
-  const char *gkScoreTable = "score_table";
-  const char *gkScoreTableRowsLimit = "rows_quantity";
-  const char *gkScorePath = "score.json";
-  const char *gkPlayerName = "player";
-  const char *gkPlayerScore = "score";
-  const char *gkScoreTitle = "score";
-  const char *gkScoreFields = "fields";
+  const std::string gkInsertNameField = "insert_name_field";
+  const std::string gkInsertNameFieldFields = "fields";
+  const std::string gkField = "field";
+  const std::string gkFieldWidth = "field_width";
+  const std::string gkCursorPos = "cursor_pos";
+  const std::string gkCursorPosName = "cursor_pos_name";
+  const std::string gkCursorPosScore = "cursor_pos_score";
+  const std::string gkWidth = "width";
+  const std::string gkHeight = "height";
+  const std::string gkGameName = "game_name";
+  const std::string gkX0 = "x";
+  const std::string gkY0 = "y";
+  const std::string gkScoreTable = "score_table";
+  const std::string gkScoreTableRowsLimit = "rows_quantity";
+  const std::string gkScorePath = "score.json";
+  const std::string gkPlayerName = "player";
+  const std::string gkPlayerScore = "score";
+  const std::string gkScoreTitle = "score";
+  const std::string gkScoreFields = "fields";
+
+  const std::string gkEnemyCursorInf = "cursor_inf";
+  const std::string gkEnemyCursorSettings = "cursor";
+  const std::string gkEnemyCursorInsert = "insert_field";
+  const std::string gkEnemyChoseFields = "fields";
+  const std::string gkCursorAvatarPos = "cursor";
+  const std::string gkCursorAvatarInsert = "insert_field";
+  const std::string gkCursorAvatar = "cursor_avatar";
+  const std::string gkEmptyCursorAvatar = "empty_cursor";
+
+
   const int gkExit = ']';
+  const int gkCursorUp = 'w';
+  const int gkCursorDown = 's';
+  const int gkStatsUp = 'd';
+  const int gkStatsDown = 'a';
   const int gkMaxNameLen = 15;// todo hide this inf in json
   const int gkEmptyNameFiller = '_';
+  const int gkEmptyEnemyCursorFiller = ' ';
+  const int gkApprovesQuantity = 2;
+
+  enum ApproveIndexes : int {
+    ekName,
+    ekEnemies,
+    ekFinish,
+  };
 }// namespace
 
 namespace gScreen {
@@ -39,6 +62,7 @@ namespace gScreen {
     drawScoreTable(std::move(gameMenuConfig.get_child(gkScoreTable)), scorePath);
     drawGameName(std::move(gameMenuConfig.get_child(gkGameName)));
     drawNameInsertField(std::move(gameMenuConfig.get_child(gkInsertNameField)));
+    drawEnemyQuantity(std::move(gameMenuConfig.get_child()));
   }
 
   void gameMenu::drawGameName(boost::property_tree::ptree&& gameName) {
@@ -50,12 +74,12 @@ namespace gScreen {
   }
 
   void gameMenu::drawNameInsertField(boost::property_tree::ptree&& nameInsertField) {
-    playerName_.insert(0, gkMaxNameLen, gkEmptyNameFiller);
+    NameInf_.name.insert(0, gkMaxNameLen, gkEmptyNameFiller);
 
     const int kX0 = nameInsertField.get<int>(gkX0, 0);
     const int kY0 = nameInsertField.get<int>(gkY0, 0);
-    playerNameInsertPos = {nameInsertField.get_child(gkCursorPos).get<int>(gkX0),
-                           nameInsertField.get_child(gkCursorPos).get<int>(gkY0)};
+    NameInf_.insertPos = {nameInsertField.get_child(gkCursorPos).get<int>(gkX0),
+                          nameInsertField.get_child(gkCursorPos).get<int>(gkY0)};
     const boost::property_tree::ptree kFields = nameInsertField.get_child(gkInsertNameFieldFields);
     for( const auto& kField: kFields ) {
       const int kX = kField.second.get<int>(gkX0, 0);
@@ -64,8 +88,8 @@ namespace gScreen {
       mvwaddstr(window_, screenSize_.Y0 + kY0 + kY, screenSize_.X0 + kX0 + kX, name.data());
       wrefresh(window_);
     }
-    mvwaddstr(window_, screenSize_.Y0 + playerNameInsertPos.second,
-              screenSize_.X0 + playerNameInsertPos.first, playerName_.data());
+    mvwaddstr(window_, screenSize_.Y0 + NameInf_.insertPos.second,
+              screenSize_.X0 + NameInf_.insertPos.first, NameInf_.name.data());
     wrefresh(window_);
   }
 
@@ -116,29 +140,127 @@ namespace gScreen {
     wrefresh(window_);
   }
 
-  bool gameMenu::introducePlayerName(const int input) {
-    if( input == KEY_ENTER || input == 10 ) {
-      playerName_.resize(curNameLen_);
-      nameIntroduced_ = true;
+  void gameMenu::introducePlayerName(const int c) {
+    if( c == KEY_ENTER || c == 10 ) {
+      NameInf_.name.resize(NameInf_.len);
+      ApproveIndex_++;
     }
-    else if( (input == KEY_BACKSPACE || input == KEY_DC || input == 127) ) {
-      if( curNameLen_ > 0 ) {
-        playerName_[--curNameLen_] = gkEmptyNameFiller;
+    else if( (c == KEY_BACKSPACE || c == KEY_DC || c == 127) ) {
+      if( NameInf_.len > 0 ) {
+        NameInf_.name[--NameInf_.len] = gkEmptyNameFiller;
       }
     }
-    else if( curNameLen_ < gkMaxNameLen && input != ERR ) {
-      playerName_[curNameLen_++] = input;
+    else if( NameInf_.len < gkMaxNameLen && c != ERR ) {
+      NameInf_.name[NameInf_.len++] = c;
     }
-    mvwaddnstr(window_, screenSize_.Y0 + playerNameInsertPos.second,
-               screenSize_.X0 + playerNameInsertPos.first, playerName_.data(),
-               playerName_.size());
+    mvwaddnstr(window_, screenSize_.Y0 + NameInf_.insertPos.second,
+               screenSize_.X0 + NameInf_.insertPos.first, NameInf_.name.data(),
+               NameInf_.name.size());
     wrefresh(window_);
-
-    return nameIntroduced_;
   }
 
-  std::string gameMenu::getPlayerName() {
-    return playerName_;
+  std::tuple<std::string, std::vector<int>> gameMenu::getIntroducedInf() {
+    return std::make_tuple(NameInf_.name, EnemyInf_.values);
+    // todo fix return value;
   }
+
+  void gameMenu::shiftEnemyIntroduceCursor() {
+    const int kPrevEnemyIndex = (EnemyInf_.enemyIndex == 0) ? 0 : EnemyInf_.enemyIndex;
+    mvwaddnstr(window_, screenSize_.Y0 + EnemyInf_.cursorPos[kPrevEnemyIndex].second,
+               screenSize_.X0 + EnemyInf_.cursorPos[kPrevEnemyIndex].first,
+               EnemyInf_.noCursor.data(), EnemyInf_.noCursor.size());
+    mvwaddnstr(window_, screenSize_.Y0 + EnemyInf_.cursorPos[EnemyInf_.enemyIndex].second,
+               screenSize_.X0 + EnemyInf_.cursorPos[EnemyInf_.enemyIndex].first,
+               EnemyInf_.cursorAvatar.data(), EnemyInf_.cursorAvatar.size());
+  }
+
+  void gameMenu::updateEnemyIntroduceStats() {
+    auto inf = std::to_string(EnemyInf_.values[EnemyInf_.enemyIndex]);
+    const int width = EnemyInf_.width[EnemyInf_.enemyIndex];
+    const int precision = width - std::min<int>(inf.size(), width);
+    const int y = EnemyInf_.insertPos[EnemyInf_.enemyIndex].second;
+    const int x = EnemyInf_.insertPos[EnemyInf_.enemyIndex].first;
+    inf.insert(0, precision, gkEmptyNameFiller);
+
+    mvwaddnstr(window_, screenSize_.Y0 + y, screenSize_.X0 + x, inf.data(), width);
+  }
+
+  void gameMenu::introduceEnemy(const int c) {
+    if( c == ERR ) {
+    }
+    else if( c == gkCursorUp ) {
+      EnemyInf_.enemyIndex =
+              (EnemyInf_.enemyIndex > 0) ? --EnemyInf_.enemyIndex : EnemyInf_.enemyIndex;
+      shiftEnemyIntroduceCursor();
+    }
+    else if( c == gkCursorDown ) {
+      EnemyInf_.enemyIndex = (EnemyInf_.enemyIndex < EnemyInf_.cursorRange) ? EnemyInf_.enemyIndex++
+                                                                            : EnemyInf_.enemyIndex;
+      shiftEnemyIntroduceCursor();
+    }
+    else if( c == gkStatsUp ) {
+      ++(EnemyInf_.values[EnemyInf_.enemyIndex]);
+      updateEnemyIntroduceStats();
+    }
+    else if( c == gkStatsDown ) {
+      EnemyInf_.values[EnemyInf_.enemyIndex] > 0 ? 0 : --(EnemyInf_.values[EnemyInf_.enemyIndex]);
+      updateEnemyIntroduceStats();
+    }
+    else if( c == KEY_BACKSPACE || c == KEY_DC || c == 127 ) {
+      ApproveIndex_++;
+    }
+  }
+
+  void gameMenu::drawEnemyQuantity(boost::property_tree::ptree&& json) {
+    const boost::property_tree::ptree kFields = json.get_child(gkEnemyChoseFields);
+    const int kX0 = json.get<int>(gkX0, 0);
+    const int kY0 = json.get<int>(gkY0, 0);
+    for( const auto& kField: kFields ) {
+      const int kX = kField.second.get<int>(gkX0, 0);
+      const int kY = kField.second.get<int>(gkY0, 0);
+      const auto name = kField.second.get<std::string>(gkField);
+      mvwaddstr(window_, screenSize_.Y0 + kY0 + kY, screenSize_.X0 + kX0 + kX, name.data());
+      wrefresh(window_);
+    }
+    getEnemyQuantityChoseInf(kX0, kY0, std::move(json.get_child(gkEnemyCursorSettings)));
+  }
+
+  void gameMenu::getEnemyQuantityChoseInf(const int xIndent, const int yIndent,
+                                          boost::property_tree::ptree&& json) {
+    const int kX0 = json.get<int>(gkX0, 0);
+    const int kY0 = json.get<int>(gkY0, 0);
+    EnemyInf_.cursorAvatar = json.get<std::string>(gkCursorAvatar);
+    EnemyInf_.noCursor = json.get<std::string>(gkEmptyCursorAvatar);
+
+    const boost::property_tree::ptree kFields = json.get_child(gkEnemyCursorInf);
+    for( const auto& kField: kFields ) {
+      int kX = kField.second.get_child(gkCursorAvatarPos).get<int>(gkX0);
+      int kY = kField.second.get_child(gkCursorAvatarPos).get<int>(gkY0);
+      EnemyInf_.cursorPos.emplace_back(xIndent + kX0 + kX, yIndent + kY0 + kY);
+    }
+
+    for( const auto& kField: kFields ) {
+      int kX = kField.second.get_child(gkCursorAvatarInsert).get<int>(gkX0);
+      int kY = kField.second.get_child(gkCursorAvatarInsert).get<int>(gkY0);
+      EnemyInf_.cursorPos.emplace_back(xIndent + kX0 + kX, yIndent + kY0 + kY);
+    }
+  }
+
+  int gameMenu::process() {
+    int c;
+    while( !((c = input()) == KEY_BACKSPACE || c == KEY_DC || c == 127) ) {
+      if( ApproveIndex_ == ApproveIndexes::ekName ) {
+        introducePlayerName(c);
+      }
+      else if( ApproveIndex_ == ApproveIndexes::ekEnemies ) {
+        introduceEnemy(c);
+      }
+      else if( ApproveIndex_ == ApproveIndexes::ekFinish ) {
+        return 0;
+      }
+    }
+    return c;
+  }
+
 
 }// namespace gScreen

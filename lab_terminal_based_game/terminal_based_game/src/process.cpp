@@ -25,12 +25,18 @@ namespace {
   const std::string gkBasicGameScreenSettingsPath = "game_screen.json";
   const std::string gkBasicScorePath = "score.json";
 
-  const char *gkScoreTitle = "score";
-  const char *gkScorePlayer = "player";
-  const char *gkScoreScore = "score";
-  const char *gkScoreMaxFieldsQuantity = "max_quantity";
-  const char *gkScoreFields = "fields";
+  const std::string gkEnemy1 = "enemy_1";
+  const std::string gkEnemy2 = "enemy_2";
+  const std::string gkEnemy3 = "enemy_3";
+  const float gkEnemy1ScoreCoef = 2;
+  const float gkEnemy2ScoreCoef = 1;
+  const float gkEnemy3ScoreCoef = 3;
 
+  const std::string gkScoreTitle = "score";
+  const std::string gkScorePlayer = "player";
+  const std::string gkScoreScore = "score";
+  const std::string gkScoreMaxFieldsQuantity = "max_quantity";
+  const std::string gkScoreFields = "fields";
 
   /// for game controller
   const char *gkGameMapSettingPath = "game_map.json";
@@ -43,33 +49,28 @@ namespace {
 }// namespace
 
 namespace gameProcess {
-  int gameProcess::showMenu(std::string& playerName) {
+  int gameProcess::showMenu(std::tuple<std::string, std::vector<int>>& introducedInf) {
     gScreen::gameMenu menu{mainScreen_, gkBasicGameMenuPath, gkBasicScorePath};
-    int input;
-    while( (input = menu.input()) != gkQuit ) {
-      if( menu.introducePlayerName(input) ) {
-        break;
-      }
-    }
-    playerName = menu.getPlayerName();
+    int input = menu.process();
+    introducedInf = menu.getIntroducedInf();
     return input;
   }
 
   int gameProcess::process() {
     while( mainScreen_.input() != gkQuit ) {
       std::string playerName{};
-
-      if( showMenu(playerName) == gkQuit ) {
+      std::tuple<std::string, std::vector<int>> introducedInf;
+      if( showMenu(introducedInf) == gkQuit ) {
         break;
       }
       playerName = (playerName.empty()) ? gkDefPlayerName : playerName;
-      startGame(gameMode::ekRateMode, playerName);
+      startGame(gameMode::ekRateMode, introducedInf);
     }
 
     return 0;
   }
 
-  void gameProcess::startRate(const std::string& kPlayerName) {
+  void gameProcess::startRate(const std::tuple<std::string, std::vector<int>>& introducedInf) {
     srandom(time(nullptr));
     auto startGameTime = std::chrono::steady_clock::now();
     int input;
@@ -91,38 +92,42 @@ namespace gameProcess {
     }
 
     if( controller.getTerminationConditions().GameIsEnd ) {
-      auto gameEndTime = std::chrono::steady_clock::now();
-      const int elapsedTime =
-              std::chrono::duration_cast<std::chrono::seconds>(gameEndTime - startGameTime).count();
-      updateScore(kPlayerName, elapsedTime);
+//      auto gameEndTime = std::chrono::steady_clock::now();
+      /*const int elapsedTime =
+              std::chrono::duration_cast<std::chrono::seconds>(gameEndTime - startGameTime).count();*/
+      updateScore(std::get<0>(introducedInf), std::get<1>(introducedInf));
     }
   }
 
-  int gameProcess::startGame(gameMode mode, const std::string& kPlayerName) {
+  int gameProcess::startGame(gameMode mode,
+                             const std::tuple<std::string, std::vector<int>>& introducedInf) {
     if( mode == gameMode::ekRateMode ) {
-      startRate(kPlayerName);
+      startRate(introducedInf);
     }
 
     return 0;
   }
 
-  static void scanScore(std::vector<std::pair<std::string, int>>& arr) {
+  static void scanScore(std::vector<std::pair<std::string, std::vector<int>>>& arr) {
     boost::property_tree::ptree scores;
     boost::property_tree::read_json(gkBasicScorePath, scores);
 
     for( auto row = scores.get_child(gkScoreTitle).get_child(gkScoreFields).begin();
          row != scores.get_child(gkScoreTitle).get_child(gkScoreFields).end(); ++row ) {
       arr.emplace_back(row->second.get<std::string>(gkScorePlayer),
-                       row->second.get<int>(gkScoreScore));
+                       std::vector{row->second.get<int>(gkEnemy1), row->second.get<int>(gkEnemy2),
+                                   row->second.get<int>(gkEnemy3)});
     }
 
-    std::sort(arr.begin(), arr.end(),
-              [](auto& left, auto& right) { return left.second < right.second; });
+    std::sort(arr.begin(), arr.end(), [](auto& left, auto& right) {
+      return left.second[0] + left.second[1] + left.second[2]
+           < right.second[0] + right.second[1] + right.second[2];
+    });
 
     arr.resize(std::min<size_t>(gkMaxFieldsQuantity, arr.size()));
   }
 
-  static void writeScore(const std::vector<std::pair<std::string, int>>& arr,
+  static void writeScore(std::vector<std::pair<std::string, std::vector<int>>>& arr,
                          boost::property_tree::ptree& json) {
     boost::property_tree::ptree newScore;
     boost::property_tree::ptree jsonScoreFields;
@@ -130,7 +135,9 @@ namespace gameProcess {
     for( const auto& values: arr ) {
       boost::property_tree::ptree player;
       player.put(gkScorePlayer, values.first);
-      player.put(gkScoreScore, values.second);
+      player.put(gkEnemy1, values.second[0]);
+      player.put(gkEnemy1, values.second[1]);
+      player.put(gkEnemy1, values.second[2]);
       jsonScoreFields.push_back({"", player});
     }
 
@@ -139,9 +146,9 @@ namespace gameProcess {
     json.add_child(gkScoreScore, newScore);
   }
 
-  void gameProcess::updateScore(const std::string& playerName, const int score) {
-    std::vector<std::pair<std::string, int>> arr{};
-    arr.emplace_back(playerName, score);
+  void gameProcess::updateScore(const std::string& playerName, const std::vector<int>& enemy) {
+    std::vector<std::pair<std::string, std::vector<int>>> arr{};
+    arr.emplace_back(playerName, enemy);
 
     scanScore(arr);
 
@@ -200,7 +207,7 @@ namespace gameProcess {
             [](std::weak_ptr<gameObj::ShiftingObject>& obj) { return obj.expired(); });
     endGameIndicator_.erase(deadBegin, endGameIndicator_.end());
 
-    if (endGameIndicator_.empty()){
+    if( endGameIndicator_.empty() ) {
       conditions_.GameIsEnd = true;
     }
   }
@@ -255,16 +262,20 @@ namespace gameProcess {
 
   void LolGameController::initGameContext() {
     playerObjects.push_back(player_);
-    for( int enemyQuantity = 0; enemyQuantity < gkEnemyQuantity && enemyQuantity < gameMapSize_.w; ++enemyQuantity ) {
+    for( int enemyQuantity = 0; enemyQuantity < gkEnemyQuantity && enemyQuantity < gameMapSize_.w;
+         ++enemyQuantity ) {
       auto defenemy = std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
-                                                    std::pair{(1 + enemyQuantity)*5, 2});
+                                                       std::pair{(1 + enemyQuantity) * 5, 2});
       gameObjects_.push_back(defenemy);
       endGameIndicator_.push_back(std::weak_ptr(defenemy));
     }
-    auto barricade = std::make_shared<gameObj::DroneGenerator>(gameObj::ObjDirection::ekOBJDown, std::pair{10,4},gameObj::ObjectFraction::ekEnemyFraction, '-');
+    auto barricade = std::make_shared<gameObj::DroneGenerator>(
+            gameObj::ObjDirection::ekOBJDown, std::pair{10, 4},
+            gameObj::ObjectFraction::ekEnemyFraction, '-');
     gameObjects_.push_back(barricade);
     endGameIndicator_.push_back(barricade);
-    auto tracking = std::make_shared<gameObj::TrackingEnemy>(gameObj::ObjDirection::ekOBJDown, std::pair{10, 5});
+    auto tracking = std::make_shared<gameObj::TrackingEnemy>(gameObj::ObjDirection::ekOBJDown,
+                                                             std::pair{10, 5});
     gameObjects_.push_back(tracking);
     endGameIndicator_.push_back(barricade);
   }
