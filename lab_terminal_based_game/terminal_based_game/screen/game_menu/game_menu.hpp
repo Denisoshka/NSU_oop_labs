@@ -48,7 +48,7 @@ namespace gScreen {
 
     void introducePlayerName(const int c);
     void introduceEnemy(const int c);
-    void shiftEnemyIntroduceCursor();
+    void shiftEnemyIntroduceCursor(const int kPrevPos);
     void updateEnemyIntroduceStats();
     void getEnemyQuantityChoseInf(const int xIndent, const int yIndent,
                                   boost::property_tree::ptree&& json);

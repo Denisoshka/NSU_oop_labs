@@ -38,6 +38,7 @@
       "y": 2,
       "empty_cursor": "~",
       "cursor_avatar": ">",
+      "cursor_quantity": 3,
       "cursor_inf": [
         {
           "cursor": {

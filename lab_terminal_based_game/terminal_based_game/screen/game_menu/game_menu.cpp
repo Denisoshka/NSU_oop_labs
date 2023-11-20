@@ -9,7 +9,7 @@ namespace {
   const std::string gkInsertNameFieldFields = "fields";
   const std::string gkField = "field";
   const std::string gkFieldWidth = "field_width";
-  const std::string gkCursorPos = "cursor_pos";
+  const std::string gkCursor = "cursor";
   const std::string gkCursorPosName = "cursor_pos_name";
   const std::string gkCursorPosScore = "cursor_pos_score";
   const std::string gkWidth = "width";
@@ -33,7 +33,11 @@ namespace {
   const std::string gkCursorAvatarInsert = "insert_field";
   const std::string gkCursorAvatar = "cursor_avatar";
   const std::string gkEmptyCursorAvatar = "empty_cursor";
-
+  const std::string gkEnemyQuantityInsertField = "enemy_quantity_field";
+  const std::string gkEnemy1 = "enemy_1";
+  const std::string gkEnemy2 = "enemy_2";
+  const std::string gkEnemy3 = "enemy_3";
+  const std::string gkCursorQuantity = "cursor_quantity";
 
   const int gkExit = ']';
   const int gkCursorUp = 'w';
@@ -62,7 +66,7 @@ namespace gScreen {
     drawScoreTable(std::move(gameMenuConfig.get_child(gkScoreTable)), scorePath);
     drawGameName(std::move(gameMenuConfig.get_child(gkGameName)));
     drawNameInsertField(std::move(gameMenuConfig.get_child(gkInsertNameField)));
-    drawEnemyQuantity(std::move(gameMenuConfig.get_child()));
+    drawEnemyQuantity(std::move(gameMenuConfig.get_child(gkEnemyQuantityInsertField)));
   }
 
   void gameMenu::drawGameName(boost::property_tree::ptree&& gameName) {
@@ -78,8 +82,8 @@ namespace gScreen {
 
     const int kX0 = nameInsertField.get<int>(gkX0, 0);
     const int kY0 = nameInsertField.get<int>(gkY0, 0);
-    NameInf_.insertPos = {nameInsertField.get_child(gkCursorPos).get<int>(gkX0),
-                          nameInsertField.get_child(gkCursorPos).get<int>(gkY0)};
+    NameInf_.insertPos = {nameInsertField.get_child(gkCursor).get<int>(gkX0),
+                          nameInsertField.get_child(gkCursor).get<int>(gkY0)};
     const boost::property_tree::ptree kFields = nameInsertField.get_child(gkInsertNameFieldFields);
     for( const auto& kField: kFields ) {
       const int kX = kField.second.get<int>(gkX0, 0);
@@ -127,7 +131,9 @@ namespace gScreen {
          field != scores.get_child(gkScoreTitle).get_child(gkScoreFields).end()
          && line < scoreRowsLimit;
          ++field, ++line ) {
-      std::string score = std::to_string(field->second.get<int>(gkPlayerScore));
+      std::string score = std::to_string(field->second.get<int>(gkEnemy1)) + "_"
+                        + std::to_string(field->second.get<int>(gkEnemy2)) + "_"
+                        + std::to_string(field->second.get<int>(gkEnemy3));
       int precision = kCursorPosScoreMaxLen - std::min<int>(kCursorPosScoreMaxLen, score.size());
       score.insert(0, precision, gkEmptyNameFiller);
 
@@ -164,10 +170,10 @@ namespace gScreen {
     // todo fix return value;
   }
 
-  void gameMenu::shiftEnemyIntroduceCursor() {
-    const int kPrevEnemyIndex = (EnemyInf_.enemyIndex == 0) ? 0 : EnemyInf_.enemyIndex;
-    mvwaddnstr(window_, screenSize_.Y0 + EnemyInf_.cursorPos[kPrevEnemyIndex].second,
-               screenSize_.X0 + EnemyInf_.cursorPos[kPrevEnemyIndex].first,
+  void gameMenu::shiftEnemyIntroduceCursor(const int kPrevPos) {
+//    const int kPrevEnemyIndex = (EnemyInf_.enemyIndex == 0) ? 0 : EnemyInf_.enemyIndex-1;
+    mvwaddnstr(window_, screenSize_.Y0 + EnemyInf_.cursorPos[kPrevPos].second,
+               screenSize_.X0 + EnemyInf_.cursorPos[kPrevPos].first,
                EnemyInf_.noCursor.data(), EnemyInf_.noCursor.size());
     mvwaddnstr(window_, screenSize_.Y0 + EnemyInf_.cursorPos[EnemyInf_.enemyIndex].second,
                screenSize_.X0 + EnemyInf_.cursorPos[EnemyInf_.enemyIndex].first,
@@ -189,24 +195,26 @@ namespace gScreen {
     if( c == ERR ) {
     }
     else if( c == gkCursorUp ) {
+      int x = EnemyInf_.enemyIndex;
       EnemyInf_.enemyIndex =
               (EnemyInf_.enemyIndex > 0) ? --EnemyInf_.enemyIndex : EnemyInf_.enemyIndex;
-      shiftEnemyIntroduceCursor();
+      shiftEnemyIntroduceCursor(x);
     }
     else if( c == gkCursorDown ) {
-      EnemyInf_.enemyIndex = (EnemyInf_.enemyIndex < EnemyInf_.cursorRange) ? EnemyInf_.enemyIndex++
+      int x = EnemyInf_.enemyIndex;
+      EnemyInf_.enemyIndex = (EnemyInf_.enemyIndex < EnemyInf_.cursorRange-1) ? ++EnemyInf_.enemyIndex
                                                                             : EnemyInf_.enemyIndex;
-      shiftEnemyIntroduceCursor();
+      shiftEnemyIntroduceCursor(x);
     }
     else if( c == gkStatsUp ) {
-      ++(EnemyInf_.values[EnemyInf_.enemyIndex]);
+      EnemyInf_.values[EnemyInf_.enemyIndex] += 1;
       updateEnemyIntroduceStats();
     }
     else if( c == gkStatsDown ) {
-      EnemyInf_.values[EnemyInf_.enemyIndex] > 0 ? 0 : --(EnemyInf_.values[EnemyInf_.enemyIndex]);
+      EnemyInf_.values[EnemyInf_.enemyIndex] == 0 ? 0 : EnemyInf_.values[EnemyInf_.enemyIndex]-=1;
       updateEnemyIntroduceStats();
     }
-    else if( c == KEY_BACKSPACE || c == KEY_DC || c == 127 ) {
+    else if( c == KEY_ENTER || c == 10 ) {
       ApproveIndex_++;
     }
   }
@@ -231,6 +239,9 @@ namespace gScreen {
     const int kY0 = json.get<int>(gkY0, 0);
     EnemyInf_.cursorAvatar = json.get<std::string>(gkCursorAvatar);
     EnemyInf_.noCursor = json.get<std::string>(gkEmptyCursorAvatar);
+    EnemyInf_.values.resize(json.get<int>(gkCursorQuantity));
+    EnemyInf_.cursorRange = json.get<int>(gkCursorQuantity);
+    std::fill(EnemyInf_.values.begin(), EnemyInf_.values.end(), 0);
 
     const boost::property_tree::ptree kFields = json.get_child(gkEnemyCursorInf);
     for( const auto& kField: kFields ) {
@@ -242,13 +253,14 @@ namespace gScreen {
     for( const auto& kField: kFields ) {
       int kX = kField.second.get_child(gkCursorAvatarInsert).get<int>(gkX0);
       int kY = kField.second.get_child(gkCursorAvatarInsert).get<int>(gkY0);
-      EnemyInf_.cursorPos.emplace_back(xIndent + kX0 + kX, yIndent + kY0 + kY);
+      EnemyInf_.insertPos.emplace_back(xIndent + kX0 + kX, yIndent + kY0 + kY);
+      EnemyInf_.width.push_back(kField.second.get_child(gkCursorAvatarInsert).get<int>(gkWidth));
     }
   }
 
   int gameMenu::process() {
     int c;
-    while( !((c = input()) == KEY_BACKSPACE || c == KEY_DC || c == 127) ) {
+    while( (c = input()) != gkExit ) {
       if( ApproveIndex_ == ApproveIndexes::ekName ) {
         introducePlayerName(c);
       }
@@ -256,7 +268,7 @@ namespace gScreen {
         introduceEnemy(c);
       }
       else if( ApproveIndex_ == ApproveIndexes::ekFinish ) {
-        return 0;
+        return ERR;
       }
     }
     return c;

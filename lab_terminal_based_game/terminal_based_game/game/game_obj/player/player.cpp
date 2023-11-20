@@ -68,6 +68,7 @@ namespace gameObj {
 
   bool Player::getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
                         std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
+
     LivesQuantity_ -= enemy->getDamage(*this);
     return isAlive();
   }
