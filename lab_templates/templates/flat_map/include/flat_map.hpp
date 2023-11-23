@@ -1,28 +1,26 @@
 #pragma once
 
+#include <concepts>
 #include <iostream>
 #include <memory>
-#include <concepts>
 #include <type_traits>
 
-template<class keyT, class valueT, class Compare = std::less<keyT>,
-         class Allocator = std::allocator<...> >
+template<class KeyT, class ValueT, class Compare = std::less<KeyT>,
+         typename Allocator = std::allocator<std::pair<KeyT, ValueT>>>
 class FlatMap {
+  static_assert(std::default_initializable<ValueT>, "ValueT must have default initialization");
+
 private:
   const double ResizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
   const size_t StartSize_ = 2;
 
-  struct pair_ {
-    keyT key;
-    valueT value;
-  };
-
-  std::unique_ptr<pair_[]> Array_;
+  std::unique_ptr<std::pair<KeyT, ValueT>[]> Array_;
   size_t CurSize_;
   size_t MaxSize_;
 
   void resize(size_t new_size) {
-    std::unique_ptr<pair_[]> tmp = std::make_unique<pair_[]>(new_size);
+    std::unique_ptr<std::pair<KeyT, ValueT>[]> tmp =
+            std::make_unique<std::pair<KeyT, ValueT>[]>(new_size);
     for( std::size_t i = 0; i < CurSize_; ++i ) {
       tmp[i] = Array_[i];
     }
@@ -37,16 +35,16 @@ public:
       : Array_(nullptr)
       , CurSize_(0)
       , MaxSize_(0) {
-    std::has_less<
-    static_assert(std::is_);
     Array_ = nullptr;
-    std::make_unique<pair_[]>(StartSize_);
+    std::make_unique<std::pair<KeyT, ValueT>[]>(StartSize_);
     MaxSize_ = StartSize_;
   }
 
   // конструктор копирования
-  FlatMap(const FlatMap& otherMap): FlatMap(){
-    std::unique_ptr<pair_[]> tmp = std::make_unique<pair_[]>(otherMap.MaxSize_);
+  FlatMap(const FlatMap& otherMap)
+      : FlatMap() {
+    std::unique_ptr<std::pair<KeyT, ValueT>[]> tmp =
+            std::make_unique<std::pair<KeyT, ValueT>[]>(otherMap.MaxSize_);
     for( size_t i = 0; i < CurSize_; ++i ) {
       tmp[i] = otherMap.Array_[i];
     }
@@ -77,7 +75,8 @@ public:
       return *this;
     }
 
-    std::unique_ptr<pair_[]> tmp{std::make_unique<pair_[]>(MaxSize_)};
+    std::unique_ptr<std::pair<KeyT, ValueT>[]> tmp{
+            std::make_unique<std::pair<KeyT, ValueT>[]>(MaxSize_)};
     for( size_t i = 0; i < CurSize_; ++i ) {
       tmp[i] = otherMap.Array_[i];
     }
@@ -109,16 +108,16 @@ public:
   }
 
   // доступ / вставка элемента по ключу
-  valueT& operator[](const keyT& key) {
-//    std::lower_bound(Array_.get(), Array_.get() + CurSize_, key) != Array_.get() + CurSize_;
-    auto it = std::lower_bound(Array_.get(), Array_.get() + CurSize_, key);
-    if( it != Array_.get() + CurSize_ ) {
-      return it;
+  ValueT& operator[](const KeyT& key) {
+    //    std::lower_bound(Array_.get(), Array_.get() + CurSize_, key) != Array_.get() + CurSize_;
+    if( !MaxSize_ ) {
+      Array_ = std::make_unique<std::pair<KeyT, ValueT>[]>(StartSize_);
+      MaxSize_ = StartSize_;
     }
 
-    if( !MaxSize_ ) {
-      Array_ = std::make_unique<pair_[]>(StartSize_);
-      MaxSize_ = StartSize_;
+    auto it = std::lower_bound(Array_.get(), Array_.get() + CurSize_, key);
+    if( it != Array_.get() + CurSize_ ) {
+      return it->second;
     }
 
     if( MaxSize_ == CurSize_ ) {
@@ -126,26 +125,26 @@ public:
     }
 
     auto StartShift = it;
-    for( ; InsertIndex.index < StartShift; --StartShift ) {
-      if( !StartShift ) {
+    for( ; it < StartShift; --StartShift ) {
+      if( StartShift == Array_ ) {
         break;
       }
-      Array_[StartShift] = std::move(Array_[StartShift - 1]);
+      *StartShift = std::move(*(StartShift - 1));
     }
 
-    Array_[InsertIndex.index].key = key;
+    it->first = key;
     CurSize_++;
 
-    return Array_[InsertIndex.index].value;
+    return it->second;
   }
 
   // возвращает true, если запись с таким ключом присутствует в таблице
-  [[nodiscard]] bool contains(const keyT& key) const {
+  [[nodiscard]] bool contains(const KeyT& key) const {
     return std::lower_bound(Array_.get(), Array_.get() + CurSize_, key) != Array_.get() + CurSize_;
   }
 
   // удаление элемента по ключу, возвращает количество удаленных элементов (0 или 1)
-  [[nodiscard]] std::size_t erase(const keyT& key) {
+  [[nodiscard]] std::size_t erase(const KeyT& key) {
     auto it = std::lower_bound(Array_.get(), Array_.get() + CurSize_, key);
     if( it == (Array_.get() + CurSize_) ) {
       return 0;
@@ -165,23 +164,23 @@ public:
     MaxSize_ = 0;
     CurSize_ = 0;
 
-    Array_ = std::make_unique<pair_[]>(StartSize_);
+    Array_ = std::make_unique<std::pair<KeyT, ValueT>[]>(StartSize_);
     MaxSize_ = StartSize_;
   }
 
   // Получить итератор на первый элемент
-  [[nodiscard]] pair_ *begin() const {
+  [[nodiscard]] std::pair<KeyT, ValueT> *begin() const {
     return Array_.get();
   }
 
   // Получить итератор на элемент, следующий за последним
-  [[nodiscard]] pair_ *end() const {
+  [[nodiscard]] std::pair<KeyT, ValueT> *end() const {
     return Array_.get() + CurSize_;
   }
 
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
-  [[nodiscard]] pair_ *find(const keyT& key) const {
+  [[nodiscard]] std::pair<KeyT, ValueT> *find(const KeyT& key) const {
     if( auto it = std::lower_bound(Array_.get(), Array_.get() + CurSize_, key);
         it != Array_.get() + CurSize_ ) {
       return it;
