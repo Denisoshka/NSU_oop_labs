@@ -1,7 +1,9 @@
 #pragma once
+
+#include "shifting_object.hpp"
+
 #include <chrono>
 #include <memory>
-#include "shifting_object.hpp"
 
 namespace gameObj {
   class Player: public ShiftingObject {

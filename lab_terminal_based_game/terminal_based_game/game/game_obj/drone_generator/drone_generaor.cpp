@@ -1,8 +1,9 @@
-#include <algorithm>
-#include <random>
 #include "bullet.hpp"
-#include "chrono"
 #include "drone_generator.hpp"
+
+#include <random>
+#include <algorithm>
+#include <chrono>
 
 namespace {
   const int gkBarricadeLivesQuantity = 10;

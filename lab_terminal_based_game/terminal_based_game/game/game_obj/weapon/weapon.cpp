@@ -1,4 +1,5 @@
 #include "weapon.hpp"
+
 namespace {
   const int gkStandartUsesForMove = 1;
 }

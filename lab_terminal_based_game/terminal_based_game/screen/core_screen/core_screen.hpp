@@ -1,7 +1,8 @@
 #pragma once
 
-#include <curses.h>
 #include "core_screen.hpp"
+
+#include <curses.h>
 
 namespace gScreen {
   struct windowSettings {

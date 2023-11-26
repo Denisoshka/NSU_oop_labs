@@ -1,8 +1,8 @@
 #pragma once
 
-#include <chrono>
-
 #include "shifting_object.hpp"
+
+#include <chrono>
 
 namespace gameObj {
 
@@ -12,6 +12,7 @@ namespace gameObj {
     Weapon(ObjDirection kViewDirection, const std::pair<int, int>& kStartCoords, char kAvatar,
            const int kLivesQuantity, const int kBattleDamage, const ObjectFraction kFraction,
            const ObjectProtection kProtection, const int kUsesPerFrame);
+    virtual ~Weapon() = default;
 
   protected:
     WeaponConditions WeaponCond_;

@@ -1,4 +1,5 @@
 #include "shifting_object.hpp"
+
 #include <algorithm>
 
 namespace gameObj {

@@ -1,7 +1,6 @@
 #include "player.hpp"
 #include "bullet.hpp"
 
-#include <cstdint>
 #include <memory>
 
 namespace {

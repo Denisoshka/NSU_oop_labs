@@ -13,11 +13,11 @@
 namespace {
   const int gkMaxFieldsQuantity = 30;
   const int gkMinimalAmmoQuantity = 10;
+  const int gkEnemyQuantity = 3;
   const char gkQuit{']'};
   const std::string gkBulletsField = "bullets quantity: ";
   const std::string gkElapsedTimeField = "elapsed time: ";
   const std::string gkPlayerLives = "lives: ";
-  const int gkEnemyQuantity = 3;
 
   const std::string gkDefPlayerName = "unknown player";
 
@@ -39,13 +39,13 @@ namespace {
   const std::string gkScoreFields = "fields";
 
   /// for game controller
-  const char *gkGameMapSettingPath = "game_map.json";
-  const char *gkWidth = "width";
-  const char *gkHeight = "height";
-  const char *gkX0 = "x";
-  const char *gkY0 = "y";
-  const char *gkMap = "map";
-  const char *gkEmptySpace = "empty_space";
+  const std::string gkGameMapSettingPath = "game_map.json";
+  const std::string gkWidth = "width";
+  const std::string gkHeight = "height";
+  const std::string gkX0 = "x";
+  const std::string gkY0 = "y";
+  const std::string gkMap = "map";
+  const std::string gkEmptySpace = "empty_space";
 }// namespace
 
 namespace gameProcess {
@@ -92,9 +92,6 @@ namespace gameProcess {
     }
 
     if( controller.getTerminationConditions().GameIsEnd ) {
-//      auto gameEndTime = std::chrono::steady_clock::now();
-      /*const int elapsedTime =
-              std::chrono::duration_cast<std::chrono::seconds>(gameEndTime - startGameTime).count();*/
       updateScore(std::get<0>(introducedInf), std::get<1>(introducedInf));
     }
   }
@@ -120,8 +117,10 @@ namespace gameProcess {
     }
 
     std::sort(arr.begin(), arr.end(), [](auto& left, auto& right) {
-      return left.second[0] + left.second[1] + left.second[2]
-           < right.second[0] + right.second[1] + right.second[2];
+      return (gkEnemy1ScoreCoef * left.second[0] + gkEnemy2ScoreCoef * left.second[1]
+              + gkEnemy3ScoreCoef * left.second[2])
+           < (gkEnemy1ScoreCoef * right.second[0] + gkEnemy2ScoreCoef * right.second[1]
+              + gkEnemy3ScoreCoef * right.second[2]);
     });
 
     arr.resize(std::min<size_t>(gkMaxFieldsQuantity, arr.size()));

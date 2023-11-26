@@ -17,9 +17,9 @@ namespace gameObj {
     virtual int sayDamage(const ShiftingObject& object) const override;
     virtual int getDamage(const ShiftingObject& object) override;
 
-  private:
     virtual void interaction(std::shared_ptr<gameObj::ShiftingObject>& other,
                              std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
+  private:
     int AttemptsToShift_;
     std::chrono::time_point<std::chrono::steady_clock> LastShoot_;
     std::chrono::time_point<std::chrono::steady_clock> LastMove_;

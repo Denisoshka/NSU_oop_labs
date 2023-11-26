@@ -1,6 +1,7 @@
-#include "basic_screen.hpp"
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+
+#include "basic_screen.hpp"
 
 namespace {
   const char *gkWidth = "width";

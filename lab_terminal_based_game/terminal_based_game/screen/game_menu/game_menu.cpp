@@ -44,7 +44,7 @@ namespace {
   const int gkCursorDown = 's';
   const int gkStatsUp = 'd';
   const int gkStatsDown = 'a';
-  const int gkMaxNameLen = 15;// todo hide this inf in json
+  const int gkMaxNameLen = 15;// todo maybe hide this inf in json
   const int gkEmptyNameFiller = '_';
   const int gkEmptyEnemyCursorFiller = ' ';
   const int gkApprovesQuantity = 2;
@@ -273,6 +273,4 @@ namespace gScreen {
     }
     return c;
   }
-
-
 }// namespace gScreen

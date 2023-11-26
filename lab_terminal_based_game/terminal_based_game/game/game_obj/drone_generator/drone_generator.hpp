@@ -1,6 +1,8 @@
 #pragma once
-#include "chrono"
+
 #include "live_object.hpp"
+
+#include "chrono"
 
 namespace gameObj {
 

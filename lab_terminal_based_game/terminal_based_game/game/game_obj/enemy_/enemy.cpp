@@ -1,6 +1,7 @@
 #include "enemy.hpp"
-#include <random>
 #include "bullet.hpp"
+
+#include <random>
 
 namespace {
   const int elapsedMSToShoot = 700;

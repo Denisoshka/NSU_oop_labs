@@ -22,6 +22,7 @@ namespace gameProcess {
   public:
     BasicGameController(const gScreen::BasicScreen& kScreen, const std::string& kGameScreenSettings,
                         const std::string& kGameMapSettings);
+    virtual ~BasicGameController() = default;
     virtual void initGameContext() = 0;
     virtual void updateGameContext(const int kAction) = 0;
     virtual void drawGameContext() = 0;
@@ -41,6 +42,8 @@ namespace gameProcess {
   public:
     LolGameController(const gScreen::BasicScreen& kScreen, const std::string& kGameScreenSettings,
                       const std::string kGameMapSettings);
+    virtual ~LolGameController() = default;
+    
     virtual void updateGameContext(const int kAction) override;
     virtual void drawGameContext() override;
     virtual void updateStat(const std::string& kField, const int kValue);

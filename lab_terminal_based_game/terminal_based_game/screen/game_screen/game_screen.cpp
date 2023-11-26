@@ -4,20 +4,20 @@
 #include <boost/property_tree/ptree.hpp>
 
 namespace {
-  const char *gkWidth = "width";
-  const char *gkHeight = "height";
-  const char *gkX0 = "x";
-  const char *gkY0 = "y";
-  const char *gkMap = "map";
-  const char *kEmptySpace = "empty_space";
-  const char *kWall = "wall";
+  const std::string gkWidth = "width";
+  const std::string gkHeight = "height";
+  const std::string gkX0 = "x";
+  const std::string gkY0 = "y";
+  const std::string gkMap = "map";
+  const std::string kEmptySpace = "empty_space";
+  const std::string kWall = "wall";
 
-  const char *kGameMap = "game_map";
+  const std::string kGameMap = "game_map";
 
-  const char *kGameStats = "game_stats";
-  const char *gkFields = "fields";
-  const char *kStatsFieldName = "field_name";
-  const char *kStatsFieldWidth = "field_width";
+  const std::string kGameStats = "game_stats";
+  const std::string gkFields = "fields";
+  const std::string kStatsFieldName = "field_name";
+  const std::string kStatsFieldWidth = "field_width";
 
   const char gkEmptyNameFiller = '_';
 }// namespace

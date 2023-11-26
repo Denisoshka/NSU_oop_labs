@@ -12,11 +12,6 @@ namespace gScreen {
              const std::string& scorePath);
     virtual ~gameMenu() = default;
 
-    /* void drawGameMenu(const std::string& kScorePath);
-      drawGameMenu(const std::vector<std::pair<std::pair<int, int>, std::string>>& stats);
-     void updateGameMenu(const std::string_view& key, std::string_view&& value);
-     void drawGameMenu(const std::vector<std::pair<std::string, int>>& score);*/
-
     void drawScoreTable(boost::property_tree::ptree&& scoreTable, const std::string& scorePath);
     void drawGameName(boost::property_tree::ptree&& gameName);
     void drawNameInsertField(boost::property_tree::ptree&& nameInsertField);

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 #include <utility>
 #include <vector>
@@ -43,6 +44,8 @@ namespace gameObj {
                    char kAvatar, const int kLivesQuantity, const int kBattleDamage,
                    const ObjectFraction kFraction, const ObjectProtection kProtection_,
                    const ObjectType kType);
+    virtual ~ShiftingObject() = default;
+
     virtual void action(std::vector<std::shared_ptr<gameObj::ShiftingObject>>& objects,
                         std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace);
 
@@ -73,6 +76,7 @@ namespace gameObj {
     virtual bool getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
                           std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) = 0;
     virtual bool isCollision(const std::shared_ptr<gameObj::ShiftingObject>& other);
+
   protected:
     ObjectFraction Fraction_;
     ObjectProtection Protection_;

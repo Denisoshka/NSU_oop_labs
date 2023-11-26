@@ -1,7 +1,8 @@
 #include "tracking_enemy.hpp"
+#include "bullet.hpp"
+
 #include <algorithm>
 #include <random>
-#include "bullet.hpp"
 
 namespace {
   const int gkTrackingTimeout = 5000;
@@ -205,8 +206,9 @@ namespace gameObj {
   }
 
   bool TrackingEnemy::checkRoute(const std::vector<std::pair<bool, bool>>& allowedShift) {
-    if(std::ranges::any_of(allowedShift.begin(), allowedShift.end(),
-                            [](auto& x) { return x != std::pair{true, true}; })) {
+    if( std::ranges::any_of(allowedShift.begin(), allowedShift.end(), [](auto& x) {
+          return x != std::pair{true, true};
+        }) ) {
       Shift_.first -= (Shift_.first / std::abs(Shift_.first));
       return RotationEnd_ = !Shift_.first;
     }
