@@ -4,7 +4,8 @@
 #include <iostream>
 #include <memory>
 #include <type_traits>
-
+#include <vector>
+std::vector<int> a;
 template<class KeyT, class ValueT, class Compare = std::less<KeyT>,
          typename Allocator = std::allocator<std::pair<KeyT, ValueT>>>
 class FlatMap {
@@ -14,6 +15,7 @@ private:
   const double ResizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
   const size_t StartSize_ = 2;
 
+  Allocator Allocator_;
   std::unique_ptr<std::pair<KeyT, ValueT>[]> Array_;
   size_t CurSize_;
   size_t MaxSize_;
@@ -32,11 +34,13 @@ private:
 public:
   // стандартный конструктор
   FlatMap()
-      : Array_(nullptr)
+      : Allocator_()
+      , Array_(nullptr)
       , CurSize_(0)
       , MaxSize_(0) {
     Array_ = nullptr;
-    std::make_unique<std::pair<KeyT, ValueT>[]>(StartSize_);
+    Allocator_.allocate();
+    std::unique_ptr<std::pair<KeyT, ValueT>[]>();
     MaxSize_ = StartSize_;
   }
 
