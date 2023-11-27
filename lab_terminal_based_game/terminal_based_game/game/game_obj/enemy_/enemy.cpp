@@ -112,23 +112,25 @@ namespace gameObj {
       return 0;
     }
 
-    if( Protection_ < object.sayDamage(*this) ) {
+    if( BattleDamage_ < object.getProtection() ) {
       return BattleDamage_ * gkBasicLowerCoef;
     }
     return BattleDamage_;
   }
 
+  // todo make the check a separate function
   int Enemy::getDamage(const ShiftingObject& object) {
-    if( object.getFraction() == Fraction_ || object.getFraction() != ObjectFraction::ekNoneFraction
+    if( (object.getFraction() == Fraction_
+         && object.getFraction() != ObjectFraction::ekNoneFraction)
+                != ObjectFraction::ekNoneFraction
         || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
 
-    if( Protection_ < object.sayDamage(*this) ) {
-      WeaponCond_ = WeaponConditions::ekWasInUse;
+    WeaponCond_ = WeaponConditions::ekWasInUse;
+    if( BattleDamage_ < object.getProtection() ) {
       return BattleDamage_ * gkBasicLowerCoef;
     }
-    WeaponCond_ = WeaponConditions::ekWasInUse;
     return BattleDamage_;
   }
 

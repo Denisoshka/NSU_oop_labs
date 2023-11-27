@@ -39,7 +39,7 @@ namespace gameObj {
 
   bool Bullet::getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
                         std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-    return !isAlive();
+    return isAlive();
   }
 
   int Bullet::sayDamage(const ShiftingObject& object) const {
@@ -49,7 +49,7 @@ namespace gameObj {
       return 0;
     }
 
-    if( BattleDamage_ < object.getProtection() ) {
+    else if( BattleDamage_ < object.getProtection() ) {
       return BattleDamage_ / 2;
     }
     else {
@@ -64,15 +64,22 @@ namespace gameObj {
       return 0;
     }
 
+    WeaponCond_ = WeaponConditions::ekWasInUse;
+
     if( BattleDamage_ < object.getProtection() ) {
       UsesForMove_ -= LivesQuantity_ / 2 + 1;
-      LivesQuantity_ -= LivesQuantity_ / 2 + 1;
-      WeaponCond_ = WeaponConditions::ekWasInUse;
-      return BattleDamage_ / 2;
+
+      if( object.getProtection() == ObjectProtection::ekShieldProtection ) {
+        LivesQuantity_ = 0;
+      }
+      else {
+        LivesQuantity_ -= LivesQuantity_ / 2 + 1;
+      }
+
+      return BattleDamage_ / 2 + 1;
     }
     --UsesForMove_;
     --LivesQuantity_;
-    WeaponCond_ = WeaponConditions::ekWasInUse;
     return BattleDamage_;
   }
 

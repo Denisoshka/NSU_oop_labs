@@ -41,9 +41,10 @@ namespace gameProcess {
   class LolGameController: BasicGameController {
   public:
     LolGameController(const gScreen::BasicScreen& kScreen, const std::string& kGameScreenSettings,
-                      const std::string kGameMapSettings);
+                      const std::string& kGameMapSettings, const std::vector<int>& kEnemyQuantity);
     virtual ~LolGameController() = default;
-    
+
+    virtual void initGameContext(const std::vector<int> & kEnemyQuantity);
     virtual void updateGameContext(const int kAction) override;
     virtual void drawGameContext() override;
     virtual void updateStat(const std::string& kField, const int kValue);

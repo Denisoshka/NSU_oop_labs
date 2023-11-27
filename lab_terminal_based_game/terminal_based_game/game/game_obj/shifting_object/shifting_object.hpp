@@ -23,6 +23,7 @@ namespace gameObj {
     ekBaseProtection = 10,
     ekStandardProtection = 20,
     ekHighProtection = 40,
+    ekShieldProtection = 1000,
   };
 
   enum ObjectType : int {

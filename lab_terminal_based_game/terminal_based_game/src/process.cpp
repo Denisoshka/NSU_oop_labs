@@ -4,8 +4,6 @@
 #include "shifting_object.hpp"
 
 #include <chrono>
-#include <fstream>
-#include <future>
 #include <iostream>
 #include <random>
 #include <set>
@@ -31,6 +29,15 @@ namespace {
   const float gkEnemy1ScoreCoef = 2;
   const float gkEnemy2ScoreCoef = 1;
   const float gkEnemy3ScoreCoef = 3;
+  const int gkEnemy1DefQuantity = 4;
+  const int gkEnemy2DefQuantity = 2;
+  const int gkEnemy3DefQuantity = 1;
+  const int gkEnemyX0 = 4;
+  const int gkEnemy1Y0 = 2;
+  const int gkEnemy2Y0 = 6;
+  const int gkEnemy3Y0 = 3;
+  const int gkDefEnemyQuantityMarker = -1;
+
 
   const std::string gkScoreTitle = "score";
   const std::string gkScorePlayer = "player";
@@ -75,11 +82,8 @@ namespace gameProcess {
     auto startGameTime = std::chrono::steady_clock::now();
     int input;
 
-    LolGameController controller{
-            coreScreen_,
-            gkBasicGameScreenSettingsPath,
-            gkGameMapSettingPath,
-    };
+    LolGameController controller{coreScreen_, gkBasicGameScreenSettingsPath, gkGameMapSettingPath,
+                                 std::get<1>(introducedInf)};
 
     while( (input = controller.input()) != gkQuit && !controller.gameIsEnd() ) {
 
@@ -119,7 +123,7 @@ namespace gameProcess {
     std::sort(arr.begin(), arr.end(), [](auto& left, auto& right) {
       return (gkEnemy1ScoreCoef * left.second[0] + gkEnemy2ScoreCoef * left.second[1]
               + gkEnemy3ScoreCoef * left.second[2])
-           < (gkEnemy1ScoreCoef * right.second[0] + gkEnemy2ScoreCoef * right.second[1]
+           > (gkEnemy1ScoreCoef * right.second[0] + gkEnemy2ScoreCoef * right.second[1]
               + gkEnemy3ScoreCoef * right.second[2]);
     });
 
@@ -130,13 +134,16 @@ namespace gameProcess {
                          boost::property_tree::ptree& json) {
     boost::property_tree::ptree newScore;
     boost::property_tree::ptree jsonScoreFields;
-
+//    todo maybe incert check in first tuple accept
     for( const auto& values: arr ) {
       boost::property_tree::ptree player;
-      player.put(gkScorePlayer, values.first);
-      player.put(gkEnemy1, values.second[0]);
-      player.put(gkEnemy1, values.second[1]);
-      player.put(gkEnemy1, values.second[2]);
+      player.put(gkScorePlayer, values.first.empty() ? gkDefPlayerName : values.first);
+      player.put(gkEnemy1, (values.second[0] == gkDefEnemyQuantityMarker) ? gkEnemy1DefQuantity
+                                                                          : values.second[0]);
+      player.put(gkEnemy2, (values.second[1] == gkDefEnemyQuantityMarker) ? gkEnemy2DefQuantity
+                                                                          : values.second[1]);
+      player.put(gkEnemy3, (values.second[2] == gkDefEnemyQuantityMarker) ? gkEnemy3DefQuantity
+                                                                          : values.second[2]);
       jsonScoreFields.push_back({"", player});
     }
 
@@ -260,32 +267,69 @@ namespace gameProcess {
   }
 
   void LolGameController::initGameContext() {
-    playerObjects.push_back(player_);
-    for( int enemyQuantity = 0; enemyQuantity < gkEnemyQuantity && enemyQuantity < gameMapSize_.w;
-         ++enemyQuantity ) {
-      auto defenemy = std::make_shared<gameObj::Enemy>(gameObj::ObjDirection::ekOBJDown,
-                                                       std::pair{(1 + enemyQuantity) * 5, 2});
-      gameObjects_.push_back(defenemy);
-      endGameIndicator_.push_back(std::weak_ptr(defenemy));
+  }
+
+  // todo maybe refactor on templates?
+  static void spawnEnemy1(const float kStep, const int EnemyQuantity, const int EnemyY0,
+                          auto& gameObjects, auto& gameEndIndicator) {
+    for( int en = 0; en < EnemyQuantity; ++en ) {
+      auto defEnemy = std::make_shared<gameObj::Enemy>(
+              gameObj::ObjDirection::ekOBJDown,
+              std::pair<int, int>{gkEnemyX0 + en * kStep, EnemyY0});
+      gameObjects.push_back(defEnemy);
+      gameEndIndicator.push_back(std::weak_ptr(defEnemy));
     }
-    auto barricade = std::make_shared<gameObj::DroneGenerator>(
-            gameObj::ObjDirection::ekOBJDown, std::pair{10, 4},
-            gameObj::ObjectFraction::ekEnemyFraction, '-');
-    gameObjects_.push_back(barricade);
-    endGameIndicator_.push_back(barricade);
-    auto tracking = std::make_shared<gameObj::TrackingEnemy>(gameObj::ObjDirection::ekOBJDown,
-                                                             std::pair{10, 5});
-    gameObjects_.push_back(tracking);
-    endGameIndicator_.push_back(barricade);
+  }
+
+  static void spawnEnemy2(const float kStep, const int EnemyQuantity, const int EnemyY0,
+                          auto& gameObjects, auto& gameEndIndicator) {
+    for( int en = 0; en < EnemyQuantity; ++en ) {
+      auto drone = std::make_shared<gameObj::DroneGenerator>(
+              gameObj::ObjDirection::ekOBJDown,
+              std::pair<int, int>{gkEnemyX0 + en * kStep, EnemyY0},
+              gameObj::ObjectFraction::ekEnemyFraction, '-');
+      gameObjects.push_back(drone);
+      gameEndIndicator.push_back(drone);
+    }
+  }
+
+  static void spawnEnemy3(const float kStep, const int EnemyQuantity, const int EnemyY0,
+                          auto& gameObjects, auto& gameEndIndicator) {
+    for( int en = 0; en < EnemyQuantity; ++en ) {
+      auto tracking = std::make_shared<gameObj::TrackingEnemy>(
+              gameObj::ObjDirection::ekOBJDown, std::pair{gkEnemyX0 + en * kStep, EnemyY0});
+      gameObjects.push_back(tracking);
+      gameEndIndicator.push_back(tracking);
+    }
+  }
+
+  void LolGameController::initGameContext(const std::vector<int>& kEnemyQuantity) {
+    playerObjects.push_back(player_);
+
+    const int enemy1Quantity =
+            kEnemyQuantity[0] == gkDefEnemyQuantityMarker ? gkEnemy1DefQuantity : kEnemyQuantity[0];
+    spawnEnemy1(static_cast<float>(gameMapSize_.w - 1) / static_cast<float>(enemy1Quantity),
+                enemy1Quantity, gkEnemy1Y0, gameObjects_, endGameIndicator_);
+
+    const int enemy2Quantity =
+            kEnemyQuantity[1] == gkDefEnemyQuantityMarker ? gkEnemy2DefQuantity : kEnemyQuantity[1];
+    spawnEnemy2(static_cast<float>(gameMapSize_.w - 1) / static_cast<float>(enemy2Quantity),
+                enemy2Quantity, gkEnemy2Y0, gameObjects_, endGameIndicator_);
+
+    const int enemy3Quantity =
+            kEnemyQuantity[2] == gkDefEnemyQuantityMarker ? gkEnemy3DefQuantity : kEnemyQuantity[2];
+    spawnEnemy3(static_cast<float>(gameMapSize_.w - 1) / static_cast<float>(enemy3Quantity),
+                enemy3Quantity, gkEnemy3Y0, gameObjects_, endGameIndicator_);
   }
 
   LolGameController::LolGameController(const gScreen::BasicScreen& kScreen,
                                        const std::string& kGameScreenSettings,
-                                       const std::string kGameMapSettings)
+                                       const std::string& kGameMapSettings,
+                                       const std::vector<int>& kEnemyQuantity)
       : BasicGameController(kScreen, kGameScreenSettings, kGameMapSettings) {
     player_ = std::make_shared<gameObj::Player>(gameObj::ObjDirection::ekObjUp,
-                                                std::pair{gameMapSize_.w / 2, gameMapSize_.h - 2});
-    LolGameController::initGameContext();
+                                                std::pair{gameMapSize_.w / 2, gameMapSize_.h - 3});
+    LolGameController::initGameContext(kEnemyQuantity);
     LolGameController::drawGameContext();
     gscreen_.drawGameMap();
   }

@@ -4,14 +4,17 @@
 #include <memory>
 
 namespace {
-  const int gkMoveLeft{'a'};
-  const int gkMoveRight{'d'};
-  const int gkReload{'s'};
-  const int gkShoot{'w'};
+  const int gkMoveLeft = 'a';
+  const int gkMoveRight = 'd';
+  const int gkReload = 's';
+  const int gkShoot = 'w';
+  const int gkBulletDestroyer = 'c';
+
   const int gkMaxAmmoQuantity = 10;
   const int gkPlayerLiverQuantity = 200;
   const int gkPlayerDamage = 50;
   const int gkReloadMilisecondsTimeout = 250;
+  const int gkBulletDestroyerTimeout = 7'500;
 
   const float gkBasicLowerCoef = 0.7;
   //  std::pair<unsigned, unsigned>
@@ -28,8 +31,8 @@ namespace gameObj {
                                std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
     CoreCoords_ = NewCoreCoords_;
     Coords_.front() = NewCoords_.front();
-    auto curTime = std::chrono::steady_clock::now();
-    if( std::chrono::duration_cast<std::chrono::milliseconds>(curTime - LastWeaponReload_).count()
+     const auto kCurTime = std::chrono::steady_clock::now();
+    if( std::chrono::duration_cast<std::chrono::milliseconds>(kCurTime - LastWeaponReload_).count()
         >= gkReloadMilisecondsTimeout ) {
       WeaponCond_ = WeaponConditions::ekUnUsable;
     }
@@ -52,7 +55,13 @@ namespace gameObj {
         trace.push_back(std::make_shared<Bullet>(ViewDirection_, bulletCoords, Fraction_));
       }
     }
-
+    else if( action == gkBulletDestroyer  && std::chrono::duration_cast<std::chrono::milliseconds>(kCurTime - LastBulletDestroyerGenerate_).count()
+                                                    >= gkBulletDestroyer) {
+       trace.push_back(std::make_shared<BulletDestroyer>(
+              ViewDirection_, std::pair{CoreCoords_.first, CoreCoords_.second + ViewDirection_ * 2},
+              Fraction_));
+       LastBulletDestroyerGenerate_ = kCurTime;
+    }
     RotationEnd_ = !Shift_.first;
   }
 
@@ -67,7 +76,6 @@ namespace gameObj {
 
   bool Player::getFight(std::shared_ptr<gameObj::ShiftingObject>& enemy,
                         std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) {
-
     LivesQuantity_ -= enemy->getDamage(*this);
     return isAlive();
   }

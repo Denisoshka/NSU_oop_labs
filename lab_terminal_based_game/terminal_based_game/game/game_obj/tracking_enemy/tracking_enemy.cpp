@@ -102,7 +102,6 @@ namespace gameObj {
                    > gkMaxTrackingCordsDiff ) {
       TrackingActivate_ = false;
     }
-
     if( std::chrono::duration_cast<std::chrono::milliseconds>(kCurTime - LastMove_).count()
         >= gkStandardMoveTimeout ) {
       RotationEnd_ = false;

@@ -25,7 +25,7 @@ file(GLOB PUBLIC_INCLUDES
         "${CMAKE_CURRENT_SOURCE_DIR}/benefits"
         "${CMAKE_CURRENT_SOURCE_DIR}/enemy_with_shield"
         "${CMAKE_CURRENT_SOURCE_DIR}/minigun_enemy"
-        "${CMAKE_CURRENT_SOURCE_DIR}/shield"
+        "${CMAKE_CURRENT_SOURCE_DIR}/bullet_destroyer"
         "${CMAKE_CURRENT_SOURCE_DIR}/drone_generator"
         "${CMAKE_CURRENT_SOURCE_DIR}/tracking_enemy"
         "${CMAKE_CURRENT_SOURCE_DIR}/live_object"

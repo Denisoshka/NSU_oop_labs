@@ -48,6 +48,7 @@ namespace {
   const int gkEmptyNameFiller = '_';
   const int gkEmptyEnemyCursorFiller = ' ';
   const int gkApprovesQuantity = 2;
+  const int gkEnemyQuantityNotInstalled = -1;
 
   enum ApproveIndexes : int {
     ekName,
@@ -171,10 +172,9 @@ namespace gScreen {
   }
 
   void gameMenu::shiftEnemyIntroduceCursor(const int kPrevPos) {
-//    const int kPrevEnemyIndex = (EnemyInf_.enemyIndex == 0) ? 0 : EnemyInf_.enemyIndex-1;
     mvwaddnstr(window_, screenSize_.Y0 + EnemyInf_.cursorPos[kPrevPos].second,
-               screenSize_.X0 + EnemyInf_.cursorPos[kPrevPos].first,
-               EnemyInf_.noCursor.data(), EnemyInf_.noCursor.size());
+               screenSize_.X0 + EnemyInf_.cursorPos[kPrevPos].first, EnemyInf_.noCursor.data(),
+               EnemyInf_.noCursor.size());
     mvwaddnstr(window_, screenSize_.Y0 + EnemyInf_.cursorPos[EnemyInf_.enemyIndex].second,
                screenSize_.X0 + EnemyInf_.cursorPos[EnemyInf_.enemyIndex].first,
                EnemyInf_.cursorAvatar.data(), EnemyInf_.cursorAvatar.size());
@@ -202,8 +202,9 @@ namespace gScreen {
     }
     else if( c == gkCursorDown ) {
       int x = EnemyInf_.enemyIndex;
-      EnemyInf_.enemyIndex = (EnemyInf_.enemyIndex < EnemyInf_.cursorRange-1) ? ++EnemyInf_.enemyIndex
-                                                                            : EnemyInf_.enemyIndex;
+      EnemyInf_.enemyIndex = (EnemyInf_.enemyIndex < EnemyInf_.cursorRange - 1)
+                                   ? ++EnemyInf_.enemyIndex
+                                   : EnemyInf_.enemyIndex;
       shiftEnemyIntroduceCursor(x);
     }
     else if( c == gkStatsUp ) {
@@ -211,7 +212,7 @@ namespace gScreen {
       updateEnemyIntroduceStats();
     }
     else if( c == gkStatsDown ) {
-      EnemyInf_.values[EnemyInf_.enemyIndex] == 0 ? 0 : EnemyInf_.values[EnemyInf_.enemyIndex]-=1;
+      EnemyInf_.values[EnemyInf_.enemyIndex] <= 0 ? 0 : EnemyInf_.values[EnemyInf_.enemyIndex] -= 1;
       updateEnemyIntroduceStats();
     }
     else if( c == KEY_ENTER || c == 10 ) {
@@ -241,7 +242,8 @@ namespace gScreen {
     EnemyInf_.noCursor = json.get<std::string>(gkEmptyCursorAvatar);
     EnemyInf_.values.resize(json.get<int>(gkCursorQuantity));
     EnemyInf_.cursorRange = json.get<int>(gkCursorQuantity);
-    std::fill(EnemyInf_.values.begin(), EnemyInf_.values.end(), 0);
+    std::fill(EnemyInf_.values.begin(), EnemyInf_.values.end(), gkEnemyQuantityNotInstalled);
+    //    std::fill(EnemyInf_.values.begin(), EnemyInf_.values.end(), 0);
 
     const boost::property_tree::ptree kFields = json.get_child(gkEnemyCursorInf);
     for( const auto& kField: kFields ) {

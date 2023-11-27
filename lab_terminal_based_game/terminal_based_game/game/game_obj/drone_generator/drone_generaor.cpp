@@ -111,6 +111,7 @@ namespace gameObj {
         || WeaponCond_ == WeaponConditions::ekUnUsable ) {
       return 0;
     }
+
     WeaponCond_ = WeaponConditions::ekWasInUse;
     if( BattleDamage_ < object.getProtection() ) {
       return BattleDamage_ * gkBasicDroneLowerCoef;
@@ -130,7 +131,7 @@ namespace gameObj {
       return 0;
     }
 
-    if( Protection_ < object.sayDamage(*this) ) {
+    if( BattleDamage_ < object.getProtection() ) {
       return BattleDamage_ * gkBasicDroneLowerCoef;
     }
     return BattleDamage_;

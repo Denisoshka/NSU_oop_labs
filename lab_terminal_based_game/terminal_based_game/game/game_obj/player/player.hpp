@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <memory>
+#include "bullet_destroyer.hpp"
 
 namespace gameObj {
   class Player: public ShiftingObject {
@@ -26,6 +27,8 @@ namespace gameObj {
                              std::vector<std::shared_ptr<gameObj::ShiftingObject>>& trace) override;
 
   private:
+    std::weak_ptr<BulletDestroyer> BulletDestroyer_;
+    std::chrono::time_point<std::chrono::steady_clock> LastBulletDestroyerGenerate_;
     WeaponConditions WeaponCond_;
     int AmmoQuantity_ = 0;
     std::chrono::time_point<std::chrono::steady_clock> LastWeaponReload_;
