@@ -10,8 +10,13 @@ namespace tupleCXX20Exceptions {
 
   class baseTupleCXX20Exception {
   public:
-    explicit baseTupleCXX20Exception(tupleCXX20ExceptionErrorsId id);
-    tupleCXX20ExceptionErrorsId getId();
+    explicit baseTupleCXX20Exception(tupleCXX20ExceptionErrorsId id)
+        : id_(id) {
+    }
+
+    tupleCXX20ExceptionErrorsId getId() const{
+      return id_;
+    };
 
   protected:
     tupleCXX20ExceptionErrorsId id_;
@@ -20,8 +25,16 @@ namespace tupleCXX20Exceptions {
   class tupleCXX20InvalidConversion: public virtual baseTupleCXX20Exception,
                                      public std::invalid_argument {
   public:
-    tupleCXX20InvalidConversion(const std::string& kMsg, const size_t kColum);
-    size_t getColum() const;
+    tupleCXX20InvalidConversion(const std::string& kMsg, const size_t kColum)
+        : baseTupleCXX20Exception(tupleCXX20ExceptionErrorsId::ekTupleCXX20InvalidConversion)
+        , kColum_(kColum)
+        , invalid_argument(kMsg) {
+    }
+
+    size_t getColum() const {
+      return kColum_;
+    };
+
   private:
     size_t kColum_;
   };

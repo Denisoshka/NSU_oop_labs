@@ -5,22 +5,7 @@
 #include <sstream>
 #include <string>
 #include <tuple>
-#include <typeinfo>
 #include <vector>
-
-#include "tuple_cxx20_exceptions.hpp"
-
-template<class Ch, class Tr, class Tuple, std::size_t N>
-static void printTuple(std::basic_ostream<Ch, Tr>& out, const Tuple& tuple) {
-  constexpr size_t index = N - 1;
-  if constexpr( index > 0 ) {
-    printTuple<Ch, Tr, Tuple, index>(out, tuple);
-    out << " " << std::get<index>(tuple);
-  }
-  else {
-    out << std::get<0>(tuple);
-  }
-}
 
 template<typename Ch, typename Tr>
 std::ostream& operator<<(std::basic_ostream<Ch, Tr>& ofs, const std::vector<std::string>& kVec) {
@@ -30,13 +15,28 @@ std::ostream& operator<<(std::basic_ostream<Ch, Tr>& ofs, const std::vector<std:
   return ofs;
 }
 
-template<typename Ch, typename Tr, typename... Types>
-std::ostream& operator<<(std::basic_ostream<Ch, Tr>& ofs, const std::tuple<Types...>& tuple) {
-  printTuple<Ch, Tr, decltype(tuple), sizeof...(Types)>(ofs, tuple);
+template<class Ch, class Tr, class Tuple, std::size_t N>
+struct TuplePrinter {
+  static void print(std::basic_ostream<Ch, Tr>& ofs, const Tuple& t) {
+    TuplePrinter<Ch, Tr, Tuple, N - 1>::print(ofs, t);
+    ofs << " " << std::get<N - 1>(t);
+  }
+};
+
+template<class Ch, class Tr, class Tuple>
+struct TuplePrinter<Ch, Tr, Tuple, 1> {
+  static void print(std::basic_ostream<Ch, Tr>& ofs, const Tuple& t) {
+    ofs << std::get<0>(t);
+  }
+};
+
+template<typename Ch, typename Tr, typename... Args>
+std::ostream& operator<<(std::basic_ostream<Ch, Tr>& ofs, const std::tuple<Args...>& tuple) {
+  TuplePrinter<Ch, Tr, decltype(tuple), sizeof...(Args)>::print(ofs, tuple);
   return ofs;
 }
 
-namespace tuple_cxx20 {
+/*
   template<typename T>
   T convert(const std::string& s, size_t N) {
     std::stringstream buff(s);
@@ -64,5 +64,5 @@ namespace tuple_cxx20 {
   std::tuple<Types..., std::vector<std::string>> getResultCVSTuple(
           const std::vector<std::string>& v) {
     return crutch<Types...>(v, std::make_index_sequence<sizeof...(Types)>{});
-  }
-}// namespace tuple_cxx20
+  }*/
+// namespace tuple_cxx11
