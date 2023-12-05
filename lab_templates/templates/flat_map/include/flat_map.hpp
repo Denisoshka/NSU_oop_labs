@@ -2,34 +2,35 @@
 
 #include <concepts>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <type_traits>
 #include <vector>
-std::vector<int> a;
+
+const double ResizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
+const size_t StartSize_ = 2;
+
+// std::vector<int> a;
 template<class KeyT, class ValueT, class Compare = std::less<KeyT>,
          typename Allocator = std::allocator<std::pair<KeyT, ValueT>>>
 class FlatMap {
+  using key_type = KeyT;
+  using val_type = ValueT;
+  using value_type = std::pair<const KeyT, ValueT>;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using key_compare = Compare;
+  using allocator_type = Allocator;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+
   static_assert(std::default_initializable<ValueT>, "ValueT must have default initialization");
 
 private:
-  const double ResizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
-  const size_t StartSize_ = 2;
-
+  value_type *Array_;
   Allocator Allocator_;
-  std::unique_ptr<std::pair<KeyT, ValueT>[]> Array_;
   size_t CurSize_;
   size_t MaxSize_;
-
-  void resize(size_t new_size) {
-    std::unique_ptr<std::pair<KeyT, ValueT>[]> tmp =
-            std::make_unique<std::pair<KeyT, ValueT>[]>(new_size);
-    for( std::size_t i = 0; i < CurSize_; ++i ) {
-      tmp[i] = Array_[i];
-    }
-
-    MaxSize_ = new_size;
-    Array_ = std::move(tmp);
-  }
 
 public:
   // стандартный конструктор
@@ -38,29 +39,36 @@ public:
       , Array_(nullptr)
       , CurSize_(0)
       , MaxSize_(0) {
-    Array_ = nullptr;
-    Allocator_.allocate();
-    std::unique_ptr<std::pair<KeyT, ValueT>[]>();
-    MaxSize_ = StartSize_;
+    try {
+      Array_ = std::allocator_traits<Allocator>::allocate(Allocator_, StartSize_);
+      MaxSize_ = StartSize_;
+    } catch( ... ) {
+      Array_ = nullptr;
+      throw;
+    }
   }
 
   // конструктор копирования
   FlatMap(const FlatMap& otherMap)
       : FlatMap() {
-    std::unique_ptr<std::pair<KeyT, ValueT>[]> tmp =
-            std::make_unique<std::pair<KeyT, ValueT>[]>(otherMap.MaxSize_);
-    for( size_t i = 0; i < CurSize_; ++i ) {
-      tmp[i] = otherMap.Array_[i];
+    decltype(Array_) tmp =
+            std::allocator_traits<Allocator>::allocate(Allocator_, otherMap.MaxSize_);
+    try {
+      std::uninitialized_copy(otherMap.begin(), otherMap.end(), tmp);
+    } catch( ... ) {
+      std::allocator_traits<Allocator>::deallocate(Allocator_, tmp, otherMap.MaxSize_);
+      throw;
     }
 
-    Array_ = std::move(tmp);
+    std::allocator_traits<Allocator>::deallocate(Allocator_, Array_, otherMap.MaxSize_);
+    Array_ = tmp;
     CurSize_ = otherMap.CurSize_;
     MaxSize_ = otherMap.MaxSize_;
   }
 
   // конструктор перемещения
   FlatMap(FlatMap&& otherMap) noexcept
-      : Array_(std::move(otherMap.Array_))
+      : Array_(otherMap.Array_)
       , CurSize_(otherMap.CurSize_)
       , MaxSize_(otherMap.MaxSize_) {
     otherMap.CurSize_ = 0;
@@ -70,7 +78,11 @@ public:
 
   // деструктор
   ~FlatMap() {
-    Array_.reset();
+    for( auto& start = begin(); start != end(); start++ ) {
+      std::allocator_traits<Allocator>::destroy(Allocator_, start);
+    }
+    std::allocator_traits<Allocator>::deallocate(Allocator_, Array_, MaxSize_);
+    Array_ = nullptr;
   }
 
   // оператор присваивания
@@ -99,8 +111,10 @@ public:
     }
     CurSize_ = OtherMap.CurSize_;
     MaxSize_ = OtherMap.MaxSize_;
-    Array_.reset();
-    Array_ = std::move(OtherMap.Array_);
+    std::allocator_traits<Allocator>::deallocate(Allocator_, Array_, MaxSize_);
+    Array_ = OtherMap.Array_;
+
+    OtherMap.Array_ = nullptr;
     OtherMap.CurSize_ = 0;
     OtherMap.MaxSize_ = 0;
     return *this;
@@ -109,6 +123,17 @@ public:
   // получить количество элементов в таблице
   [[nodiscard]] std::size_t size() const {
     return CurSize_;
+  }
+
+  void resize(size_t new_size) {
+    std::unique_ptr<std::pair<KeyT, ValueT>[]> tmp =
+            std::make_unique<std::pair<KeyT, ValueT>[]>(new_size);
+    for( std::size_t i = 0; i < new_size; ++i ) {
+      tmp[i] = std::move(Array_[i]);
+    }
+
+    MaxSize_ = new_size;
+    Array_ = std::move(tmp);
   }
 
   // доступ / вставка элемента по ключу
