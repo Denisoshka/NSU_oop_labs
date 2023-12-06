@@ -1,0 +1,5 @@
+{
+  "name": "mix_converter",
+  "params": "stream(def=output_stream(0)), start(def=0), end(def=max_value)",
+  "description" : "mix input stream with output stream"
+}
