@@ -12,11 +12,11 @@ const size_t StartSize_ = 2;
 
 // std::vector<int> a;
 template<class KeyT, class ValueT, class Compare = std::less<KeyT>,
-         class Allocator = std::allocator<std::pair<const KeyT, ValueT>>>
+         class Allocator = std::allocator<std::pair<KeyT, ValueT>>>
 class FlatMap {
   using key_type = KeyT;
   using val_type = ValueT;
-  using value_type = std::pair<const key_type, val_type>;
+  using value_type = std::pair<key_type, val_type>;
   using pointer = value_type *;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
@@ -27,6 +27,8 @@ class FlatMap {
   using const_reference = const value_type&;
 
   static_assert(std::default_initializable<ValueT>, "ValueT must have default initialization");
+  static_assert(std::is_same<typename Allocator::value_type, value_type>::value,
+                "FlatMap must have the same value_type as its allocator");
 
 private:
   allocator_type Allocator_;
@@ -34,6 +36,16 @@ private:
   key_compare Comp_;
   size_type CurSize_;
   size_type MaxSize_;
+
+  std::pair<pointer, bool> findIn(const key_type& key) const {
+    if( !Array_ ) {
+      return {Array_, false};
+    }
+    const auto it = std::lower_bound(Array_, Array_ + CurSize_, key, [this](auto left, auto right) {
+      return Comp_(left.first, right.first);
+    });
+    return {it, it != Array_ + CurSize_ && it->first == key};
+  }
 
 public:
   // стандартный конструктор
@@ -58,7 +70,7 @@ public:
       throw;
     }
 
-    ~this;
+    clear();
     Array_ = tmp;
     CurSize_ = otherMap.CurSize_;
     MaxSize_ = otherMap.MaxSize_;
@@ -76,11 +88,6 @@ public:
 
   // деструктор
   ~FlatMap() {
-    for( auto start = begin(); start != end(); start++ ) {
-      std::allocator_traits<Allocator>::destroy(Allocator_, start);
-    }
-    std::allocator_traits<Allocator>::deallocate(Allocator_, Array_, MaxSize_);
-    Array_ = nullptr;
   }
 
   // оператор присваивания
@@ -97,7 +104,7 @@ public:
       throw;
     }
 
-    ~this;
+    clear();
     Array_ = tmp;
     CurSize_ = otherMap.CurSize_;
     MaxSize_ = otherMap.MaxSize_;
@@ -111,7 +118,7 @@ public:
       return *this;
     }
     else {
-      ~this;
+      clear();
     }
 
     CurSize_ = OtherMap.CurSize_;
@@ -143,7 +150,7 @@ public:
       std::move(Array_, Array_ + CurSize_, tmp);
     }
 
-    ~this;
+    clear();
     MaxSize_ = newSize;
     CurSize_ = std::min(newSize, CurSize_);
     Array_ = tmp;
@@ -151,7 +158,6 @@ public:
 
   // доступ / вставка элемента по ключу
   ValueT& operator[](const key_type& key) {
-    //    std::lower_bound(Array_.get(), Array_.get() + CurSize_, key) != Array_.get() + CurSize_;
     if( !MaxSize_ ) {
       Array_ = std::allocator_traits<Allocator>::allocate(Allocator_, StartSize_);
       MaxSize_ = StartSize_;
@@ -161,45 +167,38 @@ public:
       resize(static_cast<size_t>(static_cast<double>(MaxSize_) * ResizeRate_));
     }
 
-    auto it = std::lower_bound(begin(), end(), key, Comp_);
-    if( it != Array_ + CurSize_ && it->first == key ) {
-      return it->second;
+
+    auto itPair = findIn(key);
+    if( itPair.second ) {
+      return itPair.first->second;
     }
 
-    auto StartShift = it;
-    for( ; it < StartShift; --StartShift ) {
+    auto StartShift = itPair.first;
+    for( ; itPair.first < StartShift; --StartShift ) {
       if( StartShift == Array_ ) {
         break;
       }
       *StartShift = std::move(*(StartShift - 1));
     }
-
-    //    it->first = key;
+    itPair.first->first = key;
     CurSize_++;
 
-    return it->second;
+    return itPair.first->second;
   }
 
   // возвращает true, если запись с таким ключом присутствует в таблице
   [[nodiscard]] bool contains(const key_type& key) const {
-    if( !Array_ ) {
-      return false;
-    }
-    const auto& it = std::lower_bound(begin(), end(), key, Comp_);
-    return it != Array_ + CurSize_ && it->first == key;
+    return findIn(key).second;
   }
 
   // удаление элемента по ключу, возвращает количество удаленных элементов (0 или 1)
-  [[nodiscard]] std::size_t erase(const KeyT& key) {
-    if( !Array_ ) {
+  [[nodiscard]] std::size_t erase(const key_type& key) {
+    auto itPair = findIn(key);
+    if( !itPair.second ) {
       return 0;
     }
 
-    auto it = std::lower_bound(begin(), end(), key, Comp_);
-    if( it == Array_ + CurSize_ || it->first != key ) {
-      return 0;
-    }
-
+    auto it = itPair.first;
     for( const auto& end = Array_ + CurSize_; it != end - 1; ++it ) {
       *it = std::move(*(it + 1));
     }
@@ -210,7 +209,11 @@ public:
 
   // очистка таблицы, после которой maxSize_() возвращает 0, а contains() - false на любой ключ
   void clear() {
-    ~this;
+    for( auto start = begin(); start != end(); start++ ) {
+      std::allocator_traits<Allocator>::destroy(Allocator_, start);
+    }
+    std::allocator_traits<Allocator>::deallocate(Allocator_, Array_, MaxSize_);
+    Array_ = nullptr;
     CurSize_ = 0;
     MaxSize_ = 0;
   }
@@ -228,15 +231,6 @@ public:
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
   [[nodiscard]] value_type *find(const key_type& key) const {
-    if( !Array_ ) {
-      return Array_;
-    }
-    else if( auto it = std::lower_bound(Array_, Array_ + CurSize_, key, Comp_);
-             it != Array_ + CurSize_ && it->first == key ) {
-      return it;
-    }
-    else {
-      return end();
-    }
+    return findIn(key).first;
   }
 };
