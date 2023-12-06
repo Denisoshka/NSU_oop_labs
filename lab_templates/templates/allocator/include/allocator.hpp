@@ -5,7 +5,7 @@
 #include <set>
 #include <vector>
 
-template<typename T, int ReservedBlocsQuantity>
+template<typename T, size_t ReservedBlocsQuantity>
 struct CustomAllocator {
 public:
   using value_type = T;

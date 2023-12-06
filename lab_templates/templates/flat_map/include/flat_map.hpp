@@ -12,32 +12,35 @@ const size_t StartSize_ = 2;
 
 // std::vector<int> a;
 template<class KeyT, class ValueT, class Compare = std::less<KeyT>,
-         typename Allocator = std::allocator<std::pair<KeyT, ValueT>>>
+         class Allocator = std::allocator<std::pair<const KeyT, ValueT>>>
 class FlatMap {
   using key_type = KeyT;
   using val_type = ValueT;
-  using value_type = std::pair<const KeyT, ValueT>;
+  using value_type = std::pair<const key_type, val_type>;
+  using pointer = value_type *;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
   using key_compare = Compare;
   using allocator_type = Allocator;
+  using alloc_traits = std::allocator_traits<allocator_type>;
   using reference = value_type&;
   using const_reference = const value_type&;
 
   static_assert(std::default_initializable<ValueT>, "ValueT must have default initialization");
 
 private:
-  value_type *Array_;
-  Allocator Allocator_;
-  Compare Comp_;
-  size_t CurSize_;
-  size_t MaxSize_;
+  allocator_type Allocator_;
+  pointer Array_;
+  key_compare Comp_;
+  size_type CurSize_;
+  size_type MaxSize_;
 
 public:
   // стандартный конструктор
   FlatMap()
-      : Allocator_()
+      : Allocator_(Allocator())
       , Array_(nullptr)
+      , Comp_(Compare())
       , CurSize_(0)
       , MaxSize_(0) {
     Array_ = std::allocator_traits<Allocator>::allocate(Allocator_, StartSize_);
@@ -73,7 +76,7 @@ public:
 
   // деструктор
   ~FlatMap() {
-    for( auto& start = begin(); start != end(); start++ ) {
+    for( auto start = begin(); start != end(); start++ ) {
       std::allocator_traits<Allocator>::destroy(Allocator_, start);
     }
     std::allocator_traits<Allocator>::deallocate(Allocator_, Array_, MaxSize_);
@@ -128,10 +131,10 @@ public:
   }
 
   void resize(size_t newSize) {
-    value_type tmp = std::allocator_traits<Allocator>::allocate(Allocator_, newSize);
+    value_type *tmp = std::allocator_traits<Allocator>::allocate(Allocator_, newSize);
 
     if( newSize < CurSize_ ) {
-      for( auto& start = Array_ + newSize; start != end(); ++start ) {
+      for( auto start = Array_ + newSize; start != end(); ++start ) {
         std::allocator_traits<Allocator>::destroy(Allocator_, start);
       }
       std::move(Array_, Array_ + newSize, tmp);
@@ -158,7 +161,7 @@ public:
       resize(static_cast<size_t>(static_cast<double>(MaxSize_) * ResizeRate_));
     }
 
-    auto& it = std::lower_bound(Array_, Array_ + CurSize_, key, Comp_);
+    auto it = std::lower_bound(begin(), end(), key, Comp_);
     if( it != Array_ + CurSize_ && it->first == key ) {
       return it->second;
     }
@@ -171,7 +174,7 @@ public:
       *StartShift = std::move(*(StartShift - 1));
     }
 
-    it->first = key;
+    //    it->first = key;
     CurSize_++;
 
     return it->second;
@@ -182,7 +185,7 @@ public:
     if( !Array_ ) {
       return false;
     }
-    const auto& it = std::lower_bound(Array_, Array_ + CurSize_, key, Comp_);
+    const auto& it = std::lower_bound(begin(), end(), key, Comp_);
     return it != Array_ + CurSize_ && it->first == key;
   }
 
@@ -192,7 +195,7 @@ public:
       return 0;
     }
 
-    auto& it = std::lower_bound(Array_, Array_ + CurSize_, key, Comp_);
+    auto it = std::lower_bound(begin(), end(), key, Comp_);
     if( it == Array_ + CurSize_ || it->first != key ) {
       return 0;
     }
@@ -228,7 +231,7 @@ public:
     if( !Array_ ) {
       return Array_;
     }
-    else if( auto& it = std::lower_bound(Array_, Array_ + CurSize_, key, Comp_);
+    else if( auto it = std::lower_bound(Array_, Array_ + CurSize_, key, Comp_);
              it != Array_ + CurSize_ && it->first == key ) {
       return it;
     }
