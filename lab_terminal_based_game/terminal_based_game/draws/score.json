@@ -1,0 +1,61 @@
+{
+    "score": {
+        "max_quantity": "30",
+        "fields": [
+            {
+                "player": "KatastrafPizdec",
+                "enemy_1": "4",
+                "enemy_2": "4",
+                "enemy_3": "4"
+            },
+            {
+                "player": "unknown player",
+                "enemy_1": "4",
+                "enemy_2": "4",
+                "enemy_3": "4"
+            },
+            {
+                "player": "awdas",
+                "enemy_1": "3",
+                "enemy_2": "2",
+                "enemy_3": "3"
+            },
+            {
+                "player": "denis",
+                "enemy_1": "0",
+                "enemy_2": "1",
+                "enemy_3": "1"
+            },
+            {
+                "player": "adad",
+                "enemy_1": "0",
+                "enemy_2": "0",
+                "enemy_3": "1"
+            },
+            {
+                "player": "unknown player",
+                "enemy_1": "0",
+                "enemy_2": "0",
+                "enemy_3": "1"
+            },
+            {
+                "player": "unknown player",
+                "enemy_1": "0",
+                "enemy_2": "0",
+                "enemy_3": "1"
+            },
+            {
+                "player": "asd",
+                "enemy_1": "0",
+                "enemy_2": "0",
+                "enemy_3": "1"
+            },
+            {
+                "player": "unknown player",
+                "enemy_1": "1",
+                "enemy_2": "0",
+                "enemy_3": "0"
+            }
+        ]
+    }
+}
