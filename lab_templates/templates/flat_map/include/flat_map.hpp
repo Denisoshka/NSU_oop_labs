@@ -37,13 +37,13 @@ private:
   size_type CurSize_;
   size_type MaxSize_;
 
-  std::pair<pointer, bool> findIn(const key_type& key) const {
+  std::pair<pointer, bool> findIn_(const key_type& key) const {
     if( !Array_ ) {
       return {Array_, false};
     }
-    const auto it = std::lower_bound(Array_, Array_ + CurSize_, key, [this](auto left, auto right) {
-      return Comp_(left.first, right.first);
-    });
+    auto it = std::lower_bound(
+            Array_, Array_ + CurSize_, key,
+            [&](const auto otherKey, const auto key) { return Comp_(otherKey.first, key); });
     return {it, it != Array_ + CurSize_ && it->first == key};
   }
 
@@ -55,8 +55,6 @@ public:
       , Comp_(Compare())
       , CurSize_(0)
       , MaxSize_(0) {
-    Array_ = std::allocator_traits<Allocator>::allocate(Allocator_, StartSize_);
-    MaxSize_ = StartSize_;
   }
 
   // конструктор копирования
@@ -88,6 +86,7 @@ public:
 
   // деструктор
   ~FlatMap() {
+    clear();
   }
 
   // оператор присваивания
@@ -168,7 +167,7 @@ public:
     }
 
 
-    auto itPair = findIn(key);
+    auto itPair = findIn_(key);
     if( itPair.second ) {
       return itPair.first->second;
     }
@@ -188,12 +187,12 @@ public:
 
   // возвращает true, если запись с таким ключом присутствует в таблице
   [[nodiscard]] bool contains(const key_type& key) const {
-    return findIn(key).second;
+    return findIn_(key).second;
   }
 
   // удаление элемента по ключу, возвращает количество удаленных элементов (0 или 1)
   [[nodiscard]] std::size_t erase(const key_type& key) {
-    auto itPair = findIn(key);
+    auto itPair = findIn_(key);
     if( !itPair.second ) {
       return 0;
     }
@@ -209,9 +208,10 @@ public:
 
   // очистка таблицы, после которой maxSize_() возвращает 0, а contains() - false на любой ключ
   void clear() {
-    for( auto start = begin(); start != end(); start++ ) {
-      std::allocator_traits<Allocator>::destroy(Allocator_, start);
+    for( auto it = begin(); it != end(); ++it ) {
+      std::allocator_traits<Allocator>::destroy(Allocator_, it);
     }
+
     std::allocator_traits<Allocator>::deallocate(Allocator_, Array_, MaxSize_);
     Array_ = nullptr;
     CurSize_ = 0;
@@ -219,18 +219,18 @@ public:
   }
 
   // Получить итератор на первый элемент
-  [[nodiscard]] value_type *begin() const {
+  [[nodiscard]] pointer begin() const {
     return Array_;
   }
 
   // Получить итератор на элемент, следующий за последним
-  [[nodiscard]] value_type *end() const {
+  [[nodiscard]] pointer end() const {
     return !Array_ ? Array_ : Array_ + CurSize_;
   }
 
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
   [[nodiscard]] value_type *find(const key_type& key) const {
-    return findIn(key).first;
+    return findIn_(key).first;
   }
 };
