@@ -176,7 +176,7 @@ public:
     pointer p = itPair.first;
 
     //    static_assert(std::is_same<decltype(p), pointer>::value, "da chto ne tak...");
-    alloc_traits::construct(Allocator_, p, std::move_if_noexcept(toKey));
+    alloc_traits::construct(Allocator_, std::addressof(*p), std::move_if_noexcept(toKey));
     //    todo error: no matching function for call to
     //    ‘construct_at(std::pair<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char>
     //    >*&, std::__cxx11::basic_string<char>)’
