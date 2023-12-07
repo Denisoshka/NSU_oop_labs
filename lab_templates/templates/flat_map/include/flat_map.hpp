@@ -25,6 +25,7 @@ class FlatMap {
   using alloc_traits = std::allocator_traits<allocator_type>;
   using reference = value_type&;
   using const_reference = const value_type&;
+  using iterator = pointer;
 
   static_assert(std::default_initializable<ValueT>, "ValueT must have default initialization");
   static_assert(std::is_same<typename Allocator::value_type, value_type>::value,
@@ -37,7 +38,7 @@ private:
   size_type CurSize_;
   size_type MaxSize_;
 
-  std::pair<pointer, bool> findIn_(const key_type& key) const {
+  std::pair<iterator, bool> findIn_(const key_type& key) const {
     if( !Array_ ) {
       return {Array_, false};
     }
@@ -60,11 +61,11 @@ public:
   // конструктор копирования
   FlatMap(const FlatMap& otherMap)
       : FlatMap() {
-    value_type *tmp = std::allocator_traits<Allocator>::allocate(Allocator_, otherMap.MaxSize_);
+    value_type *tmp = alloc_traits::allocate(Allocator_, otherMap.MaxSize_);
     try {
       std::uninitialized_copy(otherMap.begin(), otherMap.end(), tmp);
     } catch( ... ) {
-      std::allocator_traits<Allocator>::deallocate(Allocator_, tmp, otherMap.MaxSize_);
+      alloc_traits::deallocate(Allocator_, tmp, otherMap.MaxSize_);
       throw;
     }
 
@@ -99,7 +100,7 @@ public:
     try {
       std::uninitialized_copy(otherMap.begin(), otherMap.end(), tmp);
     } catch( ... ) {
-      std::allocator_traits<Allocator>::deallocate(Allocator_, tmp, otherMap.MaxSize_);
+      alloc_traits::deallocate(Allocator_, tmp, otherMap.MaxSize_);
       throw;
     }
 
@@ -157,29 +158,37 @@ public:
 
   // доступ / вставка элемента по ключу
   ValueT& operator[](const key_type& key) {
-    if( !MaxSize_ ) {
-      Array_ = std::allocator_traits<Allocator>::allocate(Allocator_, StartSize_);
-      MaxSize_ = StartSize_;
-    }
-
     if( MaxSize_ == CurSize_ ) {
-      resize(static_cast<size_t>(static_cast<double>(MaxSize_) * ResizeRate_));
+      resize(static_cast<size_t>(!MaxSize_ ? StartSize_
+                                           : static_cast<double>(MaxSize_) * ResizeRate_));
     }
 
-
-    auto itPair = findIn_(key);
+    std::pair<pointer, bool> itPair = findIn_(key);
     if( itPair.second ) {
       return itPair.first->second;
     }
 
-    auto StartShift = itPair.first;
-    for( ; itPair.first < StartShift; --StartShift ) {
-      if( StartShift == Array_ ) {
-        break;
-      }
-      *StartShift = std::move(*(StartShift - 1));
+    for( auto toShift = end(); toShift != itPair.first; --toShift ) {
+      alloc_traits::construct(Allocator_, std::addressof(*toShift),
+                              std::move_if_noexcept(*(toShift - 1)));
     }
-    itPair.first->first = key;
+    key_type toKey = key;
+    pointer p = itPair.first;
+
+    //    static_assert(std::is_same<decltype(p), pointer>::value, "da chto ne tak...");
+    alloc_traits::construct(Allocator_, p, std::move_if_noexcept(toKey));
+    //    todo error: no matching function for call to
+    //    ‘construct_at(std::pair<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char>
+    //    >*&, std::__cxx11::basic_string<char>)’
+    //  518 |           std::construct_at(__p, std::forward<_Args>(__args)...);
+    //      |           ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    //    } catch( ... ) {
+    //      todo fix if exception;
+    //      throw ;
+    //    }
+    //    key_type toKey = key;
     CurSize_++;
 
     return itPair.first->second;
@@ -219,18 +228,18 @@ public:
   }
 
   // Получить итератор на первый элемент
-  [[nodiscard]] pointer begin() const {
+  [[nodiscard]] iterator begin() const {
     return Array_;
   }
 
   // Получить итератор на элемент, следующий за последним
-  [[nodiscard]] pointer end() const {
+  [[nodiscard]] iterator end() const {
     return !Array_ ? Array_ : Array_ + CurSize_;
   }
 
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
-  [[nodiscard]] value_type *find(const key_type& key) const {
+  [[nodiscard]] iterator find(const key_type& key) const {
     return findIn_(key).first;
   }
 };
