@@ -5,58 +5,59 @@
 #include <set>
 #include <vector>
 
-template<typename T, size_t ReservedBlocsQuantity>
+template<class T, size_t ReservedBlocsQuantity = 1>
 struct CustomAllocator {
+  static_assert(!std::is_same_v<T, void>, "Type of the allocator can not be void");
+  static_assert(ReservedBlocsQuantity >= 1, "ReservedBlocsQuantity must be greater that zero");
+
 public:
-  using value_type = T;
-  using size_type = std::size_t;
-
-  CustomAllocator()
-      : StartPointer_(std::allocator_traits<std::allocator<value_type>>::allocate(
-              std::allocator<value_type>(), ReservedBlocsQuantity)) {
-    FreeBlocks_.reserve(ReservedBlocsQuantity);
-    for( size_type i = 0; i < ReservedBlocsQuantity; ++i ) {
-      FreeBlocks_.push_back(StartPointer_ + i);
-    }
-  };
-
   template<typename U>
   struct rebind {
-    using other =
-            CustomAllocator<U, ReservedBlocsQuantity>;// Переназначаем аллокатор для другого типа U
+    using other = CustomAllocator<U, ReservedBlocsQuantity>;
   };
 
-  value_type *allocate(size_type n) {
-    if( FreeBlocks_.empty() ) {
-      throw std::bad_alloc();
+  using value_type = T;
+  using pointer = value_type *;
+  using size_type = std::size_t;
+  using allocator_type = std::allocator<value_type>;
+  using alloc_traits = std::allocator_traits<allocator_type>;
+
+private:
+  allocator_type Allocator_;
+  pointer Memory_;
+  std::vector<pointer> FreeBlocks_;
+
+public:
+  CustomAllocator()
+      : Allocator_(allocator_type())
+      , Memory_(alloc_traits::allocate(Allocator_, ReservedBlocsQuantity)) {
+    FreeBlocks_.reserve(ReservedBlocsQuantity);
+    pointer memory = Memory_;
+    for( size_type i = 0; i < ReservedBlocsQuantity; ++i ) {
+      FreeBlocks_.push_back(memory + i);
     }
-    value_type *block = FreeBlocks_.back();
+  };
+
+  ~CustomAllocator() {
+    alloc_traits::deallocate(Allocator_, Memory_, ReservedBlocsQuantity);
+  }
+
+  pointer allocate(const size_type n) {
+    if( n > FreeBlocks_.size() ) {
+      throw std::runtime_error(std::to_string(n) + " > " + std::to_string(FreeBlocks_.size()));
+    }
+    for( size_type i = 0; i < n - 1; ++i ) {
+      FreeBlocks_.pop_back();
+    }
+    pointer block = FreeBlocks_.back();
     FreeBlocks_.pop_back();
+
     return block;
   }
 
-  void deallocate(value_type *p, size_type n) noexcept {
-    std::allocator_traits<std::allocator<T>>::deallocate(this(), p,
-                                                         n);
-  }
-
-  template<class... Args>
-  void construct(value_type *p, Args&&...args) {
-    if constexpr( std::is_trivially_constructible_v<value_type> ) {
-      std::allocator_traits<std::allocator<value_type>>::construct(this(), p,
-                                                                   std::forward<Args>(args)...);
+  void deallocate(value_type *p, const size_type n) noexcept {
+    for( size_type i = 0; i < n; ++i ) {
+      FreeBlocks_.push_back(p + i);
     }
   }
-
-  void destroy(value_type *ptr) {
-    if constexpr( std::is_destructible_v<value_type>) {
-      std::allocator_traits<value_type>::destroy(this(), ptr);
-    }
-    FreeBlocks_.push_back(ptr);
-  }
-
-private:
-  std::vector<value_type *> FreeBlocks_;
-  size_type ReservedBlockCount_ = ReservedBlocsQuantity;
-  value_type *StartPointer_;
 };
