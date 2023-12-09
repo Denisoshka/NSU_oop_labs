@@ -4,11 +4,11 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include "bool_flat_map.hpp"
 
 const double ResizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
 const size_t StartSize_ = 2;
 
-// std::vector<int> a;
 template<class KeyT, class ValueT, class Compare = std::less<KeyT>,
          class Allocator = std::allocator<std::pair<KeyT, ValueT>>>
 class FlatMap {
@@ -25,7 +25,8 @@ class FlatMap {
   using const_reference = const value_type&;
   using iterator = pointer;
 
-  static_assert(std::default_initializable<ValueT>, "ValueT must have default initialization");
+  //  static_assert();
+  static_assert(std::default_initializable<val_type>, "ValueT must have default initialization");
   static_assert(std::is_same<typename Allocator::value_type, value_type>::value,
                 "FlatMap must have the same value_type as its allocator");
 
@@ -37,13 +38,15 @@ private:
   size_type MaxSize_;
 
   std::pair<iterator, bool> findIn_(const key_type& key) const {
-    if( !Array_ ) {
-      return {Array_, false};
+    if( !CurSize_ ) {
+      return {Array_.get(), false};
     }
-    auto it = std::lower_bound(
-            Array_, Array_ + CurSize_, key,
-            [&](const auto otherKey, const auto key) { return Comp_(otherKey.first, key); });
-    return {it, it != Array_ + CurSize_ && it->first == key};
+    auto comp = [&](const auto& otherKey, const key_type key) {
+      return Comp_(otherKey.first, key);
+    };
+    auto it = std::lower_bound(Array_.get(), Array_.get() + CurSize_, key, comp);
+
+    return {it, it != end() && it->first == key};
   }
 
 public:
@@ -58,7 +61,7 @@ public:
   // конструктор копирования
   FlatMap(const FlatMap& otherMap)
       : FlatMap() {
-    std::unique_ptr<value_type[]> tmp = std::make_shared<value_type[]>(otherMap.MaxSize_);
+    std::unique_ptr<value_type[]> tmp{std::make_unique<value_type[]>(otherMap.MaxSize_)};
     std::uninitialized_copy(otherMap.begin(), otherMap.end(), tmp.get());
 
     clear();
@@ -90,11 +93,11 @@ public:
     if( this == &otherMap ) {
       return *this;
     }
-    std::unique_ptr<value_type[]> tmp = std::make_shared<value_type[]>(otherMap.MaxSize_);
+    std::unique_ptr<value_type[]> tmp{std::make_unique<value_type[]>(otherMap.MaxSize_)};
     std::uninitialized_copy(otherMap.begin(), otherMap.end(), tmp.get());
 
     clear();
-    Array_ = tmp;
+    Array_ = std::move(tmp);
     CurSize_ = otherMap.CurSize_;
     MaxSize_ = otherMap.MaxSize_;
 
@@ -124,18 +127,18 @@ public:
   }
 
   void resize(size_t newSize) {
-    std::unique_ptr<value_type[]> tmp = std::make_shared<value_type[]>(newSize);
+    std::unique_ptr<value_type[]> tmp{std::make_unique<value_type[]>(newSize)};
 
     if( newSize < CurSize_ ) {
       std::move(begin(), begin() + newSize, tmp.get());
+      CurSize_ = newSize;
     }
     else {
-      std::move(begin(), end(), tmp);
+      std::move(begin(), end(), tmp.get());
     }
 
-    clear();
+    //    clear();
     Array_ = std::move(tmp);
-    CurSize_ = std::min(newSize, CurSize_);
     MaxSize_ = newSize;
   }
 
@@ -154,8 +157,9 @@ public:
     for( auto toShift = end(); toShift != itPair.first; --toShift ) {
       *toShift = std::move(*(toShift - 1));
     }
-    itPair.first = {key, value_type{}};
+
     ++CurSize_;
+    *(itPair.first) = std::pair{key, val_type{}};
 
     return itPair.first->second;
   }
@@ -173,7 +177,7 @@ public:
     }
 
     auto it = itPair.first;
-    for( const auto& end = Array_ + CurSize_; it != end - 1; ++it ) {
+    for( const auto end = this->end(); it != end - 1; ++it ) {
       *it = std::move(*(it + 1));
     }
     --CurSize_;
@@ -195,13 +199,128 @@ public:
 
   // Получить итератор на элемент, следующий за последним
   [[nodiscard]] iterator end() const {
-    return !Array_ ? Array_.get(): Array_.get() + CurSize_;
+    return !Array_ ? Array_.get() : Array_.get() + CurSize_;
   }
 
   // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
   // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
   [[nodiscard]] iterator find(const key_type& key) const {
     return findIn_(key).first;
+  }
+};
+
+template<class Compare, class Allocator>
+class FlatMap<size_t, bool, Compare, Allocator> {
+  using key_type = size_t;
+  using val_type = bool;
+  using value_type = bool;
+  using pointer = value_type *;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using key_compare = Compare;
+  using allocator_type = Allocator;
+  using alloc_traits = std::allocator_traits<allocator_type>;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using iterator = pointer;
+
+  //  static_assert();
+  static_assert(std::default_initializable<val_type>, "ValueT must have default initialization");
+  static_assert(std::is_same<typename Allocator::value_type, value_type>::value,
+                "FlatMap must have the same value_type as its allocator");
+
+private:
+  std::vector<value_type, Allocator> Array_;
+
+public:
+  // стандартный конструктор
+  FlatMap()
+      : Array_({}) {
+  }
+
+  // конструктор копирования
+  FlatMap(const FlatMap& otherMap)
+      : FlatMap() {
+    Array_ = otherMap.Array_;
+  }
+
+  // конструктор перемещения
+  FlatMap(FlatMap&& otherMap) noexcept
+      : Array_(std::move(otherMap.Array_)) {
+  }
+
+  // деструктор
+  ~FlatMap() = default;
+
+  // оператор присваивания
+  FlatMap& operator=(const FlatMap& otherMap) {
+    if( this == &otherMap ) {
+      return *this;
+    }
+    Array_ = otherMap.Array_;
+    return *this;
+  }
+
+  // перемещающий operator=
+  FlatMap& operator=(FlatMap&& OtherMap) noexcept {
+    if( this == &OtherMap ) {
+      return *this;
+    }
+    Array_ = std::move(OtherMap.Array_);
+    return *this;
+  }
+
+  // получить количество элементов в таблице
+  [[nodiscard]] std::size_t size() const {
+    return Array_.size();
+  }
+
+  void resize(size_t newSize) {
+    Array_.resize(newSize, false);
+  }
+
+  // доступ / вставка элемента по ключу
+  val_type& operator[](const key_type& key) {
+    if( Array_.size() == Array_.max_size() ) {
+      resize(static_cast<size_t>(
+              Array_.empty() ? StartSize_ : static_cast<double>(Array_.size()) * ResizeRate_));
+    }
+    return Array_[key];
+  }
+
+  // возвращает true, если запись с таким ключом присутствует в таблице
+  [[nodiscard]] bool contains(const key_type& key) const {
+    return Array_[key];
+  }
+
+  // удаление элемента по ключу, возвращает количество удаленных элементов (0 или 1)
+  [[nodiscard]] std::size_t erase(const key_type& key) {
+    if( !Array_[key] ) {
+      return 0;
+    }
+    Array_[key] = false;
+    return 1;
+  }
+
+  // очистка таблицы, после которой maxSize_() возвращает 0, а contains() - false на любой ключ
+  void clear() {
+    Array_.clear();
+  }
+
+  // Получить итератор на первый элемент
+  [[nodiscard]] iterator begin() const {
+    return Array_.begin();
+  }
+
+  // Получить итератор на элемент, следующий за последним
+  [[nodiscard]] iterator end() const {
+    return Array_.end();
+  }
+
+  // Получить итератор на элемент по данному ключу, или на end(), если такого ключа нет.
+  // В отличие от operator[] не создает записи для этого ключа, если её ещё нет
+  [[nodiscard]] iterator find(const key_type& key) const {
+    return Array_.begin() + key;
   }
 };
 
