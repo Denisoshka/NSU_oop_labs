@@ -71,13 +71,15 @@ int main(int argc, char **argv) {
   return RUN_ALL_TESTS();
 }
 
+using namespace not_alloc_flat_map;
+
 TEST(test_constructors, constructor_without_args) {
-  notStd::FlatMap<std::string, std::string> tmp;
+  FlatMap<std::string, std::string> tmp;
   EXPECT_EQ(tmp.size(), 0);
 }
 
 TEST(FlatMapTest, Erase_1) {
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase1 ) {
     testMap[params.first] = params.second;
   }
@@ -92,7 +94,7 @@ TEST(FlatMapTest, Erase_1) {
 
 TEST(FlatMapTest, Erase_2) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase2 ) {
     testMap[params.first] = params.second;
   }
@@ -105,7 +107,7 @@ TEST(FlatMapTest, Erase_2) {
 
 TEST(FlatMapTest, Erase_3) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase3 ) {
     testMap[params.first] = params.second;
   }
@@ -118,7 +120,7 @@ TEST(FlatMapTest, Erase_3) {
 
 TEST(FlatMapTest, Erase_4) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase4 ) {
     testMap[params.first] = params.second;
   }
@@ -131,7 +133,7 @@ TEST(FlatMapTest, Erase_4) {
 
 TEST(FlatMapTest, Erase_5) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase5 ) {
     testMap[params.first] = params.second;
   }
@@ -144,7 +146,7 @@ TEST(FlatMapTest, Erase_5) {
 
 TEST(FlatMapTest, Insert_1) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase1 ) {
     testMap[params.first] = params.second;
   }
@@ -155,7 +157,7 @@ TEST(FlatMapTest, Insert_1) {
 
 TEST(FlatMapTest, Insert_2) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( auto& params: strTestCase2 ) {
     testMap[params.first] = params.second;
   }
@@ -165,7 +167,7 @@ TEST(FlatMapTest, Insert_2) {
 }
 
 TEST(FlatMapTest, Insert_3) {
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase3 ) {
     testMap[params.first] = params.second;
   }
@@ -176,7 +178,7 @@ TEST(FlatMapTest, Insert_3) {
 
 TEST(FlatMapTest, Insert_4) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase4 ) {
     testMap[params.first] = params.second;
   }
@@ -187,7 +189,7 @@ TEST(FlatMapTest, Insert_4) {
 
 TEST(FlatMapTest, Insert_5) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase5 ) {
     testMap[params.first] = params.second;
   }
@@ -198,7 +200,7 @@ TEST(FlatMapTest, Insert_5) {
 
 TEST(FlatMapTest, Clear1) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase1 ) {
     testMap[params.first] = params.second;
   }
@@ -211,7 +213,7 @@ TEST(FlatMapTest, Clear1) {
 }
 
 TEST(FlatMapTest, Clear2) {
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase2 ) {
     testMap[params.first] = params.second;
   }
@@ -225,7 +227,7 @@ TEST(FlatMapTest, Clear2) {
 
 TEST(FlatMapTest, Clear3) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase3 ) {
     testMap[params.first] = params.second;
   }
@@ -239,7 +241,7 @@ TEST(FlatMapTest, Clear3) {
 
 TEST(FlatMapTest, Clear4) {
 
-  notStd::FlatMap<std::string, std::string> testMap;
+  FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase4 ) {
     testMap[params.first] = params.second;
   }
@@ -252,9 +254,9 @@ TEST(FlatMapTest, Clear4) {
 }
 
 TEST(FlatMapTest, CopyConstructor1) {
-  notStd::FlatMap<std::string, std::string> testMap1;
+  FlatMap<std::string, std::string> testMap1;
 
-  notStd::FlatMap testMap2 = testMap1;
+  FlatMap testMap2 = testMap1;
 
   for( const auto& params: strTestCase1 ) {
     testMap1[params.first] = params.second;
@@ -270,9 +272,9 @@ TEST(FlatMapTest, CopyConstructor1) {
 }
 
 TEST(FlatMapTest, CopyConstructor4) {
-  notStd::FlatMap<std::string, std::string> testMap1;
+  FlatMap<std::string, std::string> testMap1;
 
-  notStd::FlatMap testMap2 = testMap1;
+  FlatMap testMap2 = testMap1;
 
   for( const auto& params: strTestCase4 ) {
     testMap1[params.first] = params.second;
@@ -287,7 +289,7 @@ TEST(FlatMapTest, CopyConstructor4) {
 }
 
 TEST(FlatMapTest, Iterator) {
-  notStd::FlatMap<std::string, std::string> tmp;
+  FlatMap<std::string, std::string> tmp;
 
 
   for( const auto& params: strTestCase1 ) {
@@ -300,7 +302,7 @@ TEST(FlatMapTest, Iterator) {
 }
 
 TEST(FlatMapTest, Find_1) {
-  notStd::FlatMap<std::string, std::string> testMap1;
+  FlatMap<std::string, std::string> testMap1;
   for( const auto& params: strTestCase1 ) {
     testMap1[params.first] = params.second;
   }
@@ -332,7 +334,7 @@ TEST(FlatMapTest, Find_1) {
 }
 
 TEST(FlatMapTest, Find_2) {
-  notStd::FlatMap<int, int> tmp;
+  FlatMap<int, int> tmp;
 
 
   for( const auto& params: intTestCase1 ) {
@@ -370,7 +372,7 @@ TEST(FlatMapTest, Find_2) {
 }
 
 TEST(FlatMapTest, Find_3) {
-  notStd::FlatMap<int, std::string> tmp;
+  FlatMap<int, std::string> tmp;
 
   std::array<int, 7> testCase_0 = {7, 1, 6, 2, 5, 3, 4};
   std::array<std::string, 7> testCase_1 = {"key7", "key1", "key6", "key2", "key5", "key3", "key4"};
@@ -414,7 +416,7 @@ TEST(FlatMapTest, Find_3) {
 }
 
 TEST(FlatMapTest, postfix_incr) {
-  notStd::FlatMap<std::string, std::string> testMap1;
+  FlatMap<std::string, std::string> testMap1;
 
   for( const auto& params: strTestCase3 ) {
     testMap1[params.first] = params.second;
