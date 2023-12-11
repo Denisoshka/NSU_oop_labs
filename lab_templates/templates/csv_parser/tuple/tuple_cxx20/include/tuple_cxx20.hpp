@@ -37,22 +37,20 @@ namespace tuple_cxx20 {
     return ofs;
   }
 
-  template<typename T>
-  T convert(const std::string& s, size_t N) {
-    std::stringstream buff(s);
-
-    T value;
-    if( !(buff >> value) ) {
+  template<template<typename> class Strategy, typename T>
+  auto convert(const std::string& s, size_t N) {
+    Strategy<T> convert;
+    try {
+      return convert(s);
+    } catch( ... ) {
       throw tupleCXX20Exceptions::tupleCXX20InvalidConversion(std::string(typeid(T).name()), N);
     }
-
-    return value;
   }
 
-  template<typename... Types, size_t... Indices>
+  template<template<typename> class Strategy, typename... Types, size_t... Indices>
   std::tuple<Types..., std::vector<std::string>> crutch(const std::vector<std::string>& v,
                                                         std::index_sequence<Indices...>) {
-    auto tmp = std::tuple_cat(std::make_tuple(convert<Types>(v[Indices], Indices)...),
+    auto tmp = std::tuple_cat(std::make_tuple(convert<Strategy, Types>(v[Indices], Indices)...),
                               std::make_tuple(std::vector<std::string>{}));
     for( std::size_t i = sizeof...(Types); i < v.size(); ++i ) {
       std::get<sizeof...(Types)>(tmp).push_back(v[i]);
@@ -60,9 +58,9 @@ namespace tuple_cxx20 {
     return tmp;
   }
 
-  template<typename... Types>
+  template<template<typename> class Strategy, typename... Types>
   std::tuple<Types..., std::vector<std::string>> getResultCVSTuple(
           const std::vector<std::string>& v) {
-    return crutch<Types...>(v, std::make_index_sequence<sizeof...(Types)>{});
+    return crutch<Strategy, Types...>(v, std::make_index_sequence<sizeof...(Types)>{});
   }
 }// namespace tuple_cxx20

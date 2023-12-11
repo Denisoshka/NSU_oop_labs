@@ -19,49 +19,8 @@
 #include "iostream"
 
 namespace parser {
-  /*
-    template<class Arg>
-    concept convertible = requires(std::stringstream string, Arg x) { string >> x; };
-  */
-
-  /*  template<class Arg>
-    struct convCheck<Arg> {
-      template <typename V, typename = decltype(std::declval<std::istringstream&>() >>
-    std::declval<V>())> static std::true_type test(int);
-
-      template <typename>
-      static std::false_type test(...);
-
-      static constexpr bool value = decltype(test<Arg>(0))::value;
-
-      */
-  /*
-static constexpr bool value = false;
-*/ /*
-
-};*/
-
-  /*
-    template <typename T>
-    struct has_extraction_operator {
-      template <typename V, typename = decltype(std::declval<std::istringstream&>() >>
-    std::declval<V>())> static std::true_type test(int);
-
-      template <typename>
-      static std::false_type test(...);
-
-      static constexpr bool value = decltype(test<T>(0))::value;
-    };
-  */
-  /*  template<typename Arg> struct has_foo{
-    private:  // Спрячем от пользователя детали реализации.
-      static int detect(...);  // Статическую функцию и вызывать проще.
-      template<typename U> static decltype(std::declval<std::stringstream>() >> std::declval<U>())*
-    detect(const U&); public: static constexpr bool value = std::is_same<bool,
-    decltype(detect(std::declval<Arg>()))>::value;  // Вот видите, готово.
-    };*/
-
-  template<class Arg, class = decltype(std::declval<std::istringstream>() >> std::declval<Arg&>())*>
+  template<class Arg,
+           class = decltype(std::declval<std::istringstream>() >> std::declval<Arg&>()) *>
   struct isConvertible {
     static constexpr bool value = true;
   };
@@ -88,10 +47,9 @@ static constexpr bool value = false;
     static constexpr bool value = true;
   };
 
-  template<typename... Types>
+  template<template<typename> class Strategy, typename... Types>
   class CSVParser {
-//    static_assert(typesCheck<Types...>::value, "not all types convertible from string");
-
+    //    static_assert(typesCheck<Types...>::value, "not all types convertible from string");
   private:
     std::ifstream& Ifs_;
     size_t LineOffset_;
@@ -146,7 +104,7 @@ static constexpr bool value = false;
       Ifs_.exceptions(std::ifstream::badbit);
     }
 
-    CSVParser(const CSVParser<Types...>& src) = delete;
+    CSVParser(const CSVParser<Strategy, Types...>& src) = delete;
 
     class InputIterator {
     public:
@@ -159,7 +117,7 @@ static constexpr bool value = false;
         ekEnd
       };
 
-      InputIterator(CSVParser<Types...>& parent, Mode mode)
+      InputIterator(CSVParser<Strategy, Types...>& parent, Mode mode)
           : Parser_(parent) {
         switch( mode ) {
           case Mode::ekBegin:
@@ -197,7 +155,7 @@ static constexpr bool value = false;
 
     private:
       pointer ItPtr_;
-      CSVParser<Types...>& Parser_;
+      CSVParser<Strategy, Types...>& Parser_;
 
       void updatePtr() {
         std::string row = Parser_.GetRow();
@@ -207,7 +165,8 @@ static constexpr bool value = false;
         }
         else {
           try {
-            auto tuple = tuple_cxx20::getResultCVSTuple<Types...>(Parser_.tokenizeRow(row));
+            auto tuple =
+                    tuple_cxx20::getResultCVSTuple<Strategy, Types...>(Parser_.tokenizeRow(row));
             ItPtr_ = std::make_shared<value_type>(tuple);
           } catch( const tupleCXX20Exceptions::tupleCXX20InvalidConversion& e ) {
             throw CSVParserExceptions::TypeMismatchException(Parser_.CurrentLine_, e.getColum(),
@@ -219,8 +178,6 @@ static constexpr bool value = false;
 
     InputIterator begin() {
       Ifs_.clear();
-      Ifs_.seekg(0, std::ifstream::beg);
-
       makeOffset();
       return InputIterator(*this, InputIterator::Mode::ekBegin);
     }
