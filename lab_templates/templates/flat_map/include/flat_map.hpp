@@ -104,6 +104,24 @@ namespace flat_map {
       MaxSize_ = otherMap.MaxSize_;
     }
 
+    FlatMap(std::initializer_list<value_type> Values)
+        : Allocator_(Allocator())
+        , Array_(nullptr)
+        , Comp_(Compare())
+        , CurSize_(Values.size())
+        , MaxSize_(Values.size()) {
+      auto tmp = alloc_traits::allocate(Allocator_, Values.size());
+      try {
+        std::uninitialized_copy(Values.begin(), Values.end(), tmp);
+      } catch( ... ) {
+        alloc_traits::deallocate(Allocator_, tmp, Values.size());
+        throw;
+      }
+      Array_ = tmp;
+      std::sort(Array_, Array_ + CurSize_,
+                [&](const auto& x, const auto& y) { return Comp_(x.first, y.first); });
+    }
+
     // конструктор перемещения
     FlatMap(FlatMap&& otherMap) noexcept
         : Array_(std::move(otherMap.Array_))

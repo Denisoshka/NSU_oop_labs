@@ -97,6 +97,21 @@ TEST(test_compare, compare) {
   }
 }
 
+TEST(test_list_initialization, list_initialization_1) {
+  FlatMap<std::string, std::string> tmp = {
+          {"key1", "value1"},
+          {"key7", "value7"},
+          {"key2", "value2"},
+          {"key6", "value6"},
+          {"key3", "value3"},
+          {"key5", "value5"},
+          {"key4", "value4"}
+  };
+  for( auto& x: tmp ) {
+    EXPECT_TRUE(tmp.contains(x.first));
+  }
+}
+
 TEST(test_constructors, constructor_without_args) {
   FlatMap<std::string, std::string> tmp;
   EXPECT_EQ(tmp.size(), 0);
@@ -462,7 +477,6 @@ TEST(FlatMapTest, postfix_incr) {
   EXPECT_EQ(count, 7);
 }
 
-
 TEST(FlatMapTest, try_emplace_test_1) {
   FlatMap<std::string, std::string> testMap1;
   std::vector<std::pair<std::string, std::string>> testCase1 = strTestCase3;
@@ -476,4 +490,3 @@ TEST(FlatMapTest, try_emplace_test_1) {
     EXPECT_FALSE(it.second);
   }
 }
-

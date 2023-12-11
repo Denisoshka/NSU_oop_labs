@@ -39,7 +39,7 @@ int main(int Argc, char **Argv) {
                           "csv_parser/test/test1.csv"};
 //  std::ifstream csvStream;
 //  auto buf = std::cin.rdbuf();
-//  csvStream.rdbuf(std::cin.rdbuf());
+//  csvStream.rdbuf(buf);
 
   parser::CSVParser<Strategy, int, std::string, double> parser(csvStream, 0);
   for( const auto& rs: parser ) {
