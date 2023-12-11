@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
   return RUN_ALL_TESTS();
 }
 
-using namespace alloc_flat_map;
+using namespace flat_map;
 
 struct A {
   A() = default;
