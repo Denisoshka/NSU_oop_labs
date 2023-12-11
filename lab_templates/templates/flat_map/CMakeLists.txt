@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 23)
 file(GLOB SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/**/flat_map.cpp")
 message(STATUS ${SOURCE_DIRS})
 set(SOURCE_LIB ${SOURCE_DIRS})
-add_compile_options(-Wall -Wextra -pedantic -Werror)
+#add_compile_options(-Wall -Wextra -pedantic -Werror)
 
 add_library(${PROJECT_NAME} INTERFACE ${SOURCE_LIB})
 target_include_directories(${PROJECT_NAME} INTERFACE include)

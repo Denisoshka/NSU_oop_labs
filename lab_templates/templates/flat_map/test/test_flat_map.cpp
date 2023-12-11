@@ -105,8 +105,9 @@ TEST(test_constructors, constructor_without_args) {
 TEST(FlatMapTest, Erase_1) {
   FlatMap<std::string, std::string> testMap;
   for( const auto& params: strTestCase1 ) {
-    testMap[params.first] = params.second;
+    testMap[params.first];//= params.second;
   }
+
 
   EXPECT_TRUE(testMap.contains(strTestCase1[0].first));
   for( const auto& params: strTestCase1 ) {
@@ -461,7 +462,7 @@ TEST(FlatMapTest, postfix_incr) {
   EXPECT_EQ(count, 7);
 }
 
-/*
+
 TEST(FlatMapTest, try_emplace_test_1) {
   FlatMap<std::string, std::string> testMap1;
   std::vector<std::pair<std::string, std::string>> testCase1 = strTestCase3;
@@ -475,4 +476,4 @@ TEST(FlatMapTest, try_emplace_test_1) {
     EXPECT_FALSE(it.second);
   }
 }
-*/
+

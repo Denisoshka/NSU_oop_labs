@@ -42,7 +42,7 @@ namespace not_alloc_flat_map {
     size_type CurSize_;
     size_type MaxSize_;
 
-    std::pair<size_t , bool> findIn_(const key_type& key) const {
+    std::pair<size_t, bool> findIn_(const key_type& key) const {
       if( !CurSize_ ) {
         return {CurSize_, false};
       }
@@ -72,7 +72,7 @@ namespace not_alloc_flat_map {
     // стандартный конструктор
     FlatMap()
         : Array_(nullptr)
-        , Comp_(Compare())
+        , Comp_(std::declval<Compare>())
         , CurSize_(0)
         , MaxSize_(0) {
     }
@@ -85,7 +85,6 @@ namespace not_alloc_flat_map {
 
       clear();
       Array_ = std::move(tmp);
-      Comp_ = otherMap.Comp_;
       CurSize_ = otherMap.CurSize_;
       MaxSize_ = otherMap.MaxSize_;
     }
@@ -383,27 +382,40 @@ namespace alloc_flat_map {
       if( !CurSize_ ) {
         return {Array_, false};
       }
-      auto it = std::lower_bound(
-              Array_, Array_ + CurSize_, key,
-              [&](const auto& otherKey, const key_type key) { return Comp_(otherKey.first, key); });
+      auto it = std::lower_bound(begin(), end(), key, [&](const auto& otherKey, const auto& key) {
+        return Comp_(otherKey.first, key);
+      });
 
-      return {it - Array_, it != end() && it->first == key};
+      return {it, it != end() && it->first == key};
     }
 
-    std::pair<iterator, bool> prepareToInsert(const key_type& key) {
-      std::pair<size_t , bool> itPair = findIn_(key);
+    std::pair<iterator, bool> getInsertIt_(const key_type& key) {
+      auto itPair = findIn_(key);
+      auto diff = itPair.first - Array_;
       if( !itPair.second ) {
         if( MaxSize_ == CurSize_ ) {
           resize(static_cast<size_t>(!MaxSize_ ? StartSize_
                                                : static_cast<double>(MaxSize_) * ResizeRate_));
         }
-//        findInPair = findIn_(key);
-        for( auto toShift = end(); toShift != Array_+ itPair.first; --toShift ) {
-          *toShift = *(toShift - 1);
+
+        for( auto toShift = end(); toShift != Array_ + diff; --toShift ) {
+          alloc_traits::construct(Allocator_, std::addressof(*toShift), std::move(*(toShift - 1)));
+          alloc_traits ::destroy(Allocator_, std::addressof(*(toShift - 1)));
         }
       }
 
-      return itPair;
+      return {Array_ + diff, itPair.second};
+    }
+
+    void clearArr_() {
+      if( !Array_ ) {
+        return;
+      }
+      for( auto it = begin(); it != end(); ++it ) {
+        alloc_traits::destroy(Allocator_, std::addressof(*it));
+      }
+      alloc_traits::deallocate(Allocator_, Array_, MaxSize_);
+      Array_ = nullptr;
     }
 
   public:
@@ -467,7 +479,7 @@ namespace alloc_flat_map {
           alloc_traits::deallocate(Allocator_, tmp, otherMap.MaxSize_);
           throw;
         }
-        clear();
+        clearArr_();
         Array_ = tmp;
       }
 
@@ -482,7 +494,7 @@ namespace alloc_flat_map {
       if( this == &OtherMap ) {
         return *this;
       }
-      clear();
+      clearArr_();
       Array_ = OtherMap.Array_;
       CurSize_ = OtherMap.CurSize_;
       MaxSize_ = OtherMap.MaxSize_;
@@ -495,11 +507,17 @@ namespace alloc_flat_map {
     }
 
     // получить количество элементов в таблице
-    [[nodiscard]] std::size_t size() const {
+    [[nodiscard]] std::size_t size() const noexcept {
       return CurSize_;
     }
-    void reserve(size_t newSize){
-      if(newSize <= MaxSize_){
+
+    // получить количество элементов в таблице
+    [[nodiscard]] std::size_t max_size() const noexcept {
+      return MaxSize_;
+    }
+
+    void reserve(size_t newSize) {
+      if( newSize <= MaxSize_ ) {
         return;
       }
       pointer tmp = std::allocator_traits<Allocator>::allocate(Allocator_, newSize);
@@ -509,11 +527,9 @@ namespace alloc_flat_map {
         alloc_traits ::deallocate(Allocator_, tmp, newSize);
         throw;
       }
-      auto tCurSize = CurSize_;
 
-      clear();
+      clearArr_();
       Array_ = tmp;
-      CurSize_ = tCurSize;
       MaxSize_ = newSize;
     }
 
@@ -527,45 +543,46 @@ namespace alloc_flat_map {
       }
 
       try {
-        std::uninitialized_copy(Array_, Array_ + CurSize_, tmp);
+        std::uninitialized_copy(begin(), end(), tmp);
       } catch( ... ) {
         alloc_traits ::deallocate(Allocator_, tmp, newSize);
         throw;
       }
 
       auto tCurSize = CurSize_;
-      auto tMaxSize = MaxSize_;
 
       clear();
       Array_ = tmp;
       tmp = nullptr;
       CurSize_ = tCurSize;
-      MaxSize_ = tMaxSize;
+      MaxSize_ = newSize;
     }
 
     // доступ / вставка элемента по ключу
     ValueT& operator[](const key_type& key) {
-      auto itPair = prepareToInsert(key);
+      auto itPair = getInsertIt_(key);
       if( !itPair.second ) {
         ++CurSize_;
+        key_type key_copy = key;
         alloc_traits::construct(Allocator_, itPair.first,
-                                value_type{std::piecewise_construct, std::forward_as_tuple(key),
-                                           std::forward_as_tuple(val_type{})});
-        //        *(itPair.first) = {key, val_type{}};
+                                std::move(value_type{std::piecewise_construct,
+                                                     std::forward_as_tuple(std::move(key_copy)),
+                                                     std::forward_as_tuple(val_type{})}));
       }
-
       return itPair.first->second;
     }
 
     template<class... Args>
     std::pair<iterator, bool> try_emplace(const key_type& key, Args&&...args) {
-      auto itPair = prepareToInsert(key);
-
+      auto itPair = getInsertIt_(key);
       if( itPair.second = !itPair.second; itPair.second ) {
         ++CurSize_;
-        *(itPair.first) = value_type{std::piecewise_construct, std::forward_as_tuple(key),
-                                     std::forward_as_tuple(std::forward<Args>(args)...)};
-        ;
+        key_type key_copy = key;
+        alloc_traits::construct(
+                Allocator_, std::addressof(*itPair.first),
+                std::move(value_type{std::piecewise_construct,
+                                     std::forward_as_tuple(std::move(key_copy)),
+                                     std::forward_as_tuple(std::forward<Args>(args)...)}));
       }
 
       return itPair;
@@ -584,13 +601,11 @@ namespace alloc_flat_map {
       }
 
       auto it = itPair.first;
-      for( const auto end = this->end(); it != end - 1; ++it ) {
-        *it = *(it + 1);
-        //        alloc_traits::construct(Allocator_, it, std::move(*(it + 1)));
-        //        alloc_traits::destroy(Allocator_, it + 1);
-        //        *it = std::move(*(it + 1));
+      for( const auto end_ = end(); it != end_ - 1; ++it ) {
+        alloc_traits::construct(Allocator_, std::addressof(*it), std::move(*(it + 1)));
+        alloc_traits::destroy(Allocator_, std::addressof(*(it + 1)));
       }
-      alloc_traits::destroy(Allocator_, end() - 1);
+      alloc_traits::destroy(Allocator_, std::addressof(*(end() - 1)));
       --CurSize_;
 
       return 1;
@@ -598,12 +613,7 @@ namespace alloc_flat_map {
 
     // очистка таблицы, после которой maxSize_() возвращает 0, а contains() - false на любой ключ
     void clear() {
-      for( auto it = begin(); it != end(); ++it ) {
-        alloc_traits::destroy(Allocator_, it);
-      }
-      if( !Array_ ) {
-        alloc_traits::deallocate(Allocator_, Array_, MaxSize_);
-      }
+      clearArr_();
       Array_ = nullptr;
       CurSize_ = 0;
       MaxSize_ = 0;
@@ -625,5 +635,4 @@ namespace alloc_flat_map {
       return findIn_(key).first;
     }
   };
-
 }// namespace alloc_flat_map
