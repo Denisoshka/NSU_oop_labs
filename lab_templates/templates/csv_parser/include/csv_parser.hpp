@@ -4,16 +4,131 @@
 #include "tuple_cxx20.hpp"
 
 #include <fstream>
+#include <iostream>
 #include <limits>
 #include <memory>
 #include <regex>
+#include <sstream>
 #include <string>
 #include <tuple>
+#include <type_traits>
+#include <typeinfo>
+#include <utility>
+#include <valarray>
 #include <vector>
+#include "iostream"
 
 namespace parser {
+  /*
+    template<class Arg>
+    concept convertible = requires(std::stringstream string, Arg x) { string >> x; };
+  */
+
+  /*  template<class Arg>
+    struct convCheck<Arg> {
+      template <typename V, typename = decltype(std::declval<std::istringstream&>() >>
+    std::declval<V>())> static std::true_type test(int);
+
+      template <typename>
+      static std::false_type test(...);
+
+      static constexpr bool value = decltype(test<Arg>(0))::value;
+
+      */
+  /*
+static constexpr bool value = false;
+*/ /*
+
+};*/
+
+  /*
+    template <typename T>
+    struct has_extraction_operator {
+      template <typename V, typename = decltype(std::declval<std::istringstream&>() >>
+    std::declval<V>())> static std::true_type test(int);
+
+      template <typename>
+      static std::false_type test(...);
+
+      static constexpr bool value = decltype(test<T>(0))::value;
+    };
+  */
+  /*  template<typename Arg> struct has_foo{
+    private:  // Спрячем от пользователя детали реализации.
+      static int detect(...);  // Статическую функцию и вызывать проще.
+      template<typename U> static decltype(std::declval<std::stringstream>() >> std::declval<U>())*
+    detect(const U&); public: static constexpr bool value = std::is_same<bool,
+    decltype(detect(std::declval<Arg>()))>::value;  // Вот видите, готово.
+    };*/
+
+  template<class Arg, class = decltype(std::declval<std::istringstream>() >> std::declval<Arg&>())*>
+  struct isConvertible {
+    static constexpr bool value = true;
+  };
+
+  template<class Arg>
+  struct isConvertible<Arg> {
+    static constexpr bool value = false;
+  };
+
+
+  template<class... Args>
+  struct typesCheck;
+
+  template<class Arg, class... Args>
+  struct typesCheck<Arg, Args...> {
+    static_assert(isConvertible<Arg>::value, "noooot all types convertible from string");
+
+    /*    static constexpr bool value = isConvertible<Arg>::value && */
+    static constexpr bool value = typesCheck<Args...>::value;
+  };
+
+  template<>
+  struct typesCheck<> {
+    static constexpr bool value = true;
+  };
+
   template<typename... Types>
   class CSVParser {
+//    static_assert(typesCheck<Types...>::value, "not all types convertible from string");
+
+  private:
+    std::ifstream& Ifs_;
+    size_t LineOffset_;
+    char ColumnDelim_;
+    char RowDelim_;
+    char EscapeSym_;
+    size_t CurrentLine_;
+
+    std::string GetRow() {
+      std::string row;
+      std::getline(Ifs_, row, RowDelim_);
+
+      ++CurrentLine_;
+      return row;
+    }
+
+    std::vector<std::string> tokenizeRow(const std::string& row) {
+      std::regex column_delim_regex({ColumnDelim_});
+      std::vector<std::string> cells(
+              std::sregex_token_iterator(row.begin(), row.end(), column_delim_regex, -1),
+              std::sregex_token_iterator());
+
+      if( cells.size() < sizeof...(Types) )
+        throw CSVParserExceptions::FewColumnsException(CurrentLine_, cells.size() + 1);
+
+      return cells;
+    }
+
+    void makeOffset() {
+      for( size_t line = 0; line < LineOffset_; ++line ) {
+        if( !Ifs_.ignore(std::numeric_limits<std::streamsize>::max(), Ifs_.widen(RowDelim_)) ) {
+          throw CSVParserExceptions::FewRowsException(
+                  line - 1, "File does not contain " + std::to_string(LineOffset_) + " lines");
+        }
+      }
+    }
+
   public:
     class InputIterator;
 
@@ -112,43 +227,6 @@ namespace parser {
 
     InputIterator end() {
       return InputIterator(*this, InputIterator::Mode::ekEnd);
-    }
-
-  private:
-    std::ifstream& Ifs_;
-    size_t LineOffset_;
-    char ColumnDelim_;
-    char RowDelim_;
-    char EscapeSym_;
-    size_t CurrentLine_;
-
-    std::string GetRow() {
-      std::string row;
-      std::getline(Ifs_, row, RowDelim_);
-
-      ++CurrentLine_;
-      return row;
-    }
-
-    std::vector<std::string> tokenizeRow(const std::string& row) {
-      std::regex column_delim_regex({ColumnDelim_});
-      std::vector<std::string> cells(
-              std::sregex_token_iterator(row.begin(), row.end(), column_delim_regex, -1),
-              std::sregex_token_iterator());
-
-      if( cells.size() < sizeof...(Types) )
-        throw CSVParserExceptions::FewColumnsException(CurrentLine_, cells.size() + 1);
-
-      return cells;
-    }
-
-    void makeOffset() {
-      for( size_t line = 0; line < LineOffset_; ++line ) {
-        if( !Ifs_.ignore(std::numeric_limits<std::streamsize>::max(), Ifs_.widen(RowDelim_)) ) {
-          throw CSVParserExceptions::FewRowsException(
-                  line - 1, "File does not contain " + std::to_string(LineOffset_) + " lines");
-        }
-      }
     }
   };
 }// namespace parser

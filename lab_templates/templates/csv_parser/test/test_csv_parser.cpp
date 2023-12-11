@@ -1,20 +1,16 @@
 #include "csv_parser.hpp"
 
-int main() {
-  std::ifstream csvStream("/home/denis/CLionProjects/nsu_oop_labs/lab_templates/templates/"
-                          "csv_parser/test/test.csv");
-  // может быть любое количество любых типов
-  parser::CSVParser<int, std::string, double> parser(csvStream, 0);
-  //  std::tuple<int, std::string, double, std::vector<std::string>>
+int main(int Argc, char ** Argv) {
 
+
+  if (Argc == 1){
+//    todo
+  }
+  std::ifstream csvStream{Argv[1]};
+  parser::CSVParser<int, std::string, double, std::string, std::string, std::string, int> parser(csvStream, 0);
   for( const auto& rs: parser ) {
-    std::cout << get<0>(rs) << " " << get<1>(rs) << " "<< get<2>(rs);
-    for (const auto & other :  get<3>(rs)){
-      std::cout <<" " <<other;
-    }
-    std::cout << std::endl;
-//    rs;
-    //    std::cout << rs << "\n";
+    using namespace tuple_cxx20;
+    std::cout << rs << std::endl;
   }
   return 0;
 }

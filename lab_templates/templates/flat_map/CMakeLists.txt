@@ -10,8 +10,8 @@ message(STATUS ${SOURCE_DIRS})
 set(SOURCE_LIB ${SOURCE_DIRS})
 add_compile_options(-Wall -Wextra -pedantic -Werror)
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_LIB})
-target_include_directories(${PROJECT_NAME} PUBLIC include)
+add_library(${PROJECT_NAME} INTERFACE ${SOURCE_LIB})
+target_include_directories(${PROJECT_NAME} INTERFACE include)
 
 
 find_package(GTest)

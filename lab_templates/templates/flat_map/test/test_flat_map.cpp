@@ -71,7 +71,31 @@ int main(int argc, char **argv) {
   return RUN_ALL_TESTS();
 }
 
-using namespace not_alloc_flat_map;
+using namespace alloc_flat_map;
+
+struct A {
+  A() = default;
+
+  A(const int a)
+      : a_(a) {
+  }
+
+  int a_;
+};
+
+bool operator==(const A& x, const A& y) {
+  return x.a_ == y.a_;
+}
+
+TEST(test_compare, compare) {
+  FlatMap<A, int, decltype([](const A& x, const A& y) { return x.a_ < y.a_; })> tmp;
+  for( int i = 0; i < 10; i++ ) {
+    tmp[A{i}];
+  }
+  for( int i = 0; i < 10; i++ ) {
+    EXPECT_TRUE(tmp.contains(A{i}));
+  }
+}
 
 TEST(test_constructors, constructor_without_args) {
   FlatMap<std::string, std::string> tmp;
@@ -438,20 +462,15 @@ TEST(FlatMapTest, postfix_incr) {
 }
 
 /*
-
 TEST(FlatMapTest, try_emplace_test_1) {
-  notStd::FlatMap<std::string, std::string> testMap1;
-  std::vector<std::pair<std::string, std::string>> testCase = strTestCase3;
-  for( auto&& x: testCase ) {
+  FlatMap<std::string, std::string> testMap1;
+  std::vector<std::pair<std::string, std::string>> testCase1 = strTestCase3;
+  std::vector<std::pair<std::string, std::string>> testCase2 = strTestCase3;
+  for( auto&& x: testCase1 ) {
     auto it = (testMap1.try_emplace(x.first, std::move(x.second)));
     EXPECT_TRUE(it.second);
   }
-  auto z = strTestCase3.begin();
-  auto y = testCase.begin();
-  for( ; z!= strTestCase3.end() && y != testCase.begin();++z, ++y ) {
-    EXPECT_NE(z->first,y->first);
-  }
-  for( auto&& x: testMap1 ) {
+  for( auto&& x: testCase2 ) {
     auto it = (testMap1.try_emplace(x.first, std::move(x.second)));
     EXPECT_FALSE(it.second);
   }
