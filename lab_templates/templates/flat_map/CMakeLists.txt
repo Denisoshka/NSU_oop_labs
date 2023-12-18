@@ -10,6 +10,7 @@ message(STATUS ${SOURCE_DIRS})
 set(SOURCE_LIB ${SOURCE_DIRS})
 add_compile_options(-Wall -Wextra -pedantic -Werror)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/allocator)
 add_library(${PROJECT_NAME} INTERFACE ${SOURCE_LIB})
 target_include_directories(${PROJECT_NAME} INTERFACE include)
 
@@ -28,5 +29,5 @@ endif ()
 
 set(TEST_NAME "test_${DIR_NAME}")
 add_executable(${TEST_NAME} test/${TEST_NAME}.cpp)
-target_link_libraries(${TEST_NAME} ${PROJECT_NAME} gtest gtest_main)
+target_link_libraries(${TEST_NAME} ${PROJECT_NAME} gtest gtest_main allocator)
 

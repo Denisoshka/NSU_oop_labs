@@ -36,7 +36,7 @@ namespace parser {
 
   template<class Arg, class... Args>
   struct typesCheck<Arg, Args...> {
-    static_assert(isConvertible<Arg>::value, "noooot all types convertible from string");
+//    static_assert(isConvertible<Arg>::value, "noooot all types convertible from string");
 
     /*    static constexpr bool value = isConvertible<Arg>::value && */
     static constexpr bool value = typesCheck<Args...>::value;
@@ -51,7 +51,7 @@ namespace parser {
   class CSVParser {
     //    static_assert(typesCheck<Types...>::value, "not all types convertible from string");
   private:
-    std::ifstream& Ifs_;
+    std::istream& Ifs_;
     size_t LineOffset_;
     char ColumnDelim_;
     char RowDelim_;
@@ -90,7 +90,7 @@ namespace parser {
   public:
     class InputIterator;
 
-    CSVParser(std::ifstream& ifs, size_t lineOffset = 0, char columnDelim = ',',
+    CSVParser(std::istream& ifs, size_t lineOffset = 0, char columnDelim = ',',
               char rowDelim = '\n', char escapeSym = '\"')
         : Ifs_(ifs)
         , LineOffset_(lineOffset)

@@ -18,30 +18,12 @@ struct Strategy {
   }
 };
 
-class csvStream{
-public:
-  csvStream(const std::string & x = ""){
-
-  }
-private:
-  decltype(std::cin.rdbuf()) cinBuff = std::cin.rdbuf();
-  std::ifstream in;
-};
-
 int main(int Argc, char **Argv) {
-  /*if( Argc != 1 ) {
-    csvStream = std::move(std::cin);
-  }
-  else{
-    std::ifstream csvStream{
+  unsigned  long offset{};
+ /* if (Argc!=1){
+    offset = std::stoul(Argv[1]);
   }*/
-  std::ifstream csvStream{"/home/denis/CLionProjects/nsu_oop_labs_try/lab_templates/templates/"
-                          "csv_parser/test/test1.csv"};
-//  std::ifstream csvStream;
-//  auto buf = std::cin.rdbuf();
-//  csvStream.rdbuf(buf);
-
-  parser::CSVParser<Strategy, int, std::string, double> parser(csvStream, 0);
+  parser::CSVParser<Strategy, int, std::string, double> parser(std::cin, offset);
   for( const auto& rs: parser ) {
     using namespace tuple_cxx20;
     std::cout << rs << std::endl;
