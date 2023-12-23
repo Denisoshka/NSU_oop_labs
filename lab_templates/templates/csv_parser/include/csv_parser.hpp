@@ -19,6 +19,15 @@
 #include "iostream"
 
 namespace parser {
+  template<typename T, typename = void>
+  struct is_valid_parser: std::false_type {};
+
+  // Parser is valid because has `operator()`.
+  template<typename T>
+  struct is_valid_parser<
+          T, std::enable_if_t<std::is_member_function_pointer_v<decltype(&T::operator())>>>
+      : std::true_type {};
+
   template<template<typename> class Strategy, typename... Types>
   class CSVParser {
     //    static_assert(typesCheck<Types...>::value, "not all types convertible from string");
