@@ -5,7 +5,7 @@
 #include <list>
 #include <random>
 
-const size_t gkReservedBlocksQuantity = 200000000;
+const size_t gkReservedBlocksQuantity = 300000000;
 const size_t gkCheckInd = 100;
 
 template<bool DeallocateTest, class... Types>

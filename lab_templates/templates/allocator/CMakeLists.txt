@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 #file(GLOB SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 message(STATUS ${SOURCE_DIRS})
 set(SOURCE_LIB ${SOURCE_DIRS})
-#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
 add_compile_options(-Wall -Wextra -pedantic -Werror)
 
 add_library(${PROJECT_NAME} INTERFACE)

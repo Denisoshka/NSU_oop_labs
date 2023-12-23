@@ -482,11 +482,11 @@ TEST(FlatMapTest, try_emplace_test_1) {
   std::vector<std::pair<std::string, std::string>> testCase1 = strTestCase3;
   std::vector<std::pair<std::string, std::string>> testCase2 = strTestCase3;
   for( auto&& x: testCase1 ) {
-    auto it = (testMap1.try_emplace(x.first, std::move(x.second)));
+    auto it = (testMap1.try_emplace(std::move(x.first), std::move(x.second)));
     EXPECT_TRUE(it.second);
   }
   for( auto&& x: testCase2 ) {
-    auto it = (testMap1.try_emplace(x.first, std::move(x.second)));
+    auto it = (testMap1.try_emplace(std::move(x.first), std::move(x.second)));
     EXPECT_FALSE(it.second);
   }
 }

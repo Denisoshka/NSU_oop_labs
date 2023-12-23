@@ -247,15 +247,14 @@ namespace flat_map {
     }
 
     template<class... Args>
-    std::pair<iterator, bool> try_emplace(const key_type& key, Args&&...args) {
+    std::pair<iterator, bool> try_emplace(key_type&& key, Args&&...args) {
       auto itPair = getInsertIt_(key);
       if( itPair.second = !itPair.second; itPair.second ) {
         ++CurSize_;
-        key_type key_copy = key;
         alloc_traits::construct(
                 Allocator_, std::addressof(*itPair.first),
                 std::move(value_type{std::piecewise_construct,
-                                     std::forward_as_tuple(std::move(key_copy)),
+                                     std::forward_as_tuple(std::move(key)),
                                      std::forward_as_tuple(std::forward<Args>(args)...)}));
       }
       return itPair;

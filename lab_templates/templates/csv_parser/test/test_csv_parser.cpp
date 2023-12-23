@@ -19,11 +19,7 @@ struct Strategy {
 };
 
 int main(int Argc, char **Argv) {
-  unsigned  long offset{};
- /* if (Argc!=1){
-    offset = std::stoul(Argv[1]);
-  }*/
-  parser::CSVParser<Strategy, int, std::string, double> parser(std::cin, offset);
+  parser::CSVParser<Strategy, int, std::string, double> parser(std::cin, 0);
   for( const auto& rs: parser ) {
     using namespace tuple_cxx20;
     std::cout << rs << std::endl;

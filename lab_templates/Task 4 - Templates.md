@@ -67,12 +67,12 @@ class FlatMap {
 
 **Дополнительно:**
 
-1. К шаблонным параметрам `Key` и `Value` добавьте `Compare` и `Allocator`, определяющие **стратегии** сравнения ключей и выделения памяти. 
+1. К шаблонным параметрам `Key` и `Value` добавьте `Compare` и `Allocator_`, определяющие **стратегии** сравнения ключей и выделения памяти. 
     ```C++
     template <class Key,
               class Value,
               class Compare = std::less<Key>,
-              class Allocator = std::allocator<...>
+              class Allocator_ = std::allocator<...>
              >
     class FlatMap {
         // ...

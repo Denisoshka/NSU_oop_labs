@@ -19,34 +19,6 @@
 #include "iostream"
 
 namespace parser {
-  template<class Arg,
-           class = decltype(std::declval<std::istringstream>() >> std::declval<Arg&>()) *>
-  struct isConvertible {
-    static constexpr bool value = true;
-  };
-
-  template<class Arg>
-  struct isConvertible<Arg> {
-    static constexpr bool value = false;
-  };
-
-
-  template<class... Args>
-  struct typesCheck;
-
-  template<class Arg, class... Args>
-  struct typesCheck<Arg, Args...> {
-//    static_assert(isConvertible<Arg>::value, "noooot all types convertible from string");
-
-    /*    static constexpr bool value = isConvertible<Arg>::value && */
-    static constexpr bool value = typesCheck<Args...>::value;
-  };
-
-  template<>
-  struct typesCheck<> {
-    static constexpr bool value = true;
-  };
-
   template<template<typename> class Strategy, typename... Types>
   class CSVParser {
     //    static_assert(typesCheck<Types...>::value, "not all types convertible from string");
@@ -133,13 +105,13 @@ namespace parser {
         return *ItPtr_;
       }
 
-      const InputIterator operator++() {
+      InputIterator operator++() {
         updatePtr();
         return *this;
       }
 
-      const InputIterator operator++(int) {
-        const InputIterator tmp = *this;
+      InputIterator operator++(int) {
+        InputIterator tmp = *this;
         updatePtr();
         return tmp;
       }

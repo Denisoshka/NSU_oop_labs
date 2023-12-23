@@ -20,17 +20,18 @@ namespace CustomAllocator {
     using value_type = T;
     using pointer = value_type *;
     using size_type = std::size_t;
+    using allocator_type = std::allocator<value_type>;
+    using alloc_traits = std::allocator_traits<allocator_type>;
 
   private:
     std::vector<pointer> FreeBlocks_;
+    allocator_type Allocator_;
     pointer Pool_;
-    size_type Size_ = PoolSize;
-
 
   public:
     PoolAllocator()
-        : Pool_(static_cast<pointer>(
-                  ::operator new(sizeof(value_type) * PoolSize * ChunkSize))) {
+        : Allocator_(allocator_type{})
+        , Pool_(alloc_traits::allocate(Allocator_, PoolSize)) {
       FreeBlocks_.reserve(PoolSize);
       for( size_type i = 0; i < PoolSize; ++i ) {
         FreeBlocks_.push_back(Pool_ + i * ChunkSize);
@@ -38,7 +39,7 @@ namespace CustomAllocator {
     }
 
     ~PoolAllocator() {
-      ::operator delete(Pool_);
+      alloc_traits::deallocate(Allocator_, Pool_, PoolSize);
     }
 
     pointer allocate(const size_type n) {
@@ -60,7 +61,7 @@ namespace CustomAllocator {
 
     void deallocate(pointer p, const size_type n) noexcept {
       for( size_type i = 0; i < n; ++i ) {
-        FreeBlocks_.push_back(p + i);
+        FreeBlocks_.push_back(p + i * ChunkSize);
       }
     }
   };
