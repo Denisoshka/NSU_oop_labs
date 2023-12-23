@@ -22,21 +22,19 @@ namespace CustomAllocator {
     using size_type = std::size_t;
 
   private:
-    std::vector<pointer> FreeBlocks_;
-    pointer Pool_;
+    std::vector<pointer> FreeBlocks_{};
+    std::unique_ptr<value_type, decltype([](pointer ptr) { ::operator delete(ptr); })> Pool_{};
 
   public:
     PoolAllocator()
         : Pool_(static_cast<pointer>(::operator new(sizeof(value_type) * PoolSize))) {
       FreeBlocks_.reserve(PoolSize);
       for( size_type i = 0; i < PoolSize; ++i ) {
-        FreeBlocks_.push_back(Pool_ + i * ChunkSize);
+        FreeBlocks_.push_back(Pool_.get() + i * ChunkSize);
       }
     }
 
-    ~PoolAllocator() {
-      ::operator delete(Pool_);
-    }
+    virtual ~PoolAllocator() = default;
 
     pointer allocate(const size_type n) {
       if constexpr( ChunkSize == PoolSize ) {
