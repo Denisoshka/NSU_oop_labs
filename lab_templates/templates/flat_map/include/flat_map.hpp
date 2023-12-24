@@ -9,12 +9,10 @@ namespace flat_map {
   const double ResizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
   const size_t StartSize_ = 2;
 
-  template<class KeyT, class Compare>
-  concept keyRequires = requires(KeyT x, KeyT y) { Compare{}(x, y); };
-
   template<class KeyT, class ValueT, class Compare = std::less<KeyT>,
            class Allocator = std::allocator<std::pair<KeyT, ValueT>>>
-  class FlatMap {
+  class FlatMap final {
+  public:
     using key_type = KeyT;
     using val_type = ValueT;
     using value_type = std::pair<key_type, val_type>;

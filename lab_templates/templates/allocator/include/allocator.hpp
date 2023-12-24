@@ -10,7 +10,6 @@ namespace CustomAllocator {
   struct PoolAllocator {
     static_assert(!std::is_same_v<T, void>, "Type of the allocator can not be void");
 
-  public:
     template<typename U>
     struct rebind {
       using other = PoolAllocator<U, PoolSize, SimplePool>;
@@ -38,7 +37,7 @@ namespace CustomAllocator {
       }
     }
 
-    virtual ~PoolAllocator() = default;
+    ~PoolAllocator() = default;
 
     pointer allocate(const size_type n) {
       if( n > FreeBlocks_.size() ) {
