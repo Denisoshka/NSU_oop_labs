@@ -39,6 +39,7 @@ namespace tuple_cxx20 {
 
   template<template<typename> class Strategy, typename T>
   auto convert(const std::string& s, size_t N) {
+    //    static_assert();
     Strategy<T> convert;
     try {
       return convert(s);

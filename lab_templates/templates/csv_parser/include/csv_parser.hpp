@@ -36,7 +36,6 @@ namespace parser {
     size_t LineOffset_;
     char ColumnDelim_;
     char RowDelim_;
-    char EscapeSym_;
     size_t CurrentLine_;
 
     std::string GetRow() {
@@ -69,15 +68,11 @@ namespace parser {
     }
 
   public:
-    class InputIterator;
-
-    CSVParser(std::istream& ifs, size_t lineOffset = 0, char columnDelim = ',',
-              char rowDelim = '\n', char escapeSym = '\"')
+    CSVParser(std::istream& ifs, size_t lineOffset = 0)
         : Ifs_(ifs)
         , LineOffset_(lineOffset)
-        , ColumnDelim_(columnDelim)
-        , RowDelim_(rowDelim)
-        , EscapeSym_(escapeSym)
+        , ColumnDelim_(',')
+        , RowDelim_('\n')
         , CurrentLine_(0) {
       if( !Ifs_ ) {
         throw std::ifstream::failure("File is not open");
@@ -86,6 +81,8 @@ namespace parser {
     }
 
     CSVParser(const CSVParser<Strategy, Types...>& src) = delete;
+
+    virtual ~CSVParser() = default;
 
     class InputIterator {
     public:
@@ -120,7 +117,7 @@ namespace parser {
       }
 
       InputIterator operator++(int) {
-        InputIterator tmp = *this;
+        InputIterator tmp{*this};
         updatePtr();
         return tmp;
       }

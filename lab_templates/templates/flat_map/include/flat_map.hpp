@@ -9,6 +9,9 @@ namespace flat_map {
   const double ResizeRate_ = 1.7;// с семинаров помню что нужно использовать это число
   const size_t StartSize_ = 2;
 
+  template<class KeyT, class Compare>
+  concept keyRequires = requires(KeyT x, KeyT y) { Compare{}(x, y); };
+
   template<class KeyT, class ValueT, class Compare = std::less<KeyT>,
            class Allocator = std::allocator<std::pair<KeyT, ValueT>>>
   class FlatMap {
@@ -28,6 +31,9 @@ namespace flat_map {
     static_assert(std::default_initializable<val_type>, "ValueT must have default initialization");
     static_assert(std::is_same<typename Allocator::value_type, value_type>::value,
                   "FlatMap must have the same value_type as its allocator");
+    static_assert(
+            requires(KeyT x, KeyT y) { x < y; } || !std::is_same<Compare, std::less<KeyT>>::value,
+            "Key are not comparable");
 
   private:
     allocator_type Allocator_;
@@ -58,7 +64,7 @@ namespace flat_map {
 
         for( auto toShift = end(); toShift != Array_ + diff; --toShift ) {
           alloc_traits::construct(Allocator_, std::addressof(*toShift), std::move(*(toShift - 1)));
-          alloc_traits ::destroy(Allocator_, std::addressof(*(toShift - 1)));
+          alloc_traits::destroy(Allocator_, std::addressof(*(toShift - 1)));
         }
       }
 
@@ -236,11 +242,9 @@ namespace flat_map {
       auto itPair = getInsertIt_(key);
       if( !itPair.second ) {
         ++CurSize_;
-        key_type key_copy = key;
         alloc_traits::construct(
                 Allocator_, itPair.first,
-                std::move(value_type{std::piecewise_construct,
-                                     std::forward_as_tuple(std::move(key_copy)),
+                std::move(value_type{std::piecewise_construct, std::forward_as_tuple(key),
                                      std::forward_as_tuple(std::move(val_type{}))}));
       }
       return itPair.first->second;
