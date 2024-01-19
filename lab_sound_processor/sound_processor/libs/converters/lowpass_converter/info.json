@@ -1,0 +1,5 @@
+{
+  "name": "lowpass_converter",
+  "params": "stream(def=output_stream(0)), start(sec=0), end(sec=max_value), frequency(def=2000)",
+  "description" : "in general, it seems to cut off the lower frequencies and with a large 4th parameter makes good sound overload"
+}
